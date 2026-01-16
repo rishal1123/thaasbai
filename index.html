@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#006994">
+    <title>Dhiha Ei - Maldivian Card Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <header id="game-header">
+            <h1>Dhiha Ei</h1>
+            <div id="game-status">
+                <span id="superior-suit-display">Superior Suit: None</span>
+            </div>
+        </header>
+
+        <main id="game-board">
+            <!-- Match Points Display -->
+            <div id="match-points-panel">
+                <div class="match-title">Match Score (First to 7)</div>
+                <div class="match-scores">
+                    <span class="match-score you">You: <span id="match-points-0">0</span></span>
+                    <span class="match-score opp">Opp: <span id="match-points-1">0</span></span>
+                </div>
+                <div class="win-types-breakdown">
+                    <div class="win-type-row">
+                        <span class="win-type-label">Normal:</span>
+                        <span class="win-type-you" id="normal-0">0</span>
+                        <span class="win-type-sep">-</span>
+                        <span class="win-type-opp" id="normal-1">0</span>
+                    </div>
+                    <div class="win-type-row">
+                        <span class="win-type-label">All 10s:</span>
+                        <span class="win-type-you" id="all-tens-0">0</span>
+                        <span class="win-type-sep">-</span>
+                        <span class="win-type-opp" id="all-tens-1">0</span>
+                    </div>
+                    <div class="win-type-row">
+                        <span class="win-type-label">Shutout:</span>
+                        <span class="win-type-you" id="shutout-0">0</span>
+                        <span class="win-type-sep">-</span>
+                        <span class="win-type-opp" id="shutout-1">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Round Score displays -->
+            <div id="score-panel">
+                <div class="round-label">Current Round</div>
+                <div class="team-score" id="team0-score">
+                    <span class="team-label">Your Team</span>
+                    <span class="tens-count">10s: <span id="team0-tens">0</span></span>
+                    <span class="tricks-count">Tricks: <span id="team0-tricks">0</span></span>
+                    <div class="collected-tens" id="collected-tens-0"></div>
+                </div>
+                <div class="team-score" id="team1-score">
+                    <span class="team-label">Opponent Team</span>
+                    <span class="tens-count">10s: <span id="team1-tens">0</span></span>
+                    <span class="tricks-count">Tricks: <span id="team1-tricks">0</span></span>
+                    <div class="collected-tens" id="collected-tens-1"></div>
+                </div>
+            </div>
+
+            <!-- Player areas -->
+            <div id="player-top" class="player-area partner">
+                <div class="player-label">Partner</div>
+                <div class="player-hand" id="hand-top"></div>
+            </div>
+
+            <div id="player-left" class="player-area opponent">
+                <div class="player-label">Opponent</div>
+                <div class="player-hand" id="hand-left"></div>
+            </div>
+
+            <div id="player-right" class="player-area opponent">
+                <div class="player-label">Opponent</div>
+                <div class="player-hand" id="hand-right"></div>
+            </div>
+
+            <!-- Center play area -->
+            <div id="play-area">
+                <div id="trick-cards">
+                    <div class="played-card" id="played-top"></div>
+                    <div class="played-card" id="played-left"></div>
+                    <div class="played-card" id="played-right"></div>
+                    <div class="played-card" id="played-bottom"></div>
+                </div>
+                <div id="turn-indicator"></div>
+            </div>
+
+            <!-- Human player area -->
+            <div id="player-bottom" class="player-area human">
+                <div class="player-hand" id="hand-bottom"></div>
+                <div class="player-label">You</div>
+            </div>
+        </main>
+
+        <!-- Game messages and overlays -->
+        <div id="message-overlay" class="hidden">
+            <div id="message-content">
+                <h2 id="message-title"></h2>
+                <p id="message-text"></p>
+                <button id="message-button">Continue</button>
+            </div>
+        </div>
+
+        <!-- New game button -->
+        <div id="controls">
+            <button id="new-game-btn">New Game</button>
+        </div>
+
+        <!-- Maldivian Table Items -->
+        <div class="table-item chips" id="table-coconut">
+            <div class="item-body"></div>
+            <div class="item-label">KURUMBA</div>
+        </div>
+        <div class="table-item drink" id="table-gulha">
+            <div class="item-body"></div>
+            <div class="item-label">GULHA</div>
+        </div>
+        <div class="table-item energy" id="table-roshi">
+            <div class="item-body"></div>
+            <div class="item-label">ROSHI</div>
+        </div>
+    </div>
+
+    <!-- Single bundled script (no modules) -->
+    <script src="js/bundle.js"></script>
+</body>
+</html>
