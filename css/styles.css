@@ -401,6 +401,89 @@ body {
     font-weight: bold;
 }
 
+/* Player Avatars (for opponents and partner) */
+.player-avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.avatar-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--ocean-turquoise) 0%, var(--ocean-deep) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--text-light);
+    text-transform: uppercase;
+    border: 3px solid rgba(64, 224, 208, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 60, 80, 0.4);
+}
+
+.player-area.partner .avatar-icon {
+    background: linear-gradient(145deg, var(--sunset-gold) 0%, var(--sunset-orange) 100%);
+    border-color: var(--sunset-gold);
+}
+
+.player-area.opponent .avatar-icon {
+    background: linear-gradient(145deg, var(--coral-pink) 0%, var(--coral-red) 100%);
+    border-color: var(--coral-pink);
+}
+
+.avatar-cards {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.avatar-cards::before {
+    content: '';
+    width: 12px;
+    height: 16px;
+    background: linear-gradient(145deg, var(--card-white) 0%, var(--sand-white) 100%);
+    border-radius: 2px;
+    border: 1px solid rgba(64, 224, 208, 0.3);
+}
+
+.card-count {
+    font-weight: bold;
+    color: var(--ocean-turquoise);
+}
+
+/* Active player indicator on avatar */
+.player-area.active-turn .avatar-icon {
+    animation: avatar-pulse 1.2s ease-in-out infinite;
+    box-shadow: 0 0 20px var(--ocean-turquoise);
+}
+
+@keyframes avatar-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Always show avatars for opponents/partner, hide their cards */
+#player-top .player-avatar,
+#player-left .player-avatar,
+#player-right .player-avatar {
+    display: flex;
+}
+
+#player-top .player-hand,
+#player-left .player-hand,
+#player-right .player-hand {
+    display: none;
+}
+
 #player-top {
     top: 20px;
     left: 50%;
@@ -2847,6 +2930,40 @@ body {
     .player-label {
         font-size: 0.65rem;
         padding: 2px 8px;
+    }
+
+    /* Avatar styles for mobile landscape */
+    .player-avatar {
+        gap: 3px;
+    }
+
+    .avatar-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+        border-width: 2px;
+    }
+
+    .avatar-cards {
+        padding: 2px 6px;
+        font-size: 0.65rem;
+        border-radius: 8px;
+    }
+
+    .avatar-cards::before {
+        width: 10px;
+        height: 14px;
+    }
+
+    /* Side players show avatar horizontally */
+    #player-left .player-avatar,
+    #player-right .player-avatar {
+        flex-direction: row;
+        gap: 5px;
+    }
+
+    #player-left .player-avatar {
+        flex-direction: row-reverse;
     }
 
     /* Play area - centered */

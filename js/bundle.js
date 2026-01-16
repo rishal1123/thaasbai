@@ -534,18 +534,28 @@
     // PLAYER CLASS
     // ============================================
 
+    // Maldivian names for AI players
+    const MALDIVIAN_AI_NAMES = [
+        'Ahmed AI', 'Fathima AI', 'Mohamed AI', 'Aisha AI',
+        'Ibrahim AI', 'Mariyam AI', 'Ali AI', 'Hawwa AI',
+        'Hassan AI', 'Aminath AI', 'Hussain AI', 'Safiya AI'
+    ];
+
     class Player {
         constructor(position, team, isHuman = false) {
             this.position = position;
             this.team = team;
             this.isHuman = isHuman;
             this.hand = [];
-            this.name = this.getPositionName();
+            this.name = this.getDefaultName();
         }
 
-        getPositionName() {
-            const names = ['You', 'Left', 'Partner', 'Right'];
-            return names[this.position];
+        getDefaultName() {
+            if (this.isHuman) {
+                return 'You';
+            }
+            // Pick a consistent Maldivian name based on position
+            return MALDIVIAN_AI_NAMES[this.position] || `Player ${this.position + 1}`;
         }
 
         setHand(cards) {
@@ -1768,8 +1778,8 @@
                 return;
             }
 
-            if (name.length > 12) {
-                this.showError('Name must be 12 characters or less');
+            if (name.length > 10) {
+                this.showError('Name must be 10 characters or less');
                 return;
             }
 
@@ -1804,6 +1814,7 @@
         // Start single player game
         startSinglePlayerGame() {
             this.isMultiplayerMode = false;
+            document.getElementById('game-container').classList.remove('multiplayer-mode');
             this.game.resetToSinglePlayer();
             this.hideLobby();
             this.hideMultiplayerStatus();
@@ -2272,6 +2283,7 @@
         // Called when multiplayer game starts
         async onMultiplayerGameStart(data) {
             this.isMultiplayerMode = true;
+            document.getElementById('game-container').classList.add('multiplayer-mode');
             const roomId = this.lobbyManager.getRoomId();
             const localPosition = this.lobbyManager.getPosition();
 
@@ -2427,14 +2439,31 @@
         // Update multiplayer turn indicator
         updateMultiplayerTurnIndicator() {
             const turnIndicator = document.getElementById('mp-turn-indicator');
+            const localPosition = this.game.localPlayerPosition;
+            const positionMap = this.getMultiplayerPositionMap(localPosition);
+
+            // Remove active-turn from all player areas
+            document.querySelectorAll('.player-area').forEach(area => {
+                area.classList.remove('active-turn');
+            });
+
             if (this.game.isLocalPlayerTurn()) {
                 turnIndicator.textContent = 'Your Turn';
                 turnIndicator.classList.add('your-turn');
+                // Highlight player's own area
+                document.getElementById('player-bottom').classList.add('active-turn');
             } else {
                 const currentPlayer = this.game.players[this.game.currentPlayerIndex];
                 const name = currentPlayer.name || `Player ${this.game.currentPlayerIndex + 1}`;
                 turnIndicator.textContent = `${name}'s Turn`;
                 turnIndicator.classList.remove('your-turn');
+
+                // Highlight the current player's avatar
+                const screenPos = positionMap[this.game.currentPlayerIndex];
+                const screenPosIds = { 1: 'player-left', 2: 'player-top', 3: 'player-right' };
+                if (screenPosIds[screenPos]) {
+                    document.getElementById(screenPosIds[screenPos]).classList.add('active-turn');
+                }
             }
         }
 
@@ -2502,9 +2531,54 @@
             this.renderer.updateSuperiorSuit(state.superiorSuit);
             this.renderer.showTurnIndicator(state.currentPlayer, this.game.isLocalPlayerTurn());
 
-            // Update player labels with names in multiplayer
+            // Always update avatars (works for both single and multiplayer)
             if (this.isMultiplayerMode) {
                 this.updatePlayerLabels();
+            } else {
+                this.updateSinglePlayerAvatars();
+            }
+        }
+
+        // Update avatars for single player mode (AI opponents)
+        updateSinglePlayerAvatars() {
+            // In single player: position 0=bottom (human), 1=left, 2=top (partner), 3=right
+            const screenPosMap = {
+                1: { area: 'player-left', pos: 1 },
+                2: { area: 'player-top', pos: 2 },
+                3: { area: 'player-right', pos: 3 }
+            };
+
+            // Remove active-turn from all
+            document.querySelectorAll('.player-area').forEach(area => {
+                area.classList.remove('active-turn');
+            });
+
+            // Highlight current player
+            const currentPos = this.game.currentPlayerIndex;
+            if (currentPos === 0) {
+                document.getElementById('player-bottom').classList.add('active-turn');
+            } else if (screenPosMap[currentPos]) {
+                document.getElementById(screenPosMap[currentPos].area).classList.add('active-turn');
+            }
+
+            // Update each AI player's avatar
+            for (const [gamePos, mapping] of Object.entries(screenPosMap)) {
+                const player = this.game.players[parseInt(gamePos)];
+                const areaId = mapping.area;
+
+                const avatarIcon = document.querySelector(`#${areaId} .avatar-icon`);
+                const cardCount = document.querySelector(`#${areaId} .card-count`);
+                const label = document.querySelector(`#${areaId} .player-label`);
+
+                if (avatarIcon && player) {
+                    avatarIcon.textContent = player.name.charAt(0).toUpperCase();
+                }
+                if (cardCount && player) {
+                    cardCount.textContent = player.hand.length;
+                }
+                if (label && player) {
+                    label.textContent = player.name;
+                }
             }
         }
 
@@ -2525,10 +2599,15 @@
 
                 const isLocal = i === localPosition;
 
-                player.hand.forEach(card => {
-                    const cardElement = CardSprite.createCardElement(card, isLocal);
+                // Only render cards for local player - opponents/partner show avatars with card counts
+                if (!isLocal) {
+                    continue;
+                }
 
-                    if (isLocal && validCards.length > 0) {
+                player.hand.forEach(card => {
+                    const cardElement = CardSprite.createCardElement(card, true);
+
+                    if (validCards.length > 0) {
                         const isValid = validCards.some(c => c.equals(card));
                         CardSprite.setPlayable(cardElement, isValid);
 
@@ -2585,6 +2664,18 @@
                 3: document.querySelector('#player-right .player-label')
             };
 
+            const avatarIcons = {
+                1: document.querySelector('#player-left .avatar-icon'),
+                2: document.querySelector('#player-top .avatar-icon'),
+                3: document.querySelector('#player-right .avatar-icon')
+            };
+
+            const cardCounts = {
+                1: document.querySelector('#player-left .card-count'),
+                2: document.querySelector('#player-top .card-count'),
+                3: document.querySelector('#player-right .card-count')
+            };
+
             for (let i = 0; i < 4; i++) {
                 const screenPos = positionMap[i];
                 const label = labels[screenPos];
@@ -2594,9 +2685,43 @@
                     if (i === localPosition) {
                         label.textContent = 'You';
                     } else {
-                        label.textContent = player.name || `Player ${i + 1}`;
+                        const name = player.name || `Player ${i + 1}`;
+                        label.textContent = name;
+
+                        // Update avatar icon with first letter
+                        if (avatarIcons[screenPos]) {
+                            avatarIcons[screenPos].textContent = name.charAt(0).toUpperCase();
+                        }
+
+                        // Update card count
+                        if (cardCounts[screenPos]) {
+                            cardCounts[screenPos].textContent = player.hand.length;
+                        }
                     }
                     label.classList.add('mp-name');
+                }
+            }
+        }
+
+        // Update card counts for all opponent/partner avatars
+        updateCardCounts() {
+            const localPosition = this.game.localPlayerPosition;
+            const positionMap = this.getMultiplayerPositionMap(localPosition);
+
+            const cardCounts = {
+                1: document.querySelector('#player-left .card-count'),
+                2: document.querySelector('#player-top .card-count'),
+                3: document.querySelector('#player-right .card-count')
+            };
+
+            for (let i = 0; i < 4; i++) {
+                if (i === localPosition) continue;
+
+                const screenPos = positionMap[i];
+                const player = this.game.players[i];
+
+                if (cardCounts[screenPos]) {
+                    cardCounts[screenPos].textContent = player.hand.length;
                 }
             }
         }

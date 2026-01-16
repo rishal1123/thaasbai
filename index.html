@@ -177,18 +177,30 @@
 
             <!-- Player areas -->
             <div id="player-top" class="player-area partner">
-                <div class="player-label">Partner</div>
+                <div class="player-avatar">
+                    <div class="avatar-icon">P</div>
+                    <div class="avatar-cards"><span class="card-count">13</span></div>
+                </div>
                 <div class="player-hand" id="hand-top"></div>
+                <div class="player-label">Partner</div>
             </div>
 
             <div id="player-left" class="player-area opponent">
-                <div class="player-label">Opponent</div>
+                <div class="player-avatar">
+                    <div class="avatar-icon">O</div>
+                    <div class="avatar-cards"><span class="card-count">13</span></div>
+                </div>
                 <div class="player-hand" id="hand-left"></div>
+                <div class="player-label">Opponent</div>
             </div>
 
             <div id="player-right" class="player-area opponent">
-                <div class="player-label">Opponent</div>
+                <div class="player-avatar">
+                    <div class="avatar-icon">O</div>
+                    <div class="avatar-cards"><span class="card-count">13</span></div>
+                </div>
                 <div class="player-hand" id="hand-right"></div>
+                <div class="player-label">Opponent</div>
             </div>
 
             <!-- Center play area -->
@@ -328,7 +340,7 @@
             <!-- Name Input Modal -->
             <div id="name-input-modal" class="hidden">
                 <h3>Enter Your Name</h3>
-                <input type="text" id="player-name-input" placeholder="Your name" maxlength="12" autocomplete="off">
+                <input type="text" id="player-name-input" placeholder="Your name" maxlength="10" autocomplete="off">
                 <div class="modal-actions">
                     <button id="name-cancel-btn" class="lobby-btn secondary">Cancel</button>
                     <button id="name-confirm-btn" class="lobby-btn primary">Confirm</button>
