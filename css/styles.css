@@ -2825,9 +2825,24 @@ body {
         width: 100dvw;
     }
 
-    /* Hide header in mobile landscape */
+    /* Minimal header - just superior suit on mobile landscape */
     #game-header {
+        padding: 3px 10px;
+        background: transparent;
+        justify-content: flex-start;
+        padding-left: max(10px, env(safe-area-inset-left));
+    }
+
+    #game-header h1 {
         display: none;
+    }
+
+    #superior-suit-display {
+        padding: 3px 10px;
+        font-size: 0.65rem;
+        position: fixed;
+        top: 5px;
+        left: max(10px, env(safe-area-inset-left));
     }
 
     /* Game board fills available space */
@@ -3004,7 +3019,7 @@ body {
     #score-panel {
         position: fixed;
         top: 5px;
-        left: calc(50% + 40px);
+        left: calc(50% + 80px);
         transform: translateX(-50%);
         flex-direction: row;
         gap: 8px;

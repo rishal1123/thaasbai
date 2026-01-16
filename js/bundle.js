@@ -1534,10 +1534,10 @@
             element.classList.remove('hearts', 'diamonds', 'clubs', 'spades');
 
             if (suit) {
-                element.textContent = `Superior: ${getSuitSymbol(suit)} ${getSuitDisplay(suit)}`;
+                element.textContent = `👑 ${getSuitSymbol(suit)}`;
                 element.classList.add(suit);
             } else {
-                element.textContent = 'Superior Suit: None';
+                element.textContent = '👑 —';
             }
         }
 
