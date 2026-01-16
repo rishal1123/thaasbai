@@ -211,7 +211,7 @@ body {
 #score-panel {
     position: fixed;
     top: 15px;
-    right: 180px;
+    right: 280px;
     display: flex;
     flex-direction: row;
     gap: 15px;
@@ -1263,7 +1263,7 @@ body {
         position: fixed;
         top: 50px;
         bottom: auto;
-        right: 150px;
+        right: 180px;
         left: auto;
         flex-direction: row;
         gap: 5px;
@@ -1564,7 +1564,7 @@ body {
     #score-panel {
         top: 45px;
         bottom: auto;
-        right: 150px;
+        right: 180px;
         left: auto;
     }
 
@@ -1661,7 +1661,7 @@ body {
     }
 
     #score-panel {
-        right: max(150px, calc(env(safe-area-inset-right) + 100px));
+        right: max(180px, calc(env(safe-area-inset-right) + 130px));
         left: auto;
     }
 
@@ -1804,7 +1804,7 @@ body {
     #score-panel {
         top: max(70px, calc(env(safe-area-inset-top) + 50px));
         bottom: auto;
-        right: 150px;
+        right: 180px;
         left: auto;
         flex-direction: row;
     }
@@ -1907,7 +1907,7 @@ body {
     }
 
     #score-panel {
-        right: max(150px, calc(env(safe-area-inset-right) + 100px));
+        right: max(180px, calc(env(safe-area-inset-right) + 130px));
         left: auto;
         top: 60px;
         flex-direction: row;
@@ -2994,7 +2994,7 @@ body {
     #score-panel {
         position: fixed;
         top: 5px;
-        right: 100px;
+        right: 130px;
         left: auto;
         transform: none;
         flex-direction: row;
@@ -3275,7 +3275,7 @@ body {
     }
 
     #score-panel {
-        right: max(100px, calc(env(safe-area-inset-right) + 50px));
+        right: max(130px, calc(env(safe-area-inset-right) + 80px));
         left: auto;
     }
 
