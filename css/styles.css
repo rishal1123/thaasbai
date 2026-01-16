@@ -74,11 +74,12 @@ body {
     display: none;
 }
 
-/* Superior Suit Display - Positioned next to score panel */
+/* Superior Suit Display - Positioned on left side */
 #superior-suit-display {
     position: fixed;
     top: 15px;
-    right: 20px;
+    left: 20px;
+    right: auto;
     padding: 10px 15px;
     background: rgba(64, 224, 208, 0.2);
     border: 2px solid var(--ocean-turquoise);
@@ -207,11 +208,12 @@ body {
     color: var(--ocean-turquoise);
 }
 
-/* Score Panel - Current Round */
+/* Score Panel - Current Round - Positioned on left side */
 #score-panel {
     position: fixed;
     top: 15px;
-    right: 280px;
+    left: 80px;
+    right: auto;
     display: flex;
     flex-direction: row;
     gap: 15px;
@@ -1258,13 +1260,13 @@ body {
         transform: translateX(-10px) scale(1.05);
     }
 
-    /* Score panels - moved to top right for consistency */
+    /* Score panels - positioned on left side */
     #score-panel {
         position: fixed;
         top: 50px;
         bottom: auto;
-        right: 180px;
-        left: auto;
+        left: 70px;
+        right: auto;
         flex-direction: row;
         gap: 5px;
         z-index: 15;
@@ -1564,8 +1566,8 @@ body {
     #score-panel {
         top: 45px;
         bottom: auto;
-        right: 180px;
-        left: auto;
+        left: 70px;
+        right: auto;
     }
 
     #match-points-panel {
@@ -1661,8 +1663,8 @@ body {
     }
 
     #score-panel {
-        right: max(180px, calc(env(safe-area-inset-right) + 130px));
-        left: auto;
+        left: max(70px, calc(env(safe-area-inset-left) + 50px));
+        right: auto;
     }
 
     #match-points-panel {
@@ -1800,12 +1802,12 @@ body {
         font-size: 0.9rem;
     }
 
-    /* Score panels - at top right for consistency */
+    /* Score panels - positioned on left side */
     #score-panel {
         top: max(70px, calc(env(safe-area-inset-top) + 50px));
         bottom: auto;
-        right: 180px;
-        left: auto;
+        left: 70px;
+        right: auto;
         flex-direction: row;
     }
 
@@ -1907,8 +1909,8 @@ body {
     }
 
     #score-panel {
-        right: max(180px, calc(env(safe-area-inset-right) + 130px));
-        left: auto;
+        left: max(70px, calc(env(safe-area-inset-left) + 50px));
+        right: auto;
         top: 60px;
         flex-direction: row;
     }
@@ -2808,12 +2810,12 @@ body {
         display: none;
     }
 
-    /* Superior suit positioned next to score panels */
+    /* Superior suit positioned on left side */
     #superior-suit-display {
         position: fixed;
         top: 5px;
-        right: 10px;
-        left: auto;
+        left: 10px;
+        right: auto;
         transform: none;
         padding: 4px 10px;
         font-size: 0.7rem;
@@ -2990,12 +2992,12 @@ body {
         height: 40px;
     }
 
-    /* Score panels - positioned at right side on mobile */
+    /* Score panels - positioned on left side on mobile */
     #score-panel {
         position: fixed;
         top: 5px;
-        right: 130px;
-        left: auto;
+        left: 60px;
+        right: auto;
         transform: none;
         flex-direction: row;
         gap: 8px;
@@ -3275,8 +3277,8 @@ body {
     }
 
     #score-panel {
-        right: max(130px, calc(env(safe-area-inset-right) + 80px));
-        left: auto;
+        left: max(60px, calc(env(safe-area-inset-left) + 40px));
+        right: auto;
     }
 
     #player-right {
