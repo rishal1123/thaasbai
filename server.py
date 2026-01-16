@@ -18,6 +18,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 # In-memory storage for rooms and players
 rooms = {}
 player_sessions = {}  # Maps session ID to room and position
+matchmaking_queue = []  # List of {sid, name, joinedAt}
 
 def generate_room_code():
     """Generate a 6-character room code"""
@@ -60,6 +61,19 @@ def handle_connect():
 def handle_disconnect():
     sid = request.sid
     print(f'Client disconnected: {sid}')
+
+    # Remove from matchmaking queue if present
+    global matchmaking_queue
+    was_in_queue = any(p['sid'] == sid for p in matchmaking_queue)
+    matchmaking_queue = [p for p in matchmaking_queue if p['sid'] != sid]
+    if was_in_queue:
+        print(f'Removed disconnected player from queue. Queue size: {len(matchmaking_queue)}')
+        # Update remaining players in queue
+        for player in matchmaking_queue:
+            socketio.emit('queue_update', {
+                'playersInQueue': len(matchmaking_queue),
+                'playersNeeded': 4 - len(matchmaking_queue)
+            }, to=player['sid'])
 
     # Clean up player from room
     if sid in player_sessions:
@@ -416,6 +430,129 @@ def handle_new_round(data):
             'gameState': rooms[room_id]['gameState'],
             'hands': rooms[room_id]['hands']
         }, room=room_id)
+
+# ===========================================
+# MATCHMAKING / QUICK MATCH
+# ===========================================
+
+def remove_from_queue(sid):
+    """Remove a player from the matchmaking queue"""
+    global matchmaking_queue
+    matchmaking_queue = [p for p in matchmaking_queue if p['sid'] != sid]
+
+def check_and_start_match():
+    """Check if we have 4 players and start a match"""
+    global matchmaking_queue
+
+    if len(matchmaking_queue) >= 4:
+        # Take first 4 players
+        match_players = matchmaking_queue[:4]
+        matchmaking_queue = matchmaking_queue[4:]
+
+        # Create a new room for this match
+        room_id = generate_room_code()
+
+        rooms[room_id] = {
+            'metadata': {
+                'host': match_players[0]['sid'],
+                'created': time.time(),
+                'status': 'waiting',
+                'playerCount': 4,
+                'isQuickMatch': True
+            },
+            'players': {},
+            'gameState': None,
+            'hands': None
+        }
+
+        # Assign players to positions (0, 2 = Team A, 1, 3 = Team B)
+        positions = [0, 1, 2, 3]
+        random.shuffle(positions)  # Randomize team assignment
+
+        for i, player in enumerate(match_players):
+            position = positions[i]
+            rooms[room_id]['players'][position] = {
+                'oderId': player['sid'],
+                'name': player['name'],
+                'ready': True,  # Auto-ready for quick match
+                'connected': True
+            }
+
+            player_sessions[player['sid']] = {
+                'roomId': room_id,
+                'position': position
+            }
+
+            # Add player to socket room
+            join_room(room_id, sid=player['sid'])
+
+        print(f'Quick match created: Room {room_id} with players {[p["name"] for p in match_players]}')
+
+        # Notify all matched players
+        for i, player in enumerate(match_players):
+            position = player_sessions[player['sid']]['position']
+            socketio.emit('match_found', {
+                'roomId': room_id,
+                'position': position,
+                'players': rooms[room_id]['players']
+            }, to=player['sid'])
+
+        return True
+    return False
+
+def broadcast_queue_status():
+    """Broadcast current queue count to all waiting players"""
+    count = len(matchmaking_queue)
+    for player in matchmaking_queue:
+        socketio.emit('queue_update', {
+            'playersInQueue': count,
+            'playersNeeded': 4 - count
+        }, to=player['sid'])
+
+@socketio.on('join_queue')
+def handle_join_queue(data):
+    sid = request.sid
+    player_name = data.get('playerName', 'Player')
+
+    # Remove if already in queue (rejoin)
+    remove_from_queue(sid)
+
+    # Check if already in a room
+    if sid in player_sessions:
+        emit('error', {'message': 'Already in a room. Leave first.'})
+        return
+
+    # Add to queue
+    matchmaking_queue.append({
+        'sid': sid,
+        'name': player_name,
+        'joinedAt': time.time()
+    })
+
+    print(f'{player_name} joined matchmaking queue. Queue size: {len(matchmaking_queue)}')
+
+    emit('queue_joined', {
+        'playersInQueue': len(matchmaking_queue),
+        'playersNeeded': max(0, 4 - len(matchmaking_queue))
+    })
+
+    # Broadcast updated queue status to all waiting
+    broadcast_queue_status()
+
+    # Check if we can start a match
+    check_and_start_match()
+
+@socketio.on('leave_queue')
+def handle_leave_queue():
+    sid = request.sid
+
+    was_in_queue = any(p['sid'] == sid for p in matchmaking_queue)
+    remove_from_queue(sid)
+
+    if was_in_queue:
+        print(f'Player left matchmaking queue. Queue size: {len(matchmaking_queue)}')
+        emit('queue_left', {})
+        broadcast_queue_status()
 
 # Need to import request for sid access
 from flask import request

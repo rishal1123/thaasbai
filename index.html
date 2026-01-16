@@ -159,10 +159,24 @@
             <div id="lobby-menu">
                 <button id="play-ai-btn" class="lobby-btn primary">Play vs AI</button>
                 <div class="lobby-divider"><span>or play online</span></div>
-                <button id="create-room-btn" class="lobby-btn">Create Room</button>
+                <button id="quick-match-btn" class="lobby-btn primary">Quick Match</button>
+                <button id="create-room-btn" class="lobby-btn">Create Private Room</button>
                 <div class="join-section">
-                    <input type="text" id="room-code-input" placeholder="Enter Room Code" maxlength="6" autocomplete="off">
+                    <input type="text" id="room-code-input" placeholder="Room Code" maxlength="6" autocomplete="off">
                     <button id="join-room-btn" class="lobby-btn">Join</button>
+                </div>
+            </div>
+
+            <!-- Matchmaking Queue -->
+            <div id="matchmaking-screen" class="hidden">
+                <div class="matchmaking-content">
+                    <h3>Finding Players...</h3>
+                    <div class="matchmaking-spinner"></div>
+                    <div class="matchmaking-status">
+                        <span id="queue-count">0</span> / 4 players
+                    </div>
+                    <p class="matchmaking-hint">Game will start automatically when 4 players join</p>
+                    <button id="cancel-queue-btn" class="lobby-btn secondary">Cancel</button>
                 </div>
             </div>
 

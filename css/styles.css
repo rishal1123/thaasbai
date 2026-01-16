@@ -2444,6 +2444,91 @@ body {
     to { transform: rotate(360deg); }
 }
 
+/* ===========================================
+   MATCHMAKING SCREEN STYLES
+   =========================================== */
+
+#matchmaking-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+#matchmaking-screen.hidden {
+    display: none;
+}
+
+.matchmaking-content {
+    text-align: center;
+}
+
+.matchmaking-content h3 {
+    color: var(--ocean-turquoise);
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    animation: pulse-text 2s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.matchmaking-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(64, 224, 208, 0.2);
+    border-top-color: var(--ocean-turquoise);
+    border-right-color: var(--sunset-gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 25px;
+}
+
+.matchmaking-status {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+#queue-count {
+    color: var(--sunset-gold);
+    font-size: 2.5rem;
+}
+
+.matchmaking-hint {
+    color: var(--sand-white);
+    opacity: 0.7;
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+}
+
+#cancel-queue-btn {
+    min-width: 150px;
+}
+
+/* Matchmaking found animation */
+@keyframes match-found {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.match-found-animation {
+    animation: match-found 0.5s ease-out;
+}
+
+.matchmaking-status.found {
+    color: var(--palm-green);
+}
+
+.matchmaking-status.found #queue-count {
+    color: var(--palm-green);
+}
+
 /* Mobile Lobby Styles */
 @media (max-width: 600px) {
     #lobby-content {

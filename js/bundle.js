@@ -1658,6 +1658,16 @@
                 this.startSinglePlayerGame();
             });
 
+            // Quick Match button
+            document.getElementById('quick-match-btn').addEventListener('click', () => {
+                this.handleQuickMatch();
+            });
+
+            // Cancel Queue button
+            document.getElementById('cancel-queue-btn').addEventListener('click', () => {
+                this.cancelMatchmaking();
+            });
+
             // Create Room button
             document.getElementById('create-room-btn').addEventListener('click', () => {
                 this.handleCreateRoom();
@@ -1798,6 +1808,172 @@
             this.hideLobby();
             this.hideMultiplayerStatus();
             this.startNewMatch();
+        }
+
+        // ===========================================
+        // QUICK MATCH / MATCHMAKING
+        // ===========================================
+
+        async handleQuickMatch() {
+            // Check for name first
+            if (!this.playerName) {
+                this.showNameInput((name) => this.joinMatchmakingQueue(name));
+                return;
+            }
+            await this.joinMatchmakingQueue(this.playerName);
+        }
+
+        async joinMatchmakingQueue(playerName) {
+            try {
+                // Initialize multiplayer if needed
+                if (!isMultiplayerAvailable()) {
+                    if (!initializeMultiplayer()) {
+                        this.showError('Could not connect to server');
+                        return;
+                    }
+                    // Wait for connection
+                    await new Promise((resolve, reject) => {
+                        const timeout = setTimeout(() => reject(new Error('Connection timeout')), 5000);
+                        const checkConnection = () => {
+                            if (isMultiplayerAvailable()) {
+                                clearTimeout(timeout);
+                                resolve();
+                            } else {
+                                setTimeout(checkConnection, 100);
+                            }
+                        };
+                        checkConnection();
+                    });
+                }
+
+                // Show matchmaking screen
+                this.showMatchmakingScreen();
+
+                // Set up socket listeners for matchmaking
+                this.setupMatchmakingListeners();
+
+                // Join the queue
+                socket.emit('join_queue', { playerName });
+
+            } catch (error) {
+                console.error('Error joining matchmaking:', error);
+                this.showError(error.message || 'Failed to join matchmaking');
+                this.hideMatchmakingScreen();
+            }
+        }
+
+        setupMatchmakingListeners() {
+            if (!socket) return;
+
+            // Queue joined confirmation
+            socket.on('queue_joined', (data) => {
+                console.log('Joined queue:', data);
+                this.updateQueueCount(data.playersInQueue);
+            });
+
+            // Queue updates
+            socket.on('queue_update', (data) => {
+                console.log('Queue update:', data);
+                this.updateQueueCount(data.playersInQueue);
+            });
+
+            // Match found!
+            socket.on('match_found', (data) => {
+                console.log('Match found!', data);
+                this.onMatchFound(data);
+            });
+
+            // Left queue
+            socket.on('queue_left', () => {
+                console.log('Left queue');
+            });
+        }
+
+        cleanupMatchmakingListeners() {
+            if (!socket) return;
+            socket.off('queue_joined');
+            socket.off('queue_update');
+            socket.off('match_found');
+            socket.off('queue_left');
+        }
+
+        showMatchmakingScreen() {
+            this.lobbyMenu.classList.add('hidden');
+            this.waitingRoom.classList.add('hidden');
+            document.getElementById('matchmaking-screen').classList.remove('hidden');
+            this.updateQueueCount(1); // At least ourselves
+        }
+
+        hideMatchmakingScreen() {
+            document.getElementById('matchmaking-screen').classList.add('hidden');
+            this.lobbyMenu.classList.remove('hidden');
+        }
+
+        updateQueueCount(count) {
+            const countEl = document.getElementById('queue-count');
+            if (countEl) {
+                countEl.textContent = count;
+            }
+        }
+
+        cancelMatchmaking() {
+            if (socket) {
+                socket.emit('leave_queue');
+            }
+            this.cleanupMatchmakingListeners();
+            this.hideMatchmakingScreen();
+        }
+
+        async onMatchFound(data) {
+            // Clean up matchmaking listeners
+            this.cleanupMatchmakingListeners();
+
+            // Show found animation
+            const statusEl = document.querySelector('.matchmaking-status');
+            if (statusEl) {
+                statusEl.classList.add('found');
+            }
+            document.getElementById('queue-count').textContent = '4';
+
+            // Create lobby manager for this match
+            this.lobbyManager = new LobbyManager();
+            this.lobbyManager.currentRoomId = data.roomId;
+            this.lobbyManager.currentPosition = data.position;
+
+            // Set up callbacks
+            this.lobbyManager.onPlayersChanged = (players) => {
+                this.updatePlayerSlots(players);
+            };
+
+            this.lobbyManager.onGameStart = (gameData) => {
+                this.onMultiplayerGameStart(gameData);
+            };
+
+            // Set up socket listeners
+            this.lobbyManager.setupSocketListeners();
+
+            // Set up presence
+            this.presenceManager = new PresenceManager(data.roomId, currentUserId, data.position);
+            await this.presenceManager.setupPresence();
+
+            // Brief delay to show "4/4 players" then transition
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Hide matchmaking, show waiting room briefly then auto-start
+            document.getElementById('matchmaking-screen').classList.add('hidden');
+
+            // Update player slots
+            this.updatePlayerSlots(data.players);
+
+            // Show waiting room briefly
+            this.showWaitingRoom(data.roomId);
+
+            // For quick match, the host (position 0 after shuffle) auto-starts the game
+            if (data.position === 0) {
+                // Small delay to let everyone sync
+                await new Promise(resolve => setTimeout(resolve, 500));
+                this.startMultiplayerGame();
+            }
         }
 
         // Handle create room
