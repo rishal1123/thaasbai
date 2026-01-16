@@ -1613,6 +1613,12 @@
             this.isMultiplayerMode = false;
             this.playerName = this.loadPlayerName();
 
+            // Game timer (15 minutes for multiplayer)
+            this.gameTimer = null;
+            this.gameTimeRemaining = 15 * 60; // 15 minutes in seconds
+            this.timerWarningShown = false;
+            this.timerCriticalShown = false;
+
             // Lobby UI elements
             this.lobbyOverlay = document.getElementById('lobby-overlay');
             this.lobbyMenu = document.getElementById('lobby-menu');
@@ -2322,6 +2328,7 @@
             // Hide lobby, show game
             this.hideLobby();
             this.showMultiplayerStatus(roomId);
+            this.startGameTimer();
             this.updateDisplay();
         }
 
@@ -2434,6 +2441,89 @@
         // Hide multiplayer status bar
         hideMultiplayerStatus() {
             this.multiplayerStatus.classList.add('hidden');
+            this.stopGameTimer();
+        }
+
+        // Start game timer for multiplayer
+        startGameTimer() {
+            this.gameTimeRemaining = 15 * 60; // 15 minutes
+            this.timerWarningShown = false;
+            this.timerCriticalShown = false;
+
+            const timerEl = document.getElementById('mp-timer');
+            const timerValue = document.getElementById('mp-timer-value');
+            timerEl.classList.remove('hidden', 'warning', 'critical');
+
+            this.updateTimerDisplay();
+
+            this.gameTimer = setInterval(() => {
+                this.gameTimeRemaining--;
+                this.updateTimerDisplay();
+
+                // Warning at 2 minutes
+                if (this.gameTimeRemaining === 120 && !this.timerWarningShown) {
+                    this.timerWarningShown = true;
+                    timerEl.classList.add('warning');
+                    this.renderer.flashMessage('⚠️ 2 minutes remaining!', 3000);
+                }
+
+                // Critical at 30 seconds
+                if (this.gameTimeRemaining === 30 && !this.timerCriticalShown) {
+                    this.timerCriticalShown = true;
+                    timerEl.classList.remove('warning');
+                    timerEl.classList.add('critical');
+                    this.renderer.flashMessage('⚠️ 30 seconds remaining!', 2000);
+                }
+
+                // Time's up
+                if (this.gameTimeRemaining <= 0) {
+                    this.stopGameTimer();
+                    this.handleTimeUp();
+                }
+            }, 1000);
+        }
+
+        // Update timer display
+        updateTimerDisplay() {
+            const timerValue = document.getElementById('mp-timer-value');
+            const minutes = Math.floor(this.gameTimeRemaining / 60);
+            const seconds = this.gameTimeRemaining % 60;
+            timerValue.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Stop game timer
+        stopGameTimer() {
+            if (this.gameTimer) {
+                clearInterval(this.gameTimer);
+                this.gameTimer = null;
+            }
+            const timerEl = document.getElementById('mp-timer');
+            if (timerEl) {
+                timerEl.classList.add('hidden');
+                timerEl.classList.remove('warning', 'critical');
+            }
+        }
+
+        // Handle time up
+        async handleTimeUp() {
+            const state = this.game.getGameState();
+            const team0Points = state.matchPoints[0];
+            const team1Points = state.matchPoints[1];
+
+            let winner, message;
+            if (team0Points > team1Points) {
+                winner = 'Your Team';
+                message = `Time's up! Your team wins ${team0Points} - ${team1Points}!`;
+            } else if (team1Points > team0Points) {
+                winner = 'Opponent Team';
+                message = `Time's up! Opponents win ${team1Points} - ${team0Points}!`;
+            } else {
+                winner = 'Draw';
+                message = `Time's up! It's a draw at ${team0Points} - ${team1Points}!`;
+            }
+
+            await this.renderer.showMessage('⏱️ Time Up!', message, 'Back to Lobby');
+            this.leaveMultiplayerGame();
         }
 
         // Update multiplayer turn indicator
