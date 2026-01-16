@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
+  <!-- Card base -->
+  <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
+  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1"/>
+
+  <!-- Top-left rank and suit -->
+  <g transform="translate(25, 50)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#8B1E1E">Q</text>
+    <polygon points="15,15 25,32 15,49 5,32" fill="#8B1E1E" transform="translate(3, 10)"/>
+  </g>
+
+  <!-- Bottom-right rank and suit (rotated 180°) -->
+  <g transform="translate(350, 475) rotate(180)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#8B1E1E">Q</text>
+    <polygon points="15,15 25,32 15,49 5,32" fill="#8B1E1E" transform="translate(3, 10)"/>
+  </g>
+
+  <!-- Queen abstract geometric design - Elegant crown/floral motif -->
+  <g transform="translate(187.5, 262.5)">
+    <!-- Outer elegant diamond frame -->
+    <polygon points="0,-110 85,0 0,110 -85,0" fill="none" stroke="#C9A24D" stroke-width="2"/>
+    <polygon points="0,-95 72,0 0,95 -72,0" fill="none" stroke="#8B1E1E" stroke-width="1"/>
+
+    <!-- Crown shape at top -->
+    <path d="M-35 -55 L-45 -80 L-20 -65 L0 -90 L20 -65 L45 -80 L35 -55"
+          fill="none" stroke="#C9A24D" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="-45,-80 -42,-72 -48,-72" fill="#C9A24D"/>
+    <polygon points="0,-90 3,-82 -3,-82" fill="#C9A24D"/>
+    <polygon points="45,-80 48,-72 42,-72" fill="#C9A24D"/>
+
+    <!-- Central floral diamond pattern -->
+    <polygon points="0,-45 45,0 0,45 -45,0" fill="none" stroke="#8B1E1E" stroke-width="2"/>
+
+    <!-- Petal diamond shapes -->
+    <polygon points="0,-35 10,-20 0,-5 -10,-20" fill="#8B1E1E" opacity="0.7"/>
+    <polygon points="0,35 10,20 0,5 -10,20" fill="#8B1E1E" opacity="0.7"/>
+    <polygon points="-35,0 -20,10 -5,0 -20,-10" fill="#8B1E1E" opacity="0.7"/>
+    <polygon points="35,0 20,10 5,0 20,-10" fill="#8B1E1E" opacity="0.7"/>
+
+    <!-- Center diamond -->
+    <polygon points="0,-18 18,0 0,18 -18,0" fill="#8B1E1E"/>
+    <polygon points="0,-10 10,0 0,10 -10,0" fill="#F7F4EF"/>
+
+    <!-- Bottom decorative element (mirrored crown) -->
+    <path d="M-35 55 L-45 80 L-20 65 L0 90 L20 65 L45 80 L35 55"
+          fill="none" stroke="#C9A24D" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="-45,80 -42,72 -48,72" fill="#C9A24D"/>
+    <polygon points="0,90 3,82 -3,82" fill="#C9A24D"/>
+    <polygon points="45,80 48,72 42,72" fill="#C9A24D"/>
+  </g>
+</svg>

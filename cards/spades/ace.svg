@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
+  <defs>
+    <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C9A24D;stop-opacity:0.3"/>
+      <stop offset="50%" style="stop-color:#C9A24D;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#C9A24D;stop-opacity:0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Card base -->
+  <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
+  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1"/>
+
+  <!-- Top-left rank and suit -->
+  <g transform="translate(25, 50)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#1A1A1A">A</text>
+    <g transform="translate(2, 12)">
+      <path d="M12,0 C12,0 2,12 2,17 C2,21 5,24 9,24 C11,24 12,22 12,22 C12,22 13,24 15,24 C19,24 22,21 22,17 C22,12 12,0 12,0 Z" fill="#1A1A1A"/>
+      <rect x="9" y="21" width="6" height="9" fill="#1A1A1A"/>
+    </g>
+  </g>
+
+  <!-- Bottom-right rank and suit (rotated 180°) -->
+  <g transform="translate(350, 475) rotate(180)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#1A1A1A">A</text>
+    <g transform="translate(2, 12)">
+      <path d="M12,0 C12,0 2,12 2,17 C2,21 5,24 9,24 C11,24 12,22 12,22 C12,22 13,24 15,24 C19,24 22,21 22,17 C22,12 12,0 12,0 Z" fill="#1A1A1A"/>
+      <rect x="9" y="21" width="6" height="9" fill="#1A1A1A"/>
+    </g>
+  </g>
+
+  <!-- Central large spade with halo effect -->
+  <g transform="translate(187.5, 250)">
+    <!-- Outer golden halo -->
+    <ellipse cx="0" cy="0" rx="90" ry="95" fill="none" stroke="url(#goldShine)" stroke-width="3"/>
+    <!-- Second halo ring -->
+    <ellipse cx="0" cy="0" rx="80" ry="85" fill="none" stroke="#C9A24D" stroke-width="1" opacity="0.4"/>
+    <!-- Large spade with gold trim -->
+    <path d="M0 -70 C0 -70 -70 -20 -70 25 C-70 50 -50 65 -25 65 C-10 65 -5 55 0 45 C5 55 10 65 25 65 C50 65 70 50 70 25 C70 -20 0 -70 0 -70 Z" fill="#1A1A1A" stroke="#C9A24D" stroke-width="3"/>
+    <!-- Spade stem with gold trim -->
+    <path d="M-12 50 L-12 85 L12 85 L12 50 C5 60 -5 60 -12 50 Z" fill="#1A1A1A" stroke="#C9A24D" stroke-width="3"/>
+    <!-- Spade highlight -->
+    <path d="M-20 -30 C-20 -30 -45 0 -45 20 C-45 30 -38 35 -30 35" fill="none" stroke="#F7F4EF" stroke-width="4" opacity="0.2"/>
+  </g>
+</svg>

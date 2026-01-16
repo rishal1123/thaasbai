@@ -1333,19 +1333,42 @@
     class CardSprite {
         static createCardElement(card, faceUp = true) {
             const element = document.createElement('div');
-            element.className = 'card';
+            element.className = 'card card-svg';
             element.dataset.cardId = card.id;
             element.dataset.suit = card.suit;
             element.dataset.rank = card.rank;
 
             if (faceUp) {
                 element.classList.add(card.suit);
-                element.innerHTML = this.getCardContent(card);
+                const img = document.createElement('img');
+                img.src = this.getCardSvgPath(card);
+                img.alt = `${card.getRankDisplay()} of ${card.suit}`;
+                img.draggable = false;
+                element.appendChild(img);
             } else {
                 element.classList.add('face-down');
+                const img = document.createElement('img');
+                img.src = 'cards/card-back.svg';
+                img.alt = 'Card back';
+                img.draggable = false;
+                element.appendChild(img);
             }
 
             return element;
+        }
+
+        static getCardSvgPath(card) {
+            // Map rank to filename
+            // Card ranks: 2-10, 11=Jack, 12=Queen, 13=King, 14=Ace
+            let filename;
+            switch (card.rank) {
+                case 14: filename = 'ace'; break;
+                case 11: filename = 'jack'; break;
+                case 12: filename = 'queen'; break;
+                case 13: filename = 'king'; break;
+                default: filename = card.rank.toString();
+            }
+            return `cards/${card.suit}/${filename}.svg`;
         }
 
         static getCardContent(card) {

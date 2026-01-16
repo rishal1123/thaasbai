@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
+  <!-- Card base -->
+  <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
+  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1.5"/>
+
+  <!-- Top-left rank and suit -->
+  <g transform="translate(25, 50)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#8B1E1E">K</text>
+    <path d="M12,12 C12,12 12,8 8,8 C4,8 2,12 2,15 C2,21 12,28 12,28 C12,28 22,21 22,15 C22,12 20,8 16,8 C12,8 12,12 12,12 Z" fill="#8B1E1E" transform="translate(2, 12)"/>
+  </g>
+
+  <!-- Bottom-right rank and suit (rotated 180°) -->
+  <g transform="translate(350, 475) rotate(180)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#8B1E1E">K</text>
+    <path d="M12,12 C12,12 12,8 8,8 C4,8 2,12 2,15 C2,21 12,28 12,28 C12,28 22,21 22,15 C22,12 20,8 16,8 C12,8 12,12 12,12 Z" fill="#8B1E1E" transform="translate(2, 12)"/>
+  </g>
+
+  <!-- King abstract geometric design - Heavy throne/pillar motif -->
+  <g transform="translate(187.5, 262.5)">
+    <!-- Outer strong rectangular frame -->
+    <rect x="-80" y="-110" width="160" height="220" rx="8" fill="none" stroke="#C9A24D" stroke-width="3"/>
+    <rect x="-70" y="-100" width="140" height="200" rx="5" fill="none" stroke="#8B1E1E" stroke-width="2"/>
+
+    <!-- Crown at top - heavy and dominant -->
+    <path d="M-55 -85 L-60 -110 L-30 -90 L0 -115 L30 -90 L60 -110 L55 -85 Z"
+          fill="#C9A24D" stroke="#8B1E1E" stroke-width="1"/>
+    <circle cx="-60" cy="-110" r="6" fill="#8B1E1E"/>
+    <circle cx="0" cy="-115" r="8" fill="#8B1E1E"/>
+    <circle cx="60" cy="-110" r="6" fill="#8B1E1E"/>
+
+    <!-- Central pillar design -->
+    <rect x="-25" y="-70" width="50" height="140" fill="#8B1E1E"/>
+    <rect x="-20" y="-65" width="40" height="130" fill="#F7F4EF"/>
+    <rect x="-15" y="-60" width="30" height="120" fill="#8B1E1E" opacity="0.3"/>
+
+    <!-- Side pillars -->
+    <rect x="-60" y="-50" width="20" height="100" fill="#8B1E1E"/>
+    <rect x="40" y="-50" width="20" height="100" fill="#8B1E1E"/>
+
+    <!-- Center large heart -->
+    <path d="M0 -25 C-12 -42 -35 -35 -35 -12 C-35 18 0 50 0 50 C0 50 35 18 35 -12 C35 -35 12 -42 0 -25 Z" fill="#8B1E1E"/>
+    <path d="M0 -18 C-8 -30 -23 -25 -23 -8 C-23 12 0 35 0 35 C0 35 23 12 23 -8 C23 -25 8 -30 0 -18 Z" fill="#C9A24D"/>
+    <path d="M0 -10 C-5 -18 -14 -15 -14 -5 C-14 8 0 22 0 22 C0 22 14 8 14 -5 C14 -15 5 -18 0 -10 Z" fill="#8B1E1E"/>
+
+    <!-- Base platform -->
+    <rect x="-70" y="70" width="140" height="15" fill="#C9A24D"/>
+    <rect x="-75" y="85" width="150" height="10" fill="#8B1E1E"/>
+  </g>
+</svg>

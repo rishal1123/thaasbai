@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
+  <!-- Card base -->
+  <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
+  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1"/>
+
+  <!-- Top-left rank and suit -->
+  <g transform="translate(25, 50)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#1A1A1A">J</text>
+    <g transform="translate(15, 40)">
+      <circle cx="0" cy="-10" r="8" fill="#1A1A1A"/>
+      <circle cx="-8" cy="0" r="8" fill="#1A1A1A"/>
+      <circle cx="8" cy="0" r="8" fill="#1A1A1A"/>
+      <rect x="-2" y="0" width="4" height="15" fill="#1A1A1A"/>
+    </g>
+  </g>
+
+  <!-- Bottom-right rank and suit (rotated 180°) -->
+  <g transform="translate(350, 475) rotate(180)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="48" font-weight="bold" fill="#1A1A1A">J</text>
+    <g transform="translate(15, 40)">
+      <circle cx="0" cy="-10" r="8" fill="#1A1A1A"/>
+      <circle cx="-8" cy="0" r="8" fill="#1A1A1A"/>
+      <circle cx="8" cy="0" r="8" fill="#1A1A1A"/>
+      <rect x="-2" y="0" width="4" height="15" fill="#1A1A1A"/>
+    </g>
+  </g>
+
+  <!-- Jack abstract geometric design - Bold blade/knot motif -->
+  <g transform="translate(187.5, 262.5)">
+    <!-- Outer frame -->
+    <polygon points="0,-100 70,-50 70,50 0,100 -70,50 -70,-50" fill="none" stroke="#C9A24D" stroke-width="2"/>
+
+    <!-- Crossed blades -->
+    <line x1="-50" y1="-70" x2="50" y2="70" stroke="#1A1A1A" stroke-width="8" stroke-linecap="round"/>
+    <line x1="50" y1="-70" x2="-50" y2="70" stroke="#1A1A1A" stroke-width="8" stroke-linecap="round"/>
+
+    <!-- Central knot -->
+    <circle cx="0" cy="0" r="25" fill="#F7F4EF" stroke="#1A1A1A" stroke-width="3"/>
+    <circle cx="0" cy="0" r="15" fill="#1A1A1A"/>
+
+    <!-- Club in center -->
+    <g transform="scale(0.5)">
+      <circle cx="0" cy="-10" r="8" fill="#F7F4EF"/>
+      <circle cx="-8" cy="2" r="8" fill="#F7F4EF"/>
+      <circle cx="8" cy="2" r="8" fill="#F7F4EF"/>
+      <rect x="-2" y="2" width="4" height="10" fill="#F7F4EF"/>
+    </g>
+
+    <!-- Corner accents -->
+    <circle cx="0" cy="-100" r="8" fill="#C9A24D"/>
+    <circle cx="0" cy="100" r="8" fill="#C9A24D"/>
+    <circle cx="-70" cy="0" r="6" fill="#C9A24D"/>
+    <circle cx="70" cy="0" r="6" fill="#C9A24D"/>
+
+    <!-- Blade tips -->
+    <polygon points="-50,-70 -55,-80 -45,-80" fill="#1A1A1A"/>
+    <polygon points="50,-70 55,-80 45,-80" fill="#1A1A1A"/>
+    <polygon points="-50,70 -55,80 -45,80" fill="#1A1A1A"/>
+    <polygon points="50,70 55,80 45,80" fill="#1A1A1A"/>
+  </g>
+</svg>

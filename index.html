@@ -47,7 +47,7 @@
     <link rel="apple-touch-startup-image" href="splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
 
     <title>Dhiha Ei - Maldivian Card Game</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=23">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -237,18 +237,30 @@
             <button id="new-game-btn">New Game</button>
         </div>
 
-        <!-- Maldivian Table Items -->
-        <div class="table-item chips" id="table-coconut">
-            <div class="item-body"></div>
-            <div class="item-label">KURUMBA</div>
+        <!-- Table Sponsor Areas -->
+        <!-- Center Table Sponsor - for main sponsor logo -->
+        <div id="table-sponsor" class="sponsor-area center-sponsor">
+            <div class="sponsor-logo">
+                <span class="sponsor-placeholder">SPONSOR</span>
+            </div>
         </div>
-        <div class="table-item drink" id="table-gulha">
-            <div class="item-body"></div>
-            <div class="item-label">GULHA</div>
+
+        <!-- Drink Sponsor Area - left side of table -->
+        <div id="drink-sponsor" class="sponsor-area drink-sponsor">
+            <div class="drink-item">
+                <div class="drink-body"></div>
+                <div class="drink-straw"></div>
+            </div>
+            <div class="sponsor-label">KURUMBA</div>
         </div>
-        <div class="table-item energy" id="table-roshi">
-            <div class="item-body"></div>
-            <div class="item-label">ROSHI</div>
+
+        <!-- Food Sponsor Area - right side of table -->
+        <div id="food-sponsor" class="sponsor-area food-sponsor">
+            <div class="food-item">
+                <div class="food-bowl"></div>
+                <div class="food-contents"></div>
+            </div>
+            <div class="sponsor-label">GULHA</div>
         </div>
     </div>
 
@@ -387,7 +399,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js"></script>
+    <script src="js/bundle.js?v=24"></script>
 
     <!-- PWA Install Handler -->
     <script>
