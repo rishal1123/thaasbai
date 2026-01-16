@@ -2582,3 +2582,605 @@ body {
         font-size: 0.85rem;
     }
 }
+
+/* ===========================================
+   ROTATE DEVICE OVERLAY
+   =========================================== */
+
+#rotate-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--night-blue) 0%, var(--ocean-deep) 100%);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+.rotate-content {
+    text-align: center;
+    color: var(--text-light);
+    padding: 40px;
+}
+
+.rotate-icon {
+    margin-bottom: 30px;
+    animation: rotate-hint 2s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+.rotate-content h2 {
+    color: var(--ocean-turquoise);
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+}
+
+.rotate-content p {
+    color: var(--sand-white);
+    opacity: 0.8;
+    font-size: 1rem;
+}
+
+/* ===========================================
+   PWA INSTALL PROMPT
+   =========================================== */
+
+#install-prompt {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    animation: slide-up 0.3s ease-out;
+}
+
+#install-prompt.hidden {
+    display: none;
+}
+
+@keyframes slide-up {
+    from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.install-content {
+    background: linear-gradient(135deg, rgba(27, 40, 56, 0.98) 0%, rgba(0, 105, 148, 0.95) 100%);
+    padding: 15px 20px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 2px solid var(--ocean-turquoise);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.install-btn {
+    background: linear-gradient(135deg, var(--ocean-turquoise) 0%, var(--ocean-deep) 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.install-btn:hover {
+    background: linear-gradient(135deg, var(--sunset-orange) 0%, var(--coral-red) 100%);
+    transform: scale(1.05);
+}
+
+.install-dismiss {
+    background: transparent;
+    border: none;
+    color: var(--coral-pink);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
+}
+
+.install-dismiss:hover {
+    color: var(--coral-red);
+}
+
+/* ===========================================
+   MOBILE LANDSCAPE OPTIMIZATION
+   Show rotate overlay in portrait, hide in landscape
+   =========================================== */
+
+/* Mobile Portrait - Show rotate overlay */
+@media screen and (max-width: 932px) and (orientation: portrait) {
+    #rotate-overlay {
+        display: flex !important;
+    }
+
+    #game-container,
+    #lobby-overlay {
+        filter: blur(10px);
+    }
+}
+
+/* Mobile Landscape - Full game experience */
+@media screen and (max-height: 500px) and (orientation: landscape),
+       screen and (max-width: 932px) and (orientation: landscape) {
+
+    #rotate-overlay {
+        display: none !important;
+    }
+
+    /* Full screen usage */
+    html, body {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+
+    #game-container {
+        height: 100dvh;
+        width: 100dvw;
+    }
+
+    /* Compact header for landscape */
+    #game-header {
+        padding: 5px 15px;
+        padding-left: max(15px, env(safe-area-inset-left));
+        padding-right: max(15px, env(safe-area-inset-right));
+    }
+
+    #game-header h1 {
+        font-size: 1rem;
+    }
+
+    #superior-suit-display {
+        padding: 4px 12px;
+        font-size: 0.8rem;
+    }
+
+    /* Game board fills available space */
+    #game-board {
+        padding: 5px;
+    }
+
+    #game-board::before {
+        width: 250px;
+        height: 250px;
+    }
+
+    /* Card sizes optimized for landscape */
+    .card {
+        width: 50px;
+        height: 72px;
+        border-radius: 6px;
+        padding: 3px;
+    }
+
+    .card-corner {
+        font-size: 0.6rem;
+    }
+
+    .card-center {
+        font-size: 1.5rem;
+    }
+
+    /* Player's own cards - larger for easy touch */
+    #player-bottom .card,
+    #hand-bottom .card {
+        width: 70px;
+        height: 100px;
+        border-radius: 8px;
+        padding: 5px;
+    }
+
+    #player-bottom .card .card-corner,
+    #hand-bottom .card .card-corner {
+        font-size: 0.75rem;
+    }
+
+    #player-bottom .card .card-center,
+    #hand-bottom .card .card-center {
+        font-size: 2rem;
+    }
+
+    /* Scrollable hand for player */
+    #player-bottom {
+        bottom: max(5px, env(safe-area-inset-bottom));
+        width: 100%;
+        max-width: calc(100vw - 150px);
+        padding: 0;
+    }
+
+    #hand-bottom {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding: 5px 15px;
+        gap: 8px;
+        scrollbar-width: none;
+    }
+
+    #hand-bottom::-webkit-scrollbar {
+        display: none;
+    }
+
+    #hand-bottom .card {
+        margin: 0;
+        flex-shrink: 0;
+        scroll-snap-align: center;
+    }
+
+    /* Player positions for landscape */
+    #player-top {
+        top: 35px;
+    }
+
+    #player-left {
+        left: max(10px, env(safe-area-inset-left));
+    }
+
+    #player-right {
+        right: max(10px, env(safe-area-inset-right));
+    }
+
+    .player-hand .card {
+        margin: 0 -12px;
+    }
+
+    #player-left .player-hand .card,
+    #player-right .player-hand .card {
+        margin: -18px 0;
+    }
+
+    .player-label {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+    }
+
+    /* Play area - centered */
+    #play-area {
+        width: 200px;
+        height: 180px;
+    }
+
+    .played-card {
+        width: 50px;
+        height: 72px;
+    }
+
+    #played-top { top: 5px; }
+    #played-bottom { bottom: 5px; }
+    #played-left { left: 10px; }
+    #played-right { right: 10px; }
+
+    #turn-indicator {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Score panels - compact and positioned at sides */
+    #score-panel {
+        position: fixed;
+        top: 35px;
+        left: max(10px, env(safe-area-inset-left));
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .round-label {
+        display: none;
+    }
+
+    .team-score {
+        padding: 5px 8px;
+        font-size: 0.65rem;
+        min-width: auto;
+    }
+
+    .team-label {
+        font-size: 0.6rem;
+    }
+
+    .tens-count, .tricks-count {
+        font-size: 0.6rem;
+    }
+
+    .collected-tens {
+        display: none;
+    }
+
+    /* Match points panel - top right */
+    #match-points-panel {
+        position: fixed;
+        top: 35px;
+        right: max(10px, env(safe-area-inset-right));
+        padding: 8px 10px;
+        max-width: 100px;
+    }
+
+    #match-points-panel::before,
+    #match-points-panel::after {
+        display: none;
+    }
+
+    .match-title {
+        font-size: 0.55rem;
+        margin-bottom: 5px;
+    }
+
+    .match-scores {
+        gap: 8px;
+        font-size: 0.8rem;
+    }
+
+    #match-points-0, #match-points-1 {
+        font-size: 1rem;
+    }
+
+    .win-types-breakdown {
+        display: none;
+    }
+
+    /* Controls - bottom right */
+    #controls {
+        bottom: max(10px, env(safe-area-inset-bottom));
+        right: max(10px, env(safe-area-inset-right));
+        gap: 5px;
+    }
+
+    #menu-btn,
+    #new-game-btn {
+        padding: 6px 12px;
+        font-size: 0.7rem;
+        min-height: 36px;
+    }
+
+    /* Hide decorations */
+    .table-item {
+        display: none;
+    }
+
+    #game-container::before,
+    #game-container::after {
+        display: none;
+    }
+
+    /* Message overlay */
+    #message-content {
+        padding: 20px 30px;
+        max-width: 80vw;
+    }
+
+    #message-title {
+        font-size: 1.2rem;
+    }
+
+    #message-text {
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+
+    #message-button {
+        padding: 8px 20px;
+        font-size: 0.85rem;
+    }
+
+    #message-content::before,
+    #message-content::after {
+        display: none;
+    }
+
+    /* Lobby in landscape */
+    #lobby-content {
+        padding: 20px 30px;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .lobby-title {
+        font-size: 1.6rem;
+        margin-bottom: 5px;
+    }
+
+    .lobby-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 15px;
+    }
+
+    #lobby-menu {
+        gap: 10px;
+    }
+
+    .lobby-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        min-height: 40px;
+    }
+
+    .lobby-divider {
+        margin: 5px 0;
+    }
+
+    .join-section {
+        flex-direction: row;
+    }
+
+    .join-section input {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+
+    /* Waiting room in landscape */
+    #player-slots {
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    .team-column {
+        min-width: 140px;
+    }
+
+    .player-slot {
+        padding: 8px 12px;
+    }
+
+    #waiting-room-actions {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    #waiting-room-actions .lobby-btn {
+        width: auto;
+        flex: 1;
+    }
+
+    /* Matchmaking in landscape */
+    .matchmaking-spinner {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 15px;
+    }
+
+    .matchmaking-content h3 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+
+    .matchmaking-status {
+        font-size: 1.5rem;
+    }
+
+    #queue-count {
+        font-size: 2rem;
+    }
+
+    .matchmaking-hint {
+        font-size: 0.8rem;
+        margin-bottom: 15px;
+    }
+
+    /* Multiplayer status bar */
+    #multiplayer-status {
+        top: 5px;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+    }
+
+    /* Install prompt */
+    #install-prompt {
+        bottom: 10px;
+    }
+
+    .install-content {
+        padding: 10px 15px;
+        font-size: 0.8rem;
+    }
+
+    .install-btn {
+        padding: 8px 15px;
+        font-size: 0.8rem;
+    }
+}
+
+/* ===========================================
+   iPHONE LANDSCAPE SPECIFIC (notch handling)
+   =========================================== */
+
+@media screen and (max-height: 430px) and (orientation: landscape) {
+    /* iPhone in landscape - notch on left or right */
+    #player-left {
+        left: max(50px, env(safe-area-inset-left));
+    }
+
+    #score-panel {
+        left: max(50px, env(safe-area-inset-left));
+    }
+
+    #player-right {
+        right: max(50px, env(safe-area-inset-right));
+    }
+
+    #match-points-panel {
+        right: max(50px, env(safe-area-inset-right));
+    }
+
+    #controls {
+        right: max(50px, env(safe-area-inset-right));
+    }
+
+    /* Even more compact for small height */
+    #game-header {
+        padding: 3px 10px;
+        padding-left: max(50px, env(safe-area-inset-left));
+    }
+
+    #game-header h1 {
+        font-size: 0.9rem;
+    }
+
+    .card {
+        width: 45px;
+        height: 65px;
+    }
+
+    #player-bottom .card,
+    #hand-bottom .card {
+        width: 60px;
+        height: 86px;
+    }
+
+    #play-area {
+        width: 160px;
+        height: 140px;
+    }
+
+    .played-card {
+        width: 45px;
+        height: 65px;
+    }
+}
+
+/* ===========================================
+   PWA STANDALONE MODE
+   =========================================== */
+
+@media all and (display-mode: standalone) {
+    /* Extra padding when running as installed PWA */
+    #game-header {
+        padding-top: max(env(safe-area-inset-top), 5px);
+    }
+
+    #player-bottom {
+        padding-bottom: max(env(safe-area-inset-bottom), 5px);
+    }
+
+    /* Hide install prompt in standalone mode */
+    #install-prompt {
+        display: none !important;
+    }
+}
+
+/* ===========================================
+   DESKTOP RETAINS ORIGINAL STYLES
+   Large screens don't need landscape enforcement
+   =========================================== */
+
+@media screen and (min-width: 933px) {
+    #rotate-overlay {
+        display: none !important;
+    }
+}

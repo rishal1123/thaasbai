@@ -2,32 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- iPhone 15 Pro Max optimized viewport -->
+    <!-- Landscape-optimized viewport for mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
-    <!-- iOS PWA settings -->
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS PWA settings - landscape orientation -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dhiha Ei">
+    <meta name="apple-mobile-web-app-orientations" content="landscape">
 
     <!-- Android PWA settings -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#001825">
+    <meta name="msapplication-navbutton-color" content="#001825">
+    <meta name="msapplication-TileColor" content="#001825">
+
+    <!-- Screen orientation hint -->
+    <meta name="screen-orientation" content="landscape">
+    <meta name="x5-orientation" content="landscape">
+    <meta name="x5-fullscreen" content="true">
 
     <!-- Prevent text size adjustment -->
     <meta name="format-detection" content="telephone=no">
 
-    <!-- iOS icons (add actual icons later) -->
+    <!-- iOS icons -->
     <link rel="apple-touch-icon" href="icons/icon-180.png">
     <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+
+    <!-- Splash screens for iOS -->
+    <link rel="apple-touch-startup-image" href="splash/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="splash/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="splash/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <link rel="apple-touch-startup-image" href="splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
 
     <title>Dhiha Ei - Maldivian Card Game</title>
     <link rel="stylesheet" href="css/styles.css">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        // Lock screen orientation to landscape
+        function lockLandscape() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {
+                    // Orientation lock not supported or denied
+                    console.log('Orientation lock not available');
+                });
+            }
+        }
+
+        // Try to lock on load and fullscreen
+        document.addEventListener('DOMContentLoaded', lockLandscape);
+        document.addEventListener('fullscreenchange', lockLandscape);
+        document.addEventListener('webkitfullscreenchange', lockLandscape);
+    </script>
 </head>
 <body>
     <div id="game-container">
@@ -257,7 +311,71 @@
         <button id="mp-leave-btn" class="mp-btn">Leave</button>
     </div>
 
+    <!-- Rotate Device Overlay (portrait mode on mobile) -->
+    <div id="rotate-overlay">
+        <div class="rotate-content">
+            <div class="rotate-icon">
+                <svg viewBox="0 0 100 100" width="80" height="80">
+                    <rect x="25" y="10" width="50" height="80" rx="5" fill="none" stroke="#40E0D0" stroke-width="3"/>
+                    <circle cx="50" cy="80" r="4" fill="#40E0D0"/>
+                    <path d="M75 50 L90 50 L82.5 35 Z" fill="#FFD700"/>
+                    <path d="M90 50 Q95 50 95 55 L95 75 Q95 80 90 80 L75 80" fill="none" stroke="#FFD700" stroke-width="3"/>
+                </svg>
+            </div>
+            <h2>Rotate Your Device</h2>
+            <p>Dhiha Ei is best played in landscape mode</p>
+        </div>
+    </div>
+
+    <!-- Install PWA Prompt -->
+    <div id="install-prompt" class="hidden">
+        <div class="install-content">
+            <span>Install Dhiha Ei for the best experience</span>
+            <button id="install-btn" class="install-btn">Install</button>
+            <button id="install-dismiss" class="install-dismiss">&times;</button>
+        </div>
+    </div>
+
     <!-- Single bundled script (no modules) -->
     <script src="js/bundle.js"></script>
+
+    <!-- PWA Install Handler -->
+    <script>
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Show install prompt after a delay
+            setTimeout(() => {
+                const prompt = document.getElementById('install-prompt');
+                if (prompt && !localStorage.getItem('pwaInstallDismissed')) {
+                    prompt.classList.remove('hidden');
+                }
+            }, 3000);
+        });
+
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log('Install prompt outcome:', outcome);
+                deferredPrompt = null;
+            }
+            document.getElementById('install-prompt')?.classList.add('hidden');
+        });
+
+        document.getElementById('install-dismiss')?.addEventListener('click', () => {
+            document.getElementById('install-prompt')?.classList.add('hidden');
+            localStorage.setItem('pwaInstallDismissed', 'true');
+        });
+
+        // Hide install prompt if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            const prompt = document.getElementById('install-prompt');
+            if (prompt) prompt.classList.add('hidden');
+        }
+    </script>
 </body>
 </html>
