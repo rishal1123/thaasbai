@@ -1,10 +1,399 @@
 /**
  * Dhiha Ei - Maldivian Card Game
- * Bundled version with multi-round scoring
+ * Bundled version with multi-round scoring and multiplayer support
  */
 
 (function() {
     'use strict';
+
+    // ============================================
+    // WEBSOCKET MULTIPLAYER CONFIGURATION
+    // ============================================
+
+    // Socket.IO connection
+    let socket = null;
+    let currentUserId = null;
+    let isConnected = false;
+
+    // Get WebSocket server URL (same origin or configurable)
+    function getServerUrl() {
+        // Use same origin for production, or configure for development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return window.location.origin;
+        }
+        return window.location.origin;
+    }
+
+    // Initialize WebSocket connection
+    function initializeMultiplayer() {
+        if (typeof io === 'undefined') {
+            console.warn('Socket.IO not loaded - multiplayer disabled');
+            return false;
+        }
+
+        try {
+            const serverUrl = getServerUrl();
+            socket = io(serverUrl, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000
+            });
+
+            socket.on('connect', () => {
+                console.log('Connected to server');
+                isConnected = true;
+            });
+
+            socket.on('connected', (data) => {
+                currentUserId = data.sid;
+                console.log('Session ID:', currentUserId);
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+                isConnected = false;
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('Connection error:', error);
+                isConnected = false;
+            });
+
+            console.log('Multiplayer initialized');
+            return true;
+        } catch (error) {
+            console.error('Multiplayer initialization error:', error);
+            return false;
+        }
+    }
+
+    // Check if connected
+    function isMultiplayerAvailable() {
+        return socket && isConnected;
+    }
+
+    // ============================================
+    // PRESENCE MANAGER
+    // ============================================
+
+    class PresenceManager {
+        constructor(roomId, userId, position) {
+            this.roomId = roomId;
+            this.userId = userId;
+            this.position = position;
+            this.onPlayerDisconnected = null;
+        }
+
+        async setupPresence() {
+            if (!socket) return;
+
+            // Listen for player disconnections
+            socket.on('player_disconnected', (data) => {
+                if (this.onPlayerDisconnected) {
+                    this.onPlayerDisconnected(data.position, data.players);
+                }
+            });
+        }
+
+        cleanup() {
+            if (socket) {
+                socket.off('player_disconnected');
+            }
+        }
+    }
+
+    // ============================================
+    // LOBBY MANAGER
+    // ============================================
+
+    class LobbyManager {
+        constructor() {
+            this.currentRoomId = null;
+            this.currentPosition = null;
+            this.onPlayersChanged = null;
+            this.onGameStart = null;
+            this.onError = null;
+            this.onPositionChanged = null;
+            this.gameStartData = null;
+        }
+
+        setupSocketListeners() {
+            if (!socket) return;
+
+            // Players changed
+            socket.on('players_changed', (data) => {
+                if (this.onPlayersChanged) {
+                    this.onPlayersChanged(data.players);
+                }
+            });
+
+            // Position changed (after swap)
+            socket.on('position_changed', (data) => {
+                // Update our position if we were moved
+                for (const [sid, pos] of Object.entries(data.players || {})) {
+                    if (data.players[this.currentPosition]?.oderId !== currentUserId) {
+                        // Find our new position
+                        for (let i = 0; i < 4; i++) {
+                            if (data.players[i]?.oderId === currentUserId) {
+                                this.currentPosition = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (this.onPlayersChanged) {
+                    this.onPlayersChanged(data.players);
+                }
+                if (this.onPositionChanged) {
+                    this.onPositionChanged(this.currentPosition);
+                }
+            });
+
+            // Game started
+            socket.on('game_started', (data) => {
+                this.gameStartData = data;
+                if (this.onGameStart) {
+                    this.onGameStart(data);
+                }
+            });
+
+            // Error handling
+            socket.on('error', (data) => {
+                if (this.onError) {
+                    this.onError(data.message);
+                }
+            });
+        }
+
+        async createRoom(hostName) {
+            if (!socket || !isConnected) {
+                throw new Error('Not connected to server');
+            }
+
+            return new Promise((resolve, reject) => {
+                socket.emit('create_room', { playerName: hostName });
+
+                socket.once('room_created', (data) => {
+                    this.currentRoomId = data.roomId;
+                    this.currentPosition = data.position;
+                    this.setupSocketListeners();
+
+                    if (this.onPlayersChanged) {
+                        this.onPlayersChanged(data.players);
+                    }
+
+                    resolve({ roomId: data.roomId, position: data.position });
+                });
+
+                socket.once('error', (data) => {
+                    reject(new Error(data.message));
+                });
+            });
+        }
+
+        async joinRoom(roomId, playerName) {
+            if (!socket || !isConnected) {
+                throw new Error('Not connected to server');
+            }
+
+            return new Promise((resolve, reject) => {
+                socket.emit('join_room', {
+                    roomId: roomId.toUpperCase().trim(),
+                    playerName
+                });
+
+                socket.once('room_joined', (data) => {
+                    this.currentRoomId = data.roomId;
+                    this.currentPosition = data.position;
+                    this.setupSocketListeners();
+
+                    if (this.onPlayersChanged) {
+                        this.onPlayersChanged(data.players);
+                    }
+
+                    resolve({ roomId: data.roomId, position: data.position });
+                });
+
+                socket.once('error', (data) => {
+                    reject(new Error(data.message));
+                });
+            });
+        }
+
+        async setReady(ready) {
+            if (!socket || this.currentPosition === null) return;
+            socket.emit('set_ready', { ready });
+        }
+
+        async startGame(gameState, hands) {
+            if (!socket || !this.currentRoomId) return;
+
+            return new Promise((resolve, reject) => {
+                socket.emit('start_game', { gameState, hands });
+
+                // Game start is handled by game_started event
+                const timeout = setTimeout(() => {
+                    reject(new Error('Start game timeout'));
+                }, 5000);
+
+                socket.once('game_started', () => {
+                    clearTimeout(timeout);
+                    resolve();
+                });
+
+                socket.once('error', (data) => {
+                    clearTimeout(timeout);
+                    reject(new Error(data.message));
+                });
+            });
+        }
+
+        async leaveRoom() {
+            if (!socket) return;
+
+            socket.emit('leave_room');
+
+            // Clean up listeners
+            socket.off('players_changed');
+            socket.off('position_changed');
+            socket.off('game_started');
+
+            this.currentRoomId = null;
+            this.currentPosition = null;
+        }
+
+        isHost() {
+            return this.currentPosition === 0;
+        }
+
+        getRoomId() {
+            return this.currentRoomId;
+        }
+
+        getPosition() {
+            return this.currentPosition;
+        }
+
+        getGameStartData() {
+            return this.gameStartData;
+        }
+
+        // Swap a player to the other team (host only)
+        async swapPlayerTeam(fromPosition) {
+            if (!this.isHost()) {
+                throw new Error('Only host can assign teams');
+            }
+
+            if (!socket) return;
+
+            socket.emit('swap_player', { fromPosition });
+        }
+    }
+
+    // ============================================
+    // GAME SYNC MANAGER
+    // ============================================
+
+    class GameSyncManager {
+        constructor(roomId, userId, position) {
+            this.roomId = roomId;
+            this.userId = userId;
+            this.localPosition = position;
+            this.onRemoteCardPlayed = null;
+            this.onGameStateChanged = null;
+            this.onRoundStarted = null;
+            this.isListening = false;
+        }
+
+        async initialize() {
+            // No initialization needed for WebSocket
+        }
+
+        startListening() {
+            if (this.isListening || !socket) return;
+            this.isListening = true;
+
+            // Listen for remote card plays
+            socket.on('remote_card_played', (data) => {
+                console.log('Remote card played:', data);
+                if (this.onRemoteCardPlayed) {
+                    this.onRemoteCardPlayed(data.card, data.position);
+                }
+            });
+
+            // Listen for game state updates
+            socket.on('game_state_updated', (data) => {
+                if (this.onGameStateChanged) {
+                    this.onGameStateChanged(data.gameState);
+                }
+            });
+
+            // Listen for new rounds
+            socket.on('round_started', (data) => {
+                if (this.onRoundStarted) {
+                    this.onRoundStarted(data.gameState, data.hands);
+                }
+            });
+        }
+
+        stopListening() {
+            if (socket) {
+                socket.off('remote_card_played');
+                socket.off('game_state_updated');
+                socket.off('round_started');
+            }
+            this.isListening = false;
+        }
+
+        async broadcastCardPlay(card, position) {
+            if (!socket) return;
+
+            socket.emit('card_played', {
+                card: { suit: card.suit, rank: card.rank },
+                position: position
+            });
+        }
+
+        async broadcastGameState(state) {
+            if (!socket) return;
+
+            socket.emit('update_game_state', {
+                gameState: {
+                    currentPlayerIndex: state.currentPlayerIndex,
+                    trickNumber: state.trickNumber,
+                    superiorSuit: state.superiorSuit || null,
+                    tricksWon: state.tricksWon,
+                    tensCollected: state.tensCollected,
+                    roundOver: state.roundOver || false,
+                    roundResult: state.roundResult || null,
+                    matchPoints: state.matchPoints,
+                    matchOver: state.matchOver || false
+                }
+            });
+        }
+
+        async broadcastNewRound(initialState, hands) {
+            if (!socket) return;
+
+            const handsData = {};
+            hands.forEach((hand, index) => {
+                handsData[index] = hand.map(card => ({
+                    suit: card.suit,
+                    rank: card.rank
+                }));
+            });
+
+            socket.emit('new_round', {
+                gameState: initialState,
+                hands: handsData
+            });
+        }
+
+        cleanup() {
+            this.stopListening();
+        }
+    }
 
     // ============================================
     // CONSTANTS
@@ -575,6 +964,13 @@
                 { normal: 0, 'all-tens': 0, shutout: 0 }
             ];
 
+            // Multiplayer properties
+            this.isMultiplayer = false;
+            this.localPlayerPosition = 0;
+            this.syncManager = null;
+            this.remotePlayers = {}; // Stores player names by position
+            this.isHost = false;
+
             this.onStateChange = null;
             this.onTrickComplete = null;
             this.onRoundOver = null;
@@ -585,11 +981,73 @@
             this.initializePlayers();
         }
 
-        initializePlayers() {
-            this.players.push(new Player(0, 0, true));
-            this.players.push(new AIPlayer(1, 1));
-            this.players.push(new AIPlayer(2, 0));
-            this.players.push(new AIPlayer(3, 1));
+        initializePlayers(multiplayer = false, localPosition = 0) {
+            this.players = [];
+
+            if (multiplayer) {
+                // In multiplayer, all positions are human players (remote)
+                for (let i = 0; i < 4; i++) {
+                    const team = i % 2 === 0 ? 0 : 1; // Positions 0,2 = Team A, 1,3 = Team B
+                    const isLocal = i === localPosition;
+                    this.players.push(new Player(i, team, isLocal));
+                }
+            } else {
+                // Single player mode - position 0 is human, rest are AI
+                this.players.push(new Player(0, 0, true));
+                this.players.push(new AIPlayer(1, 1));
+                this.players.push(new AIPlayer(2, 0));
+                this.players.push(new AIPlayer(3, 1));
+            }
+        }
+
+        setMultiplayerMode(syncManager, localPosition, playerNames) {
+            this.isMultiplayer = true;
+            this.localPlayerPosition = localPosition;
+            this.syncManager = syncManager;
+            this.remotePlayers = playerNames || {};
+            this.isHost = localPosition === 0;
+
+            // Reinitialize players for multiplayer
+            this.initializePlayers(true, localPosition);
+
+            // Set up remote card play handler
+            if (syncManager) {
+                syncManager.onRemoteCardPlayed = (cardData, position) => {
+                    this.playRemoteCard(cardData, position);
+                };
+            }
+        }
+
+        setPlayerNames(names) {
+            this.remotePlayers = names;
+            // Update player names
+            for (let i = 0; i < 4; i++) {
+                if (names[i] && this.players[i]) {
+                    this.players[i].name = names[i];
+                }
+            }
+        }
+
+        // Play a card from a remote player
+        async playRemoteCard(cardData, position) {
+            if (!this.isMultiplayer) return false;
+            if (position !== this.currentPlayerIndex) {
+                console.warn('Remote card played out of turn');
+                return false;
+            }
+
+            const player = this.players[position];
+            const card = player.hand.find(c =>
+                c.suit === cardData.suit && c.rank === cardData.rank
+            );
+
+            if (!card) {
+                console.error('Remote card not found in player hand');
+                return false;
+            }
+
+            // Play the card internally without broadcasting
+            return await this.playCardInternal(card, true);
         }
 
         startNewMatch() {
@@ -648,6 +1106,20 @@
         }
 
         async playCard(card) {
+            if (this.roundOver) return false;
+
+            // In multiplayer, broadcast the card play first
+            if (this.isMultiplayer && this.currentPlayerIndex === this.localPlayerPosition) {
+                if (this.syncManager) {
+                    await this.syncManager.broadcastCardPlay(card, this.currentPlayerIndex);
+                }
+            }
+
+            return await this.playCardInternal(card, false);
+        }
+
+        // Internal card play logic (used by both local and remote plays)
+        async playCardInternal(card, isRemote = false) {
             if (this.roundOver) return false;
 
             const player = this.getCurrentPlayer();
@@ -768,9 +1240,40 @@
         }
 
         async continueGame() {
+            if (this.isMultiplayer) {
+                // In multiplayer, don't auto-play - wait for remote players
+                // Only the UI needs to update to show waiting state
+                this.notifyStateChange();
+                return;
+            }
+
+            // Single player mode - AI plays automatically
             while (!this.roundOver && !this.isHumanTurn()) {
                 await this.playAITurn();
             }
+        }
+
+        // Check if it's the local player's turn in multiplayer
+        isLocalPlayerTurn() {
+            if (!this.isMultiplayer) {
+                return this.isHumanTurn();
+            }
+            return this.currentPlayerIndex === this.localPlayerPosition;
+        }
+
+        // Get the hand that should be shown (for multiplayer, only show local player's hand)
+        getLocalHand() {
+            return this.players[this.localPlayerPosition].hand;
+        }
+
+        // Reset for single player mode
+        resetToSinglePlayer() {
+            this.isMultiplayer = false;
+            this.localPlayerPosition = 0;
+            this.syncManager = null;
+            this.remotePlayers = {};
+            this.isHost = false;
+            this.initializePlayers(false, 0);
         }
 
         getGameState() {
@@ -1093,13 +1596,670 @@
             this.renderer = new Renderer();
             this.isProcessing = false;
 
+            // Multiplayer components
+            this.lobbyManager = null;
+            this.syncManager = null;
+            this.presenceManager = null;
+            this.isMultiplayerMode = false;
+            this.playerName = this.loadPlayerName();
+
+            // Lobby UI elements
+            this.lobbyOverlay = document.getElementById('lobby-overlay');
+            this.lobbyMenu = document.getElementById('lobby-menu');
+            this.waitingRoom = document.getElementById('waiting-room');
+            this.nameInputModal = document.getElementById('name-input-modal');
+            this.lobbyError = document.getElementById('lobby-error');
+            this.multiplayerStatus = document.getElementById('multiplayer-status');
+
             this.setupEventListeners();
+            this.setupLobbyEventListeners();
             this.bindGameEvents();
+        }
+
+        // Load player name from localStorage
+        loadPlayerName() {
+            return localStorage.getItem('dhihaEi_playerName') || null;
+        }
+
+        // Save player name to localStorage
+        savePlayerName(name) {
+            localStorage.setItem('dhihaEi_playerName', name);
+            this.playerName = name;
         }
 
         setupEventListeners() {
             const newGameBtn = document.getElementById('new-game-btn');
-            newGameBtn.addEventListener('click', () => this.startNewMatch());
+            newGameBtn.addEventListener('click', () => {
+                if (this.isMultiplayerMode) {
+                    this.confirmLeaveMultiplayer();
+                } else {
+                    this.startNewMatch();
+                }
+            });
+
+            const menuBtn = document.getElementById('menu-btn');
+            menuBtn.addEventListener('click', () => {
+                this.returnToLobby();
+            });
+        }
+
+        // Return to lobby from game
+        async returnToLobby() {
+            if (this.isMultiplayerMode) {
+                this.confirmLeaveMultiplayer();
+            } else {
+                this.showLobby();
+            }
+        }
+
+        setupLobbyEventListeners() {
+            // Play vs AI button
+            document.getElementById('play-ai-btn').addEventListener('click', () => {
+                this.startSinglePlayerGame();
+            });
+
+            // Create Room button
+            document.getElementById('create-room-btn').addEventListener('click', () => {
+                this.handleCreateRoom();
+            });
+
+            // Join Room button
+            document.getElementById('join-room-btn').addEventListener('click', () => {
+                this.handleJoinRoom();
+            });
+
+            // Room code input - handle Enter key
+            document.getElementById('room-code-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.handleJoinRoom();
+                }
+            });
+
+            // Copy room code button
+            document.getElementById('copy-code-btn').addEventListener('click', () => {
+                this.copyRoomCode();
+            });
+
+            // Ready button
+            document.getElementById('ready-btn').addEventListener('click', () => {
+                this.toggleReady();
+            });
+
+            // Start Game button (host only)
+            document.getElementById('start-game-btn').addEventListener('click', () => {
+                this.startMultiplayerGame();
+            });
+
+            // Leave Room button
+            document.getElementById('leave-room-btn').addEventListener('click', () => {
+                this.leaveRoom();
+            });
+
+            // Name input modal
+            document.getElementById('name-confirm-btn').addEventListener('click', () => {
+                this.confirmNameInput();
+            });
+
+            document.getElementById('name-cancel-btn').addEventListener('click', () => {
+                this.cancelNameInput();
+            });
+
+            document.getElementById('player-name-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.confirmNameInput();
+                }
+            });
+
+            // Multiplayer leave button (during game)
+            document.getElementById('mp-leave-btn').addEventListener('click', () => {
+                this.confirmLeaveMultiplayer();
+            });
+
+            // Swap buttons for team assignment (host only)
+            document.querySelectorAll('.swap-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const slot = e.target.closest('.player-slot');
+                    if (slot) {
+                        const position = parseInt(slot.dataset.position);
+                        this.handleSwapPlayer(position);
+                    }
+                });
+            });
+        }
+
+        // Handle swap player button click
+        async handleSwapPlayer(position) {
+            if (!this.lobbyManager || !this.lobbyManager.isHost()) return;
+
+            try {
+                await this.lobbyManager.swapPlayerTeam(position);
+            } catch (error) {
+                console.error('Error swapping player:', error);
+                this.showError(error.message || 'Failed to swap player');
+            }
+        }
+
+        // Show name input modal
+        showNameInput(callback) {
+            this.nameInputCallback = callback;
+            this.nameInputModal.classList.remove('hidden');
+            const input = document.getElementById('player-name-input');
+            input.value = this.playerName || '';
+            input.focus();
+            input.select();
+        }
+
+        confirmNameInput() {
+            const input = document.getElementById('player-name-input');
+            const name = input.value.trim();
+
+            if (name.length < 1) {
+                this.showError('Please enter a name');
+                return;
+            }
+
+            if (name.length > 12) {
+                this.showError('Name must be 12 characters or less');
+                return;
+            }
+
+            this.savePlayerName(name);
+            this.nameInputModal.classList.add('hidden');
+
+            if (this.nameInputCallback) {
+                this.nameInputCallback(name);
+                this.nameInputCallback = null;
+            }
+        }
+
+        cancelNameInput() {
+            this.nameInputModal.classList.add('hidden');
+            this.nameInputCallback = null;
+        }
+
+        // Show error message in lobby
+        showError(message) {
+            this.lobbyError.textContent = message;
+            this.lobbyError.classList.remove('hidden');
+            setTimeout(() => {
+                this.lobbyError.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Hide error
+        hideError() {
+            this.lobbyError.classList.add('hidden');
+        }
+
+        // Start single player game
+        startSinglePlayerGame() {
+            this.isMultiplayerMode = false;
+            this.game.resetToSinglePlayer();
+            this.hideLobby();
+            this.hideMultiplayerStatus();
+            this.startNewMatch();
+        }
+
+        // Handle create room
+        async handleCreateRoom() {
+            // Check for name first
+            if (!this.playerName) {
+                this.showNameInput((name) => this.createRoom(name));
+                return;
+            }
+            await this.createRoom(this.playerName);
+        }
+
+        async createRoom(playerName) {
+            try {
+                // Initialize multiplayer if needed
+                if (!isMultiplayerAvailable()) {
+                    if (!initializeMultiplayer()) {
+                        this.showError('Could not connect to server');
+                        return;
+                    }
+                    // Wait for connection
+                    await new Promise((resolve, reject) => {
+                        const timeout = setTimeout(() => reject(new Error('Connection timeout')), 5000);
+                        const checkConnection = () => {
+                            if (isMultiplayerAvailable()) {
+                                clearTimeout(timeout);
+                                resolve();
+                            } else {
+                                setTimeout(checkConnection, 100);
+                            }
+                        };
+                        checkConnection();
+                    });
+                }
+
+                // Create lobby manager
+                this.lobbyManager = new LobbyManager();
+
+                // Set up callbacks
+                this.lobbyManager.onPlayersChanged = (players) => {
+                    this.updatePlayerSlots(players);
+                };
+
+                this.lobbyManager.onGameStart = (data) => {
+                    this.onMultiplayerGameStart(data);
+                };
+
+                // Create room
+                const { roomId, position } = await this.lobbyManager.createRoom(playerName);
+
+                // Show waiting room
+                this.showWaitingRoom(roomId);
+
+                // Set up presence
+                this.presenceManager = new PresenceManager(roomId, currentUserId, position);
+                await this.presenceManager.setupPresence();
+
+            } catch (error) {
+                console.error('Error creating room:', error);
+                this.showError(error.message || 'Failed to create room');
+            }
+        }
+
+        // Handle join room
+        async handleJoinRoom() {
+            const roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
+
+            if (!roomCode || roomCode.length !== 6) {
+                this.showError('Please enter a valid 6-character room code');
+                return;
+            }
+
+            // Check for name first
+            if (!this.playerName) {
+                this.showNameInput((name) => this.joinRoom(roomCode, name));
+                return;
+            }
+
+            await this.joinRoom(roomCode, this.playerName);
+        }
+
+        async joinRoom(roomCode, playerName) {
+            try {
+                // Initialize multiplayer if needed
+                if (!isMultiplayerAvailable()) {
+                    if (!initializeMultiplayer()) {
+                        this.showError('Could not connect to server');
+                        return;
+                    }
+                    // Wait for connection
+                    await new Promise((resolve, reject) => {
+                        const timeout = setTimeout(() => reject(new Error('Connection timeout')), 5000);
+                        const checkConnection = () => {
+                            if (isMultiplayerAvailable()) {
+                                clearTimeout(timeout);
+                                resolve();
+                            } else {
+                                setTimeout(checkConnection, 100);
+                            }
+                        };
+                        checkConnection();
+                    });
+                }
+
+                // Create lobby manager
+                this.lobbyManager = new LobbyManager();
+
+                // Set up callbacks
+                this.lobbyManager.onPlayersChanged = (players) => {
+                    this.updatePlayerSlots(players);
+                };
+
+                this.lobbyManager.onGameStart = (data) => {
+                    this.onMultiplayerGameStart(data);
+                };
+
+                // Join room
+                const { roomId, position } = await this.lobbyManager.joinRoom(roomCode, playerName);
+
+                // Show waiting room
+                this.showWaitingRoom(roomId);
+
+                // Set up presence
+                this.presenceManager = new PresenceManager(roomId, currentUserId, position);
+                await this.presenceManager.setupPresence();
+
+            } catch (error) {
+                console.error('Error joining room:', error);
+                this.showError(error.message || 'Failed to join room');
+            }
+        }
+
+        // Show waiting room UI
+        showWaitingRoom(roomId) {
+            this.lobbyMenu.classList.add('hidden');
+            this.waitingRoom.classList.remove('hidden');
+            document.getElementById('room-code-display').textContent = roomId;
+
+            const isHost = this.lobbyManager && this.lobbyManager.isHost();
+
+            // Show/hide start button based on host status
+            const startBtn = document.getElementById('start-game-btn');
+            if (isHost) {
+                startBtn.classList.remove('hidden');
+            } else {
+                startBtn.classList.add('hidden');
+            }
+
+            // Show/hide host hint for team assignment
+            const hostHint = document.getElementById('host-team-hint');
+            if (isHost) {
+                hostHint.classList.remove('hidden');
+            } else {
+                hostHint.classList.add('hidden');
+            }
+
+            // Reset ready button
+            const readyBtn = document.getElementById('ready-btn');
+            readyBtn.classList.remove('ready');
+            readyBtn.textContent = 'Ready';
+        }
+
+        // Update player slots in waiting room
+        updatePlayerSlots(players) {
+            const slots = document.querySelectorAll('.player-slot');
+            const localPosition = this.lobbyManager ? this.lobbyManager.getPosition() : null;
+            const isHost = this.lobbyManager && this.lobbyManager.isHost();
+
+            let filledCount = 0;
+            let allReady = true;
+
+            slots.forEach((slot) => {
+                const position = parseInt(slot.dataset.position);
+                const player = players[position];
+
+                slot.classList.remove('filled', 'ready', 'you');
+
+                const statusSpan = slot.querySelector('.slot-status');
+                const nameSpan = slot.querySelector('.slot-name');
+                const readySpan = slot.querySelector('.slot-ready');
+                const swapBtn = slot.querySelector('.swap-btn');
+
+                if (player) {
+                    filledCount++;
+                    slot.classList.add('filled');
+
+                    if (position === localPosition) {
+                        slot.classList.add('you');
+                    }
+
+                    if (player.ready) {
+                        slot.classList.add('ready');
+                        readySpan.textContent = 'READY';
+                    } else {
+                        readySpan.textContent = '';
+                        allReady = false;
+                    }
+
+                    statusSpan.textContent = position === 0 ? 'Host' : 'Player';
+                    nameSpan.textContent = player.name || 'Unknown';
+
+                    // Show swap button for host (can swap any non-host player)
+                    if (swapBtn) {
+                        if (isHost && position !== 0) {
+                            swapBtn.classList.remove('hidden');
+                        } else {
+                            swapBtn.classList.add('hidden');
+                        }
+                    }
+                } else {
+                    statusSpan.textContent = 'Waiting...';
+                    nameSpan.textContent = '';
+                    readySpan.textContent = '';
+                    allReady = false;
+
+                    // Hide swap button for empty slots
+                    if (swapBtn) {
+                        swapBtn.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Enable/disable start button for host
+            const startBtn = document.getElementById('start-game-btn');
+            if (isHost) {
+                startBtn.disabled = !(filledCount === 4 && allReady);
+            }
+        }
+
+        // Copy room code to clipboard
+        async copyRoomCode() {
+            const roomCode = document.getElementById('room-code-display').textContent;
+            const copyBtn = document.getElementById('copy-code-btn');
+
+            try {
+                await navigator.clipboard.writeText(roomCode);
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+
+        // Toggle ready status
+        async toggleReady() {
+            if (!this.lobbyManager) return;
+
+            const readyBtn = document.getElementById('ready-btn');
+            const isReady = readyBtn.classList.toggle('ready');
+
+            readyBtn.textContent = isReady ? 'Not Ready' : 'Ready';
+
+            await this.lobbyManager.setReady(isReady);
+        }
+
+        // Start multiplayer game (host only)
+        async startMultiplayerGame() {
+            if (!this.lobbyManager || !this.lobbyManager.isHost()) return;
+
+            try {
+                // Create a temporary game to deal cards
+                this.game.startNewMatch();
+
+                // Prepare initial game state
+                const initialState = {
+                    currentPlayerIndex: 0,
+                    trickNumber: 0,
+                    superiorSuit: null,
+                    tricksWon: [0, 0],
+                    tensCollected: [0, 0],
+                    matchPoints: [0, 0],
+                    roundOver: false,
+                    matchOver: false
+                };
+
+                // Prepare hands data
+                const handsData = {};
+                this.game.players.forEach((player, index) => {
+                    handsData[index] = player.hand.map(card => ({
+                        suit: card.suit,
+                        rank: card.rank
+                    }));
+                });
+
+                await this.lobbyManager.startGame(initialState, handsData);
+            } catch (error) {
+                console.error('Error starting game:', error);
+                this.showError(error.message || 'Failed to start game');
+            }
+        }
+
+        // Called when multiplayer game starts
+        async onMultiplayerGameStart(data) {
+            this.isMultiplayerMode = true;
+            const roomId = this.lobbyManager.getRoomId();
+            const localPosition = this.lobbyManager.getPosition();
+
+            // Get player names from start data
+            const players = data.players;
+            const playerNames = {};
+            for (let i = 0; i < 4; i++) {
+                if (players && players[i]) {
+                    playerNames[i] = players[i].name;
+                }
+            }
+
+            // Create sync manager
+            this.syncManager = new GameSyncManager(roomId, currentUserId, localPosition);
+            await this.syncManager.initialize();
+
+            // Set up game for multiplayer
+            this.game.setMultiplayerMode(this.syncManager, localPosition, playerNames);
+
+            // If host, cards are already dealt
+            if (this.lobbyManager.isHost()) {
+                // Cards already dealt in startMultiplayerGame
+            } else {
+                // Non-host: reconstruct hands from server data
+                this.reconstructHandsFromData(data.hands);
+            }
+
+            // Set up round started listener for subsequent rounds
+            this.syncManager.onRoundStarted = (gameState, hands) => {
+                this.handleNewRound(gameState, hands);
+            };
+
+            // Start listening for remote actions
+            this.syncManager.startListening();
+
+            // Hide lobby, show game
+            this.hideLobby();
+            this.showMultiplayerStatus(roomId);
+            this.updateDisplay();
+        }
+
+        // Reconstruct hands from server data
+        reconstructHandsFromData(handsData) {
+            if (!handsData) return;
+
+            for (let i = 0; i < 4; i++) {
+                if (handsData[i]) {
+                    const cards = handsData[i].map(c => new Card(c.suit, c.rank));
+                    this.game.players[i].setHand(cards);
+                }
+            }
+            this.game.currentTrick = new Trick();
+        }
+
+        // Handle new round from host
+        handleNewRound(gameState, hands) {
+            this.reconstructHandsFromData(hands);
+
+            // Update game state
+            this.game.currentPlayerIndex = gameState.currentPlayerIndex || 0;
+            this.game.trickNumber = gameState.trickNumber || 0;
+            this.game.superiorSuit = gameState.superiorSuit || null;
+            this.game.tricksWon = gameState.tricksWon || [0, 0];
+            this.game.tensCollected = gameState.tensCollected || [0, 0];
+            this.game.matchPoints = gameState.matchPoints || [0, 0];
+            this.game.roundOver = false;
+            this.game.currentTrick = new Trick();
+
+            this.updateDisplay();
+        }
+
+
+        // Leave room
+        async leaveRoom() {
+            if (this.presenceManager) {
+                this.presenceManager.cleanup();
+                this.presenceManager = null;
+            }
+
+            if (this.lobbyManager) {
+                await this.lobbyManager.leaveRoom();
+                this.lobbyManager = null;
+            }
+
+            // Show main menu
+            this.waitingRoom.classList.add('hidden');
+            this.lobbyMenu.classList.remove('hidden');
+            document.getElementById('room-code-input').value = '';
+        }
+
+        // Confirm leaving multiplayer game
+        async confirmLeaveMultiplayer() {
+            if (confirm('Are you sure you want to leave the game?')) {
+                await this.cleanupMultiplayer();
+                this.showLobby();
+            }
+        }
+
+        // Cleanup multiplayer
+        async cleanupMultiplayer() {
+            if (this.syncManager) {
+                this.syncManager.cleanup();
+                this.syncManager = null;
+            }
+
+            if (this.presenceManager) {
+                this.presenceManager.cleanup();
+                this.presenceManager = null;
+            }
+
+            if (this.lobbyManager) {
+                await this.lobbyManager.leaveRoom();
+                this.lobbyManager = null;
+            }
+
+            this.isMultiplayerMode = false;
+            this.game.resetToSinglePlayer();
+            this.hideMultiplayerStatus();
+        }
+
+        // Show lobby overlay
+        showLobby() {
+            this.lobbyOverlay.classList.remove('hidden');
+            this.lobbyMenu.classList.remove('hidden');
+            this.waitingRoom.classList.add('hidden');
+            this.nameInputModal.classList.add('hidden');
+            this.hideError();
+
+            // Check if this is first load and prompt for name
+            if (!this.playerName) {
+                this.showNameInput((name) => {
+                    // Name saved, continue showing lobby
+                });
+            }
+        }
+
+        // Hide lobby overlay
+        hideLobby() {
+            this.lobbyOverlay.classList.add('hidden');
+        }
+
+        // Show multiplayer status bar
+        showMultiplayerStatus(roomCode) {
+            this.multiplayerStatus.classList.remove('hidden');
+            document.getElementById('mp-room-code').textContent = roomCode;
+        }
+
+        // Hide multiplayer status bar
+        hideMultiplayerStatus() {
+            this.multiplayerStatus.classList.add('hidden');
+        }
+
+        // Update multiplayer turn indicator
+        updateMultiplayerTurnIndicator() {
+            const turnIndicator = document.getElementById('mp-turn-indicator');
+            if (this.game.isLocalPlayerTurn()) {
+                turnIndicator.textContent = 'Your Turn';
+                turnIndicator.classList.add('your-turn');
+            } else {
+                const currentPlayer = this.game.players[this.game.currentPlayerIndex];
+                const name = currentPlayer.name || `Player ${this.game.currentPlayerIndex + 1}`;
+                turnIndicator.textContent = `${name}'s Turn`;
+                turnIndicator.classList.remove('your-turn');
+            }
         }
 
         bindGameEvents() {
@@ -1140,25 +2300,140 @@
 
         updateDisplay() {
             const state = this.game.getGameState();
-            const validCards = this.game.isHumanTurn() ? this.game.getValidCards() : [];
 
-            this.renderer.renderAllHands(
-                this.game.players,
-                validCards,
-                (card) => this.handleCardClick(card)
-            );
+            if (this.isMultiplayerMode) {
+                // In multiplayer, show valid cards only for local player on their turn
+                const isLocalTurn = this.game.isLocalPlayerTurn();
+                const validCards = isLocalTurn ? this.game.getValidCards() : [];
+
+                this.renderMultiplayerHands(validCards, (card) => this.handleCardClick(card));
+                this.updateMultiplayerTurnIndicator();
+            } else {
+                // Single player mode
+                const validCards = this.game.isHumanTurn() ? this.game.getValidCards() : [];
+
+                this.renderer.renderAllHands(
+                    this.game.players,
+                    validCards,
+                    (card) => this.handleCardClick(card)
+                );
+            }
 
             this.renderer.updateScores(state.tricksWon, state.tensCollected);
             this.renderer.updateMatchPoints(state.matchPoints);
             this.renderer.updateWinTypeCounts(state.winTypeCount);
             this.renderer.updateCollectedTens(state.collectedTensCards);
             this.renderer.updateSuperiorSuit(state.superiorSuit);
-            this.renderer.showTurnIndicator(state.currentPlayer, this.game.isHumanTurn());
+            this.renderer.showTurnIndicator(state.currentPlayer, this.game.isLocalPlayerTurn());
+
+            // Update player labels with names in multiplayer
+            if (this.isMultiplayerMode) {
+                this.updatePlayerLabels();
+            }
+        }
+
+        // Render hands in multiplayer mode
+        renderMultiplayerHands(validCards, onCardClick) {
+            const localPosition = this.game.localPlayerPosition;
+
+            // Determine screen positions based on local player's position
+            // Local player is always at bottom
+            const positionMap = this.getMultiplayerPositionMap(localPosition);
+
+            for (let i = 0; i < 4; i++) {
+                const player = this.game.players[i];
+                const screenPosition = positionMap[i];
+                const handElement = this.getHandElementByScreenPosition(screenPosition);
+
+                handElement.innerHTML = '';
+
+                const isLocal = i === localPosition;
+
+                player.hand.forEach(card => {
+                    const cardElement = CardSprite.createCardElement(card, isLocal);
+
+                    if (isLocal && validCards.length > 0) {
+                        const isValid = validCards.some(c => c.equals(card));
+                        CardSprite.setPlayable(cardElement, isValid);
+
+                        if (isValid && onCardClick) {
+                            cardElement.addEventListener('click', () => onCardClick(card));
+                        }
+                    }
+
+                    handElement.appendChild(cardElement);
+                });
+            }
+        }
+
+        // Map game positions to screen positions based on local player
+        getMultiplayerPositionMap(localPosition) {
+            // Returns: { gamePosition: screenPosition }
+            // Screen positions: 0=bottom, 1=left, 2=top, 3=right
+            // Game positions follow counter-clockwise: 0 → 3 → 2 → 1 → 0
+
+            const map = {};
+            for (let i = 0; i < 4; i++) {
+                // Calculate relative position from local player
+                const relativePos = (i - localPosition + 4) % 4;
+                // Map to screen position
+                // 0 (self) -> bottom (0)
+                // 1 (right of self) -> right (3)
+                // 2 (across) -> top (2)
+                // 3 (left of self) -> left (1)
+                const screenPosMap = [0, 3, 2, 1];
+                map[i] = screenPosMap[relativePos];
+            }
+            return map;
+        }
+
+        getHandElementByScreenPosition(screenPos) {
+            const elements = {
+                0: document.getElementById('hand-bottom'),
+                1: document.getElementById('hand-left'),
+                2: document.getElementById('hand-top'),
+                3: document.getElementById('hand-right')
+            };
+            return elements[screenPos];
+        }
+
+        // Update player labels with actual names
+        updatePlayerLabels() {
+            const localPosition = this.game.localPlayerPosition;
+            const positionMap = this.getMultiplayerPositionMap(localPosition);
+
+            const labels = {
+                0: document.querySelector('#player-bottom .player-label'),
+                1: document.querySelector('#player-left .player-label'),
+                2: document.querySelector('#player-top .player-label'),
+                3: document.querySelector('#player-right .player-label')
+            };
+
+            for (let i = 0; i < 4; i++) {
+                const screenPos = positionMap[i];
+                const label = labels[screenPos];
+                const player = this.game.players[i];
+
+                if (label) {
+                    if (i === localPosition) {
+                        label.textContent = 'You';
+                    } else {
+                        label.textContent = player.name || `Player ${i + 1}`;
+                    }
+                    label.classList.add('mp-name');
+                }
+            }
         }
 
         async handleCardClick(card) {
             if (this.isProcessing) return;
-            if (!this.game.isHumanTurn()) return;
+
+            // Check if it's the player's turn (handles both single and multiplayer)
+            if (this.isMultiplayerMode) {
+                if (!this.game.isLocalPlayerTurn()) return;
+            } else {
+                if (!this.game.isHumanTurn()) return;
+            }
 
             this.isProcessing = true;
 
@@ -1259,7 +2534,8 @@
         }
 
         init() {
-            this.startNewMatch();
+            // Show lobby on startup
+            this.showLobby();
         }
     }
 
@@ -1276,11 +2552,21 @@
 
         console.log('Dhiha Ei - Game initialized!');
 
+        // Expose for debugging/development
         window.dhihaEi = {
             game,
             ui,
             getState: () => game.getGameState(),
-            POINTS_TO_WIN: POINTS_TO_WIN_MATCH
+            POINTS_TO_WIN: POINTS_TO_WIN_MATCH,
+            isMultiplayerAvailable: () => isMultiplayerAvailable(),
+            // Multiplayer utilities
+            multiplayer: {
+                LobbyManager,
+                GameSyncManager,
+                PresenceManager,
+                getCurrentUserId: () => currentUserId,
+                initializeMultiplayer
+            }
         };
     });
 

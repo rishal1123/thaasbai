@@ -9,6 +9,9 @@
     <meta name="theme-color" content="#006994">
     <title>Dhiha Ei - Maldivian Card Game</title>
     <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Socket.IO for multiplayer -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -111,6 +114,7 @@
 
         <!-- New game button -->
         <div id="controls">
+            <button id="menu-btn">Menu</button>
             <button id="new-game-btn">New Game</button>
         </div>
 
@@ -127,6 +131,100 @@
             <div class="item-body"></div>
             <div class="item-label">ROSHI</div>
         </div>
+    </div>
+
+    <!-- Lobby Overlay -->
+    <div id="lobby-overlay">
+        <div id="lobby-content">
+            <h2 class="lobby-title">Dhiha Ei</h2>
+            <p class="lobby-subtitle">Maldivian Card Game</p>
+
+            <!-- Main Menu -->
+            <div id="lobby-menu">
+                <button id="play-ai-btn" class="lobby-btn primary">Play vs AI</button>
+                <div class="lobby-divider"><span>or play online</span></div>
+                <button id="create-room-btn" class="lobby-btn">Create Room</button>
+                <div class="join-section">
+                    <input type="text" id="room-code-input" placeholder="Enter Room Code" maxlength="6" autocomplete="off">
+                    <button id="join-room-btn" class="lobby-btn">Join</button>
+                </div>
+            </div>
+
+            <!-- Waiting Room -->
+            <div id="waiting-room" class="hidden">
+                <div class="room-header">
+                    <h3>Room Code</h3>
+                    <div id="room-code-display"></div>
+                    <button id="copy-code-btn" class="copy-btn" title="Copy code">Copy</button>
+                </div>
+
+                <div id="player-slots">
+                    <div class="team-column" data-team="0">
+                        <div class="team-label">Team A</div>
+                        <div class="player-slot" data-position="0" data-team="0">
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                            <button class="swap-btn hidden" title="Move to Team B">→</button>
+                        </div>
+                        <div class="player-slot" data-position="2" data-team="0">
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                            <button class="swap-btn hidden" title="Move to Team B">→</button>
+                        </div>
+                    </div>
+                    <div class="team-column" data-team="1">
+                        <div class="team-label">Team B</div>
+                        <div class="player-slot" data-position="1" data-team="1">
+                            <button class="swap-btn hidden" title="Move to Team A">←</button>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                        <div class="player-slot" data-position="3" data-team="1">
+                            <button class="swap-btn hidden" title="Move to Team A">←</button>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="host-team-hint" class="host-hint hidden">As host, click arrows to move players between teams</p>
+
+                <div id="waiting-room-actions">
+                    <button id="ready-btn" class="lobby-btn">Ready</button>
+                    <button id="start-game-btn" class="lobby-btn primary hidden">Start Game</button>
+                    <button id="leave-room-btn" class="lobby-btn secondary">Leave Room</button>
+                </div>
+
+                <div id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+            </div>
+
+            <!-- Name Input Modal -->
+            <div id="name-input-modal" class="hidden">
+                <h3>Enter Your Name</h3>
+                <input type="text" id="player-name-input" placeholder="Your name" maxlength="12" autocomplete="off">
+                <div class="modal-actions">
+                    <button id="name-cancel-btn" class="lobby-btn secondary">Cancel</button>
+                    <button id="name-confirm-btn" class="lobby-btn primary">Confirm</button>
+                </div>
+            </div>
+
+            <!-- Error Display -->
+            <div id="lobby-error" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- Multiplayer Status Bar (shown during game) -->
+    <div id="multiplayer-status" class="hidden">
+        <span id="mp-room-code"></span>
+        <span id="mp-turn-indicator"></span>
+        <button id="mp-leave-btn" class="mp-btn">Leave</button>
     </div>
 
     <!-- Single bundled script (no modules) -->
