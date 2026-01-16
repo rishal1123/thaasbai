@@ -3000,11 +3000,11 @@ body {
         height: 40px;
     }
 
-    /* Score panels - compact at top center */
+    /* Score panels - compact, shifted right of center */
     #score-panel {
         position: fixed;
         top: 5px;
-        left: 50%;
+        left: calc(50% + 40px);
         transform: translateX(-50%);
         flex-direction: row;
         gap: 8px;
@@ -3049,8 +3049,19 @@ body {
         font-size: 0.55rem;
     }
 
+    /* Show collected tens on mobile - smaller */
     .collected-tens {
-        display: none;
+        display: flex;
+        gap: 2px;
+        margin-top: 3px;
+        min-height: 20px;
+    }
+
+    .collected-ten {
+        width: 14px;
+        height: 20px;
+        font-size: 0.45rem;
+        border-radius: 2px;
     }
 
     /* Match points panel - top right */
