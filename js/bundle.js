@@ -2812,6 +2812,11 @@
 
         // Show lobby overlay
         showLobby() {
+            // Hide game container
+            document.getElementById('game-container').classList.add('hidden');
+            document.getElementById('game-container').classList.remove('multiplayer-mode');
+
+            // Show lobby
             this.lobbyOverlay.classList.remove('hidden');
             this.showGameSelection();
         }
@@ -2819,6 +2824,7 @@
         // Hide lobby overlay
         hideLobby() {
             this.lobbyOverlay.classList.add('hidden');
+            document.getElementById('game-container').classList.remove('hidden');
         }
 
         // Show multiplayer status bar
