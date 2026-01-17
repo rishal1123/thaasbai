@@ -1985,18 +1985,16 @@ body {
     /* Force landscape layout by rotating the viewport wrapper */
     #viewport-wrapper {
         position: fixed;
-        top: 0;
-        left: 0;
         /* In portrait: screen width is narrow, height is tall */
         /* We want landscape: use height as width, width as height */
         width: 100vh;
         height: 100vw;
-        /* Rotate 90 degrees counterclockwise so top of game is at left of phone */
-        transform: rotate(-90deg);
+        /* Rotate 90 degrees clockwise so top of game is at right of phone */
+        transform: rotate(90deg);
         transform-origin: top left;
         /* Move into view after rotation */
-        top: 100%;
-        left: 0;
+        top: 0;
+        left: 100vw;
         overflow: hidden;
     }
 
