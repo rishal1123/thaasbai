@@ -87,12 +87,17 @@ def handle_disconnect():
             room = rooms[room_id]
 
             if position in room['players']:
+                player_name = room['players'][position].get('name', f'Player {position + 1}')
+
                 # Mark player as disconnected or remove
                 if room['metadata']['status'] == 'playing':
-                    # During game, mark as disconnected
+                    # During game, notify all players that someone left
                     room['players'][position]['connected'] = False
-                    emit('player_disconnected', {
+                    print(f'Player {player_name} disconnected from game in room {room_id}')
+                    emit('player_left_game', {
                         'position': position,
+                        'playerName': player_name,
+                        'reason': 'disconnected',
                         'players': room['players']
                     }, room=room_id)
                 else:
@@ -220,17 +225,32 @@ def handle_leave_room():
         room = rooms[room_id]
 
         if position in room['players']:
+            player_name = room['players'][position].get('name', f'Player {position + 1}')
+            is_playing = room['metadata']['status'] == 'playing'
+
             del room['players'][position]
             room['metadata']['playerCount'] = len(room['players'])
 
-        leave_room(room_id)
+            leave_room(room_id)
 
-        # Delete room if empty
-        if len(room['players']) == 0:
-            del rooms[room_id]
-            print(f'Room {room_id} deleted (empty)')
+            # Delete room if empty
+            if len(room['players']) == 0:
+                del rooms[room_id]
+                print(f'Room {room_id} deleted (empty)')
+            else:
+                if is_playing:
+                    # Notify others that player left during game
+                    print(f'Player {player_name} left game in room {room_id}')
+                    emit('player_left_game', {
+                        'position': position,
+                        'playerName': player_name,
+                        'reason': 'left',
+                        'players': room['players']
+                    }, room=room_id)
+                else:
+                    emit('players_changed', {'players': room['players']}, room=room_id)
         else:
-            emit('players_changed', {'players': room['players']}, room=room_id)
+            leave_room(room_id)
 
     del player_sessions[sid]
     emit('left_room', {})

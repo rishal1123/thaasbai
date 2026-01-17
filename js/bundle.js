@@ -2666,6 +2666,12 @@
                     console.log('All players ready for next round');
                     this.onAllReadyForRound(data);
                 });
+
+                // Set up listener for player leaving game
+                socket.on('player_left_game', (data) => {
+                    console.log('Player left game:', data);
+                    this.onPlayerLeftGame(data);
+                });
             }
 
             // Hide lobby, show game
@@ -2737,6 +2743,7 @@
             // Clean up socket listeners
             if (socket) {
                 socket.off('all_ready_for_round');
+                socket.off('player_left_game');
             }
 
             if (this.syncManager) {
@@ -3359,6 +3366,27 @@
                 }
             }
             // Non-hosts wait for round_started event from host
+        }
+
+        // Called when a player leaves the game
+        async onPlayerLeftGame(data) {
+            const { playerName, reason } = data;
+
+            // Stop any ongoing game actions
+            this.isProcessing = true;
+
+            // Hide any flash messages
+            this.renderer.hideFlashMessage();
+
+            // Show message about player leaving
+            const reasonText = reason === 'disconnected' ? 'disconnected' : 'left the game';
+            const message = `${playerName} has ${reasonText}.\n\nThe game cannot continue without all players.`;
+
+            await this.renderer.showMessage('Player Left', message, 'Leave Game');
+
+            // Clean up and return to lobby
+            await this.cleanupMultiplayer();
+            this.showLobby();
         }
 
         async handleMatchOver(winner, points) {
