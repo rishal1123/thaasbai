@@ -1793,6 +1793,12 @@ body {
     margin-bottom: calc(1.5 * var(--scale));
 }
 
+#message-buttons {
+    display: flex;
+    gap: calc(1 * var(--scale));
+    justify-content: center;
+}
+
 #message-button {
     padding: calc(0.8 * var(--scale)) calc(2 * var(--scale));
     background: linear-gradient(145deg, var(--ocean-turquoise), var(--lagoon));
@@ -1802,6 +1808,21 @@ body {
     font-size: clamp(17px, calc(2 * var(--scale)), 26px);
     font-weight: 600;
     cursor: pointer;
+}
+
+#message-button-secondary {
+    padding: calc(0.8 * var(--scale)) calc(2 * var(--scale));
+    background: linear-gradient(145deg, var(--coral-pink), var(--coral-red));
+    border: none;
+    border-radius: calc(0.8 * var(--scale));
+    color: var(--text-light);
+    font-size: clamp(17px, calc(2 * var(--scale)), 26px);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#message-button-secondary.hidden {
+    display: none;
 }
 
 /* Copy Button */

@@ -1463,7 +1463,8 @@
                 messageOverlay: document.getElementById('message-overlay'),
                 messageTitle: document.getElementById('message-title'),
                 messageText: document.getElementById('message-text'),
-                messageButton: document.getElementById('message-button')
+                messageButton: document.getElementById('message-button'),
+                messageButtonSecondary: document.getElementById('message-button-secondary')
             };
         }
 
@@ -1602,6 +1603,7 @@
                 this.elements.messageText.textContent = text;
                 this.elements.messageButton.textContent = buttonText;
                 this.elements.messageButton.style.display = '';
+                this.elements.messageButtonSecondary.classList.add('hidden');
                 this.elements.messageOverlay.classList.remove('hidden');
 
                 const handleClick = () => {
@@ -1611,6 +1613,39 @@
                 };
 
                 this.elements.messageButton.addEventListener('click', handleClick);
+            });
+        }
+
+        // Show message with two buttons, returns 'primary' or 'secondary'
+        showMessageWithOptions(title, text, primaryText, secondaryText) {
+            return new Promise(resolve => {
+                this.elements.messageTitle.textContent = title;
+                this.elements.messageText.textContent = text;
+                this.elements.messageButton.textContent = primaryText;
+                this.elements.messageButtonSecondary.textContent = secondaryText;
+                this.elements.messageButton.style.display = '';
+                this.elements.messageButtonSecondary.classList.remove('hidden');
+                this.elements.messageOverlay.classList.remove('hidden');
+
+                const handlePrimary = () => {
+                    cleanup();
+                    resolve('primary');
+                };
+
+                const handleSecondary = () => {
+                    cleanup();
+                    resolve('secondary');
+                };
+
+                const cleanup = () => {
+                    this.elements.messageButton.removeEventListener('click', handlePrimary);
+                    this.elements.messageButtonSecondary.removeEventListener('click', handleSecondary);
+                    this.elements.messageButtonSecondary.classList.add('hidden');
+                    this.elements.messageOverlay.classList.add('hidden');
+                };
+
+                this.elements.messageButton.addEventListener('click', handlePrimary);
+                this.elements.messageButtonSecondary.addEventListener('click', handleSecondary);
             });
         }
 
@@ -3314,9 +3349,50 @@
                 await this.renderer.showMessage(title, text, 'Ready for Next Round');
                 this.showReadyForNextRound();
             } else {
-                await this.renderer.showMessage(title, text, 'Next Round');
-                this.startNextRound();
+                // AI game - show options for next round or end game
+                const choice = await this.renderer.showMessageWithOptions(title, text, 'Next Round', 'End Game');
+                if (choice === 'primary') {
+                    this.startNextRound();
+                } else {
+                    // End game - show final score
+                    await this.showAIGameFinalScore();
+                }
             }
+        }
+
+        // Show final score for AI game
+        async showAIGameFinalScore() {
+            const state = this.game.getGameState();
+            const team0Score = state.matchPoints[0];
+            const team1Score = state.matchPoints[1];
+
+            // Get player names for each team
+            const team0Players = [];
+            const team1Players = [];
+
+            for (let i = 0; i < 4; i++) {
+                const player = this.game.players[i];
+                if (player.team === 0) {
+                    team0Players.push(player.name);
+                } else {
+                    team1Players.push(player.name);
+                }
+            }
+
+            // Determine winner
+            let title;
+            if (team0Score > team1Score) {
+                title = 'You Won!';
+            } else if (team1Score > team0Score) {
+                title = 'You Lost!';
+            } else {
+                title = 'Tie Game!';
+            }
+
+            const scoreMessage = `Final Score:\n\nYour Team (${team0Players.join(' & ')}): ${team0Score}\nOpponents (${team1Players.join(' & ')}): ${team1Score}`;
+
+            await this.renderer.showMessage(title, scoreMessage, 'Back to Menu');
+            this.showLobby();
         }
 
         // Show ready check UI for next round

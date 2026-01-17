@@ -47,7 +47,7 @@
     <link rel="apple-touch-startup-image" href="splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
 
     <title>Thaasbai - Maldivian Card Games</title>
-    <link rel="stylesheet" href="css/styles.css?v=36">
+    <link rel="stylesheet" href="css/styles.css?v=37">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -307,7 +307,10 @@
             <div id="message-content">
                 <h2 id="message-title"></h2>
                 <p id="message-text"></p>
-                <button id="message-button">Continue</button>
+                <div id="message-buttons">
+                    <button id="message-button">Continue</button>
+                    <button id="message-button-secondary" class="hidden">End Game</button>
+                </div>
             </div>
         </div>
 
@@ -531,7 +534,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=29"></script>
+    <script src="js/bundle.js?v=30"></script>
 
     <!-- PWA Install Handler -->
     <script>
