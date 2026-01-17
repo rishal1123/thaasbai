@@ -4,7 +4,7 @@
   <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1.5"/>
 
   <!-- Top-left rank and suit -->
-  <g transform="translate(25, 50)">
+  <g transform="translate(25, 90)">
     <text x="0" y="0" font-family="Georgia, serif" font-size="96" font-weight="bold" fill="#1A1A1A">K</text>
     <g transform="translate(16, 40)">
       <circle cx="0" cy="-10" r="8" fill="#1A1A1A"/>

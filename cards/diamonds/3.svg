@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
   <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
-  <g transform="translate(25, 50)">
+  <g transform="translate(25, 90)">
     <text x="0" y="0" font-family="Georgia, serif" font-size="96" font-weight="bold" fill="#8B1E1E">3</text>
     <polygon points="15,15 25,35 15,55 5,35" fill="#8B1E1E"/>
   </g>

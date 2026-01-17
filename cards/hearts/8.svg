@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
   <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
-  <g transform="translate(25, 50)">
+  <g transform="translate(25, 90)">
     <text x="0" y="0" font-family="Georgia, serif" font-size="96" font-weight="bold" fill="#8B1E1E">8</text>
     <path d="M12,12 C12,12 12,8 8,8 C4,8 2,12 2,15 C2,21 12,28 12,28 C12,28 22,21 22,15 C22,12 20,8 16,8 C12,8 12,12 12,12 Z" fill="#8B1E1E" transform="translate(0, 12)"/>
   </g>

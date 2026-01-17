@@ -1,33 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
   <defs>
     <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#C9A24D;stop-opacity:0.3"/>
-      <stop offset="50%" style="stop-color:#C9A24D;stop-opacity:0.6"/>
-      <stop offset="100%" style="stop-color:#C9A24D;stop-opacity:0.3"/>
+      <stop offset="0%" style="stop-color:#C9A24D;stop-opacity:0.5"/>
+      <stop offset="50%" style="stop-color:#C9A24D;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#C9A24D;stop-opacity:0.5"/>
     </linearGradient>
   </defs>
 
   <!-- Card base -->
   <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
-  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1"/>
+  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="2"/>
 
   <!-- Top-left rank and suit -->
-  <g transform="translate(25, 50)">
+  <g transform="translate(25, 90)">
     <text x="0" y="0" font-family="Georgia, serif" font-size="96" font-weight="bold" fill="#8B1E1E">A</text>
     <path d="M12,12 C12,12 12,8 8,8 C4,8 2,12 2,15 C2,21 12,28 12,28 C12,28 22,21 22,15 C22,12 20,8 16,8 C12,8 12,12 12,12 Z" fill="#8B1E1E" transform="translate(2, 12)"/>
   </g>
 
-  <!-- Central large heart with halo effect -->
-  <g transform="translate(187.5, 262.5)">
-    <!-- Outer golden halo -->
-    <ellipse cx="0" cy="10" rx="90" ry="85" fill="none" stroke="url(#goldShine)" stroke-width="3"/>
-    <!-- Second halo ring -->
-    <ellipse cx="0" cy="10" rx="80" ry="75" fill="none" stroke="#C9A24D" stroke-width="1" opacity="0.4"/>
-    <!-- Large heart with gold trim -->
-    <path d="M0 -50 C-30 -80 -75 -60 -75 -20 C-75 30 0 75 0 75 C0 75 75 30 75 -20 C75 -60 30 -80 0 -50 Z"
-          fill="#8B1E1E" stroke="#C9A24D" stroke-width="3"/>
-    <!-- Heart highlight -->
-    <path d="M-25 -40 C-35 -50 -50 -45 -50 -25 C-50 -15 -40 -10 -25 -5"
-          fill="none" stroke="#F7F4EF" stroke-width="3" opacity="0.3"/>
+  <!-- Central large heart - PROMINENT -->
+  <g transform="translate(187.5, 290)">
+    <!-- Outer golden glow -->
+    <ellipse cx="0" cy="0" rx="130" ry="125" fill="none" stroke="url(#goldShine)" stroke-width="5"/>
+    <ellipse cx="0" cy="0" rx="115" ry="110" fill="none" stroke="#C9A24D" stroke-width="2" opacity="0.6"/>
+
+    <!-- Large heart with bold gold trim -->
+    <path d="M0 -70 C-45 -115 -105 -85 -105 -25 C-105 55 0 125 0 125 C0 125 105 55 105 -25 C105 -85 45 -115 0 -70 Z"
+          fill="#8B1E1E" stroke="#C9A24D" stroke-width="6"/>
+
+    <!-- Heart inner highlight -->
+    <path d="M-35 -55 C-55 -75 -75 -60 -75 -30 C-75 -10 -55 15 -30 35"
+          fill="none" stroke="#F7F4EF" stroke-width="8" opacity="0.3" stroke-linecap="round"/>
   </g>
 </svg>

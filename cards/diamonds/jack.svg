@@ -4,7 +4,7 @@
   <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1"/>
 
   <!-- Top-left rank and suit -->
-  <g transform="translate(25, 50)">
+  <g transform="translate(25, 90)">
     <text x="0" y="0" font-family="Georgia, serif" font-size="96" font-weight="bold" fill="#8B1E1E">J</text>
     <polygon points="15,15 25,32 15,49 5,32" fill="#8B1E1E" transform="translate(-2, 10)"/>
   </g>

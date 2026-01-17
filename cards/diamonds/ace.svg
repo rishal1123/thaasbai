@@ -1,31 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
   <defs>
     <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#C9A24D;stop-opacity:0.3"/>
-      <stop offset="50%" style="stop-color:#C9A24D;stop-opacity:0.6"/>
-      <stop offset="100%" style="stop-color:#C9A24D;stop-opacity:0.3"/>
+      <stop offset="0%" style="stop-color:#C9A24D;stop-opacity:0.5"/>
+      <stop offset="50%" style="stop-color:#C9A24D;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#C9A24D;stop-opacity:0.5"/>
     </linearGradient>
   </defs>
 
   <!-- Card base -->
   <rect x="0" y="0" width="375" height="525" rx="20" ry="20" fill="#F7F4EF"/>
-  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="1"/>
+  <rect x="4" y="4" width="367" height="517" rx="18" ry="18" fill="none" stroke="#C9A24D" stroke-width="2"/>
 
   <!-- Top-left rank and suit -->
-  <g transform="translate(25, 50)">
+  <g transform="translate(25, 90)">
     <text x="0" y="0" font-family="Georgia, serif" font-size="96" font-weight="bold" fill="#8B1E1E">A</text>
     <polygon points="15,15 25,32 15,49 5,32" fill="#8B1E1E" transform="translate(2, 10)"/>
   </g>
 
-  <!-- Central large diamond with halo effect -->
-  <g transform="translate(187.5, 262.5)">
-    <!-- Outer golden halo -->
-    <polygon points="0,-100 75,0 0,100 -75,0" fill="none" stroke="url(#goldShine)" stroke-width="3"/>
-    <!-- Second halo ring -->
-    <polygon points="0,-85 65,0 0,85 -65,0" fill="none" stroke="#C9A24D" stroke-width="1" opacity="0.4"/>
-    <!-- Large diamond with gold trim -->
-    <polygon points="0,-70 55,0 0,70 -55,0" fill="#8B1E1E" stroke="#C9A24D" stroke-width="3"/>
+  <!-- Central large diamond - PROMINENT -->
+  <g transform="translate(187.5, 290)">
+    <!-- Outer golden glow -->
+    <polygon points="0,-140 110,0 0,140 -110,0" fill="none" stroke="url(#goldShine)" stroke-width="5"/>
+    <polygon points="0,-125 98,0 0,125 -98,0" fill="none" stroke="#C9A24D" stroke-width="2" opacity="0.6"/>
+
+    <!-- Large diamond with bold gold trim -->
+    <polygon points="0,-110 85,0 0,110 -85,0" fill="#8B1E1E" stroke="#C9A24D" stroke-width="6"/>
+
     <!-- Diamond highlight -->
-    <polygon points="-15,-35 -5,-35 -25,0" fill="#F7F4EF" opacity="0.3"/>
+    <polygon points="-25,-55 -10,-55 -45,0" fill="#F7F4EF" opacity="0.3"/>
   </g>
 </svg>

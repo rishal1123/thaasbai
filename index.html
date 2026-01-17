@@ -47,7 +47,7 @@
     <link rel="apple-touch-startup-image" href="splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
 
     <title>Dhiha Ei - Maldivian Card Game</title>
-    <link rel="stylesheet" href="css/styles.css?v=23">
+    <link rel="stylesheet" href="css/styles.css?v=26">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -161,17 +161,32 @@
 
             <!-- Round Score displays -->
             <div id="score-panel">
-                <div class="round-label">Current Round</div>
                 <div class="team-score" id="team0-score">
                     <span class="team-label">Your Team</span>
-                    <span class="tens-count">10s: <span id="team0-tens">0</span></span>
-                    <span class="tricks-count">Tricks: <span id="team0-tricks">0</span></span>
+                    <div class="score-stats">
+                        <span class="tens-count">
+                            <span>10s</span>
+                            <span id="team0-tens">0</span>
+                        </span>
+                        <span class="tricks-count">
+                            <span>Tricks</span>
+                            <span id="team0-tricks">0</span>
+                        </span>
+                    </div>
                     <div class="collected-tens" id="collected-tens-0"></div>
                 </div>
                 <div class="team-score" id="team1-score">
-                    <span class="team-label">Opponent Team</span>
-                    <span class="tens-count">10s: <span id="team1-tens">0</span></span>
-                    <span class="tricks-count">Tricks: <span id="team1-tricks">0</span></span>
+                    <span class="team-label">Opponents</span>
+                    <div class="score-stats">
+                        <span class="tens-count">
+                            <span>10s</span>
+                            <span id="team1-tens">0</span>
+                        </span>
+                        <span class="tricks-count">
+                            <span>Tricks</span>
+                            <span id="team1-tricks">0</span>
+                        </span>
+                    </div>
                     <div class="collected-tens" id="collected-tens-1"></div>
                 </div>
             </div>
@@ -193,6 +208,41 @@
                 </div>
                 <div class="player-hand" id="hand-left"></div>
                 <div class="player-label">Opponent</div>
+                <!-- Coke Can SVG -->
+                <div class="table-item coke-can">
+                    <svg viewBox="0 0 40 80" width="40" height="80">
+                        <!-- Can body -->
+                        <defs>
+                            <linearGradient id="cokeRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#8B0000"/>
+                                <stop offset="30%" style="stop-color:#DC143C"/>
+                                <stop offset="50%" style="stop-color:#FF0000"/>
+                                <stop offset="70%" style="stop-color:#DC143C"/>
+                                <stop offset="100%" style="stop-color:#8B0000"/>
+                            </linearGradient>
+                            <linearGradient id="canTop" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#E8E8E8"/>
+                                <stop offset="50%" style="stop-color:#C0C0C0"/>
+                                <stop offset="100%" style="stop-color:#A0A0A0"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Can body -->
+                        <rect x="4" y="12" width="32" height="60" rx="3" fill="url(#cokeRed)"/>
+                        <!-- Top rim -->
+                        <ellipse cx="20" cy="12" rx="16" ry="4" fill="url(#canTop)"/>
+                        <ellipse cx="20" cy="12" rx="12" ry="3" fill="#888"/>
+                        <!-- Pull tab -->
+                        <ellipse cx="20" cy="10" rx="6" ry="2" fill="#C0C0C0"/>
+                        <rect x="17" y="6" width="6" height="4" rx="1" fill="#A0A0A0"/>
+                        <!-- White wave design -->
+                        <path d="M4 35 Q12 30 20 35 Q28 40 36 35" stroke="white" stroke-width="3" fill="none" opacity="0.9"/>
+                        <path d="M4 42 Q12 47 20 42 Q28 37 36 42" stroke="white" stroke-width="2" fill="none" opacity="0.7"/>
+                        <!-- Bottom rim -->
+                        <ellipse cx="20" cy="72" rx="16" ry="3" fill="#A0A0A0"/>
+                        <!-- Highlight -->
+                        <rect x="8" y="20" width="4" height="40" rx="2" fill="white" opacity="0.2"/>
+                    </svg>
+                </div>
             </div>
 
             <div id="player-right" class="player-area opponent">
@@ -202,6 +252,34 @@
                 </div>
                 <div class="player-hand" id="hand-right"></div>
                 <div class="player-label">Opponent</div>
+                <!-- Chips Packet SVG -->
+                <div class="table-item chips-packet">
+                    <svg viewBox="0 0 50 70" width="50" height="70">
+                        <defs>
+                            <linearGradient id="chipsYellow" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#B8860B"/>
+                                <stop offset="30%" style="stop-color:#FFD700"/>
+                                <stop offset="50%" style="stop-color:#FFEA00"/>
+                                <stop offset="70%" style="stop-color:#FFD700"/>
+                                <stop offset="100%" style="stop-color:#B8860B"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Packet body -->
+                        <path d="M8 15 L5 60 Q5 65 10 65 L40 65 Q45 65 45 60 L42 15 Q42 10 37 8 L25 5 L13 8 Q8 10 8 15Z" fill="url(#chipsYellow)"/>
+                        <!-- Top crimp -->
+                        <path d="M10 12 Q15 8 25 5 Q35 8 40 12" stroke="#B8860B" stroke-width="2" fill="none"/>
+                        <path d="M12 15 L14 12 L16 15 L18 12 L20 15 L22 12 L24 15 L26 12 L28 15 L30 12 L32 15 L34 12 L36 15 L38 12" stroke="#8B4513" stroke-width="1.5" fill="none"/>
+                        <!-- Red banner -->
+                        <rect x="7" y="25" width="36" height="18" fill="#DC143C" rx="2"/>
+                        <text x="25" y="37" font-family="Arial Black, sans-serif" font-size="8" fill="white" text-anchor="middle" font-weight="bold">CHIPS</text>
+                        <!-- Chip illustrations -->
+                        <ellipse cx="18" cy="52" rx="6" ry="4" fill="#DEB887" stroke="#8B4513" stroke-width="0.5"/>
+                        <ellipse cx="32" cy="50" rx="5" ry="3" fill="#D2B48C" stroke="#8B4513" stroke-width="0.5"/>
+                        <ellipse cx="25" cy="55" rx="6" ry="4" fill="#DEB887" stroke="#8B4513" stroke-width="0.5"/>
+                        <!-- Highlight -->
+                        <path d="M12 20 L10 55" stroke="white" stroke-width="2" opacity="0.3"/>
+                    </svg>
+                </div>
             </div>
 
             <!-- Center play area -->
@@ -239,9 +317,33 @@
 
         <!-- Table Sponsor Areas -->
         <!-- Center Table Sponsor - for main sponsor logo -->
+        <!-- Ooredoo Maldives Sponsor -->
         <div id="table-sponsor" class="sponsor-area center-sponsor">
-            <div class="sponsor-logo">
-                <span class="sponsor-placeholder">SPONSOR</span>
+            <div class="sponsor-logo ooredoo">
+                <svg viewBox="0 0 200 80" width="200" height="80">
+                    <!-- Ooredoo Logo -->
+                    <defs>
+                        <linearGradient id="ooredooRed" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E60012"/>
+                            <stop offset="100%" style="stop-color:#C4000F"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Ooredoo Symbol - Abstract circular design -->
+                    <g transform="translate(15, 12)">
+                        <!-- Main circle -->
+                        <circle cx="28" cy="28" r="26" fill="url(#ooredooRed)"/>
+                        <!-- Inner cutout circles creating the design -->
+                        <circle cx="20" cy="22" r="10" fill="white"/>
+                        <circle cx="36" cy="22" r="8" fill="white"/>
+                        <circle cx="28" cy="38" r="7" fill="white"/>
+                        <!-- Connecting white space -->
+                        <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none"/>
+                    </g>
+                    <!-- "ooredoo" text -->
+                    <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#E60012" letter-spacing="-1">ooredoo</text>
+                    <!-- "MALDIVES" text -->
+                    <text x="77" y="65" font-family="Arial, sans-serif" font-size="12" fill="#E60012" letter-spacing="2">MALDIVES</text>
+                </svg>
             </div>
         </div>
 
@@ -399,7 +501,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=24"></script>
+    <script src="js/bundle.js?v=25"></script>
 
     <!-- PWA Install Handler -->
     <script>
