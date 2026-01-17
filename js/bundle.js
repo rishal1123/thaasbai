@@ -2597,13 +2597,9 @@
             // Set up game for multiplayer
             this.game.setMultiplayerMode(this.syncManager, localPosition, playerNames);
 
-            // If host, cards are already dealt
-            if (this.lobbyManager.isHost()) {
-                // Cards already dealt in startMultiplayerGame
-            } else {
-                // Non-host: reconstruct hands from server data
-                this.reconstructHandsFromData(data.hands);
-            }
+            // Reconstruct hands from server data for ALL players (including host)
+            // This is needed because setMultiplayerMode reinitializes players
+            this.reconstructHandsFromData(data.hands);
 
             // Set up round started listener for subsequent rounds
             this.syncManager.onRoundStarted = (gameState, hands) => {
