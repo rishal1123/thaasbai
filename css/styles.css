@@ -2009,4 +2009,40 @@ body {
         width: 100%;
         height: 100%;
     }
+
+    /* Player's hand cards - 1.5x larger for touch */
+    #player-bottom .card,
+    #hand-bottom .card {
+        width: calc(13.5 * var(--scale));
+        height: calc(19.35 * var(--scale));
+        border-radius: calc(1.5 * var(--scale));
+    }
+
+    /* Played cards in center - 1.5x larger */
+    .played-card {
+        width: calc(10.5 * var(--scale));
+        height: calc(15 * var(--scale));
+    }
+
+    .played-card .card {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Base card size - 1.5x larger */
+    .card {
+        width: calc(10.5 * var(--scale));
+        height: calc(15 * var(--scale));
+    }
+
+    /* Adjust play area for larger cards */
+    #play-area {
+        width: calc(42 * var(--scale));
+        height: calc(42 * var(--scale));
+    }
+
+    /* Adjust card overlap in hand */
+    .player-hand .card {
+        margin: 0 calc(-2.5 * var(--scale));
+    }
 }
