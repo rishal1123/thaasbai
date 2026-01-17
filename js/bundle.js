@@ -1,6 +1,7 @@
 /**
- * Dhiha Ei - Maldivian Card Game
+ * Thaasbai - Maldivian Card Games
  * Bundled version with multi-round scoring and multiplayer support
+ * Currently includes: Dhiha Ei, Digu (coming soon)
  */
 
 (function() {
@@ -1723,6 +1724,22 @@
         }
 
         setupLobbyEventListeners() {
+            // Game Selection - Dhiha Ei card
+            const dhihaEiCard = document.querySelector('.game-card[data-game="dhiha-ei"]');
+            if (dhihaEiCard) {
+                dhihaEiCard.querySelector('.game-select-btn').addEventListener('click', () => {
+                    this.selectGame('dhiha-ei');
+                });
+            }
+
+            // Back to games button
+            const backBtn = document.getElementById('back-to-games');
+            if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                    this.showGameSelection();
+                });
+            }
+
             // Play vs AI button
             document.getElementById('play-ai-btn').addEventListener('click', () => {
                 this.startSinglePlayerGame();
@@ -2726,13 +2743,41 @@
             this.hideMultiplayerStatus();
         }
 
-        // Show lobby overlay
-        showLobby() {
-            this.lobbyOverlay.classList.remove('hidden');
-            this.lobbyMenu.classList.remove('hidden');
+        // Show game selection screen
+        showGameSelection() {
+            const gameSelection = document.getElementById('game-selection');
+            const gameLobby = document.getElementById('game-lobby');
+
+            if (gameSelection) gameSelection.classList.remove('hidden');
+            if (gameLobby) gameLobby.classList.add('hidden');
+
             this.waitingRoom.classList.add('hidden');
             this.nameInputModal.classList.add('hidden');
+            document.getElementById('matchmaking-screen').classList.add('hidden');
             this.hideError();
+        }
+
+        // Select a game and show its lobby
+        selectGame(gameName) {
+            const gameSelection = document.getElementById('game-selection');
+            const gameLobby = document.getElementById('game-lobby');
+            const selectedGameTitle = document.getElementById('selected-game-title');
+            const currentGameName = document.getElementById('current-game-name');
+
+            this.selectedGame = gameName;
+
+            // Update titles based on selected game
+            if (gameName === 'dhiha-ei') {
+                if (selectedGameTitle) selectedGameTitle.textContent = 'Dhiha Ei';
+                if (currentGameName) currentGameName.textContent = 'Dhiha Ei';
+            } else if (gameName === 'digu') {
+                if (selectedGameTitle) selectedGameTitle.textContent = 'Digu';
+                if (currentGameName) currentGameName.textContent = 'Digu';
+            }
+
+            // Hide game selection, show game lobby
+            if (gameSelection) gameSelection.classList.add('hidden');
+            if (gameLobby) gameLobby.classList.remove('hidden');
 
             // Check if this is first load and prompt for name
             if (!this.playerName) {
@@ -2740,6 +2785,12 @@
                     // Name saved, continue showing lobby
                 });
             }
+        }
+
+        // Show lobby overlay
+        showLobby() {
+            this.lobbyOverlay.classList.remove('hidden');
+            this.showGameSelection();
         }
 
         // Hide lobby overlay
@@ -3250,16 +3301,16 @@
     // ============================================
 
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('Dhiha Ei - Initializing game...');
+        console.log('Thaasbai - Initializing game...');
 
         const game = new Game();
         const ui = new UIManager(game);
         ui.init();
 
-        console.log('Dhiha Ei - Game initialized!');
+        console.log('Thaasbai - Game initialized!');
 
         // Expose for debugging/development
-        window.dhihaEi = {
+        window.thaasbai = {
             game,
             ui,
             getState: () => game.getGameState(),

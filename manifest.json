@@ -1,7 +1,7 @@
 {
-  "name": "Dhiha Ei - Maldivian Card Game",
-  "short_name": "Dhiha Ei",
-  "description": "Traditional Maldivian card game with multiplayer support",
+  "name": "Thaasbai - Maldivian Card Games",
+  "short_name": "Thaasbai",
+  "description": "Collection of traditional Maldivian card games including Dhiha Ei and Digu",
   "start_url": "/",
   "display": "fullscreen",
   "orientation": "landscape",

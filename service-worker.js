@@ -1,11 +1,11 @@
 /**
- * Dhiha Ei - Service Worker
+ * Thaasbai - Service Worker
  * Enables offline play and auto-updates
  */
 
 // IMPORTANT: Increment this version to trigger update
-const CACHE_VERSION = 20;
-const CACHE_NAME = `dhiha-ei-v${CACHE_VERSION}`;
+const CACHE_VERSION = 21;
+const CACHE_NAME = `thaasbai-v${CACHE_VERSION}`;
 const OFFLINE_URL = '/';
 
 // Assets to cache for offline use
@@ -48,7 +48,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((cacheName) => cacheName.startsWith('dhiha-ei-') && cacheName !== CACHE_NAME)
+            .filter((cacheName) => (cacheName.startsWith('thaasbai-') || cacheName.startsWith('dhiha-ei-')) && cacheName !== CACHE_NAME)
             .map((cacheName) => {
               console.log('[ServiceWorker] Deleting old cache:', cacheName);
               return caches.delete(cacheName);

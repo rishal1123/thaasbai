@@ -1,6 +1,7 @@
 """
-Dhiha Ei - Multiplayer Game Server
+Thaasbai - Multiplayer Game Server
 Python WebSocket server using Flask-SocketIO
+Supports: Dhiha Ei, Digu (coming soon)
 """
 
 import os
@@ -762,5 +763,5 @@ from flask import request
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    print(f'Starting Dhiha Ei server on port {port}...')
+    print(f'Starting Thaasbai server on port {port}...')
     socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)

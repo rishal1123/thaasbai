@@ -11,7 +11,7 @@
     <!-- iOS PWA settings - landscape orientation -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Dhiha Ei">
+    <meta name="apple-mobile-web-app-title" content="Thaasbai">
     <meta name="apple-mobile-web-app-orientations" content="landscape">
 
     <!-- Android PWA settings -->
@@ -46,8 +46,8 @@
     <link rel="apple-touch-startup-image" href="splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
     <link rel="apple-touch-startup-image" href="splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
 
-    <title>Dhiha Ei - Maldivian Card Game</title>
-    <link rel="stylesheet" href="css/styles.css?v=29">
+    <title>Thaasbai - Maldivian Card Games</title>
+    <link rel="stylesheet" href="css/styles.css?v=30">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -122,7 +122,8 @@
 <body>
     <div id="game-container">
         <header id="game-header">
-            <h1>Dhiha Ei</h1>
+            <h1>Thaasbai</h1>
+            <div id="current-game-name">Dhiha Ei</div>
             <div id="game-status"></div>
         </header>
 
@@ -369,18 +370,46 @@
     <!-- Lobby Overlay -->
     <div id="lobby-overlay">
         <div id="lobby-content">
-            <h2 class="lobby-title">Dhiha Ei</h2>
-            <p class="lobby-subtitle">Maldivian Card Game</p>
+            <!-- Game Selection Screen -->
+            <div id="game-selection">
+                <h2 class="lobby-title">Thaasbai</h2>
+                <p class="lobby-subtitle">Maldivian Card Games</p>
 
-            <!-- Main Menu -->
-            <div id="lobby-menu">
-                <button id="play-ai-btn" class="lobby-btn primary">Play vs AI</button>
-                <div class="lobby-divider"><span>or play online</span></div>
-                <button id="quick-match-btn" class="lobby-btn primary">Quick Match</button>
-                <button id="create-room-btn" class="lobby-btn">Create Private Room</button>
-                <div class="join-section">
-                    <input type="text" id="room-code-input" placeholder="Room Code" maxlength="6" autocomplete="off">
-                    <button id="join-room-btn" class="lobby-btn">Join</button>
+                <div class="game-cards">
+                    <div class="game-card" data-game="dhiha-ei">
+                        <div class="game-card-icon">🃏</div>
+                        <h3 class="game-card-title">Dhiha Ei</h3>
+                        <p class="game-card-desc">Classic trick-taking game for 4 players in teams</p>
+                        <button class="game-select-btn">Play</button>
+                    </div>
+                    <div class="game-card coming-soon" data-game="digu">
+                        <div class="coming-soon-badge">Coming Soon</div>
+                        <div class="game-card-icon">🎴</div>
+                        <h3 class="game-card-title">Digu</h3>
+                        <p class="game-card-desc">Strategic card matching game</p>
+                        <button class="game-select-btn" disabled>Coming Soon</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Lobby (shown after selecting a game) -->
+            <div id="game-lobby" class="hidden">
+                <div class="lobby-header">
+                    <button id="back-to-games" class="back-btn">← Games</button>
+                    <h2 class="lobby-title" id="selected-game-title">Dhiha Ei</h2>
+                </div>
+                <p class="lobby-subtitle">Maldivian Card Game</p>
+
+                <!-- Main Menu -->
+                <div id="lobby-menu">
+                    <button id="play-ai-btn" class="lobby-btn primary">Play vs AI</button>
+                    <div class="lobby-divider"><span>or play online</span></div>
+                    <button id="quick-match-btn" class="lobby-btn primary">Quick Match</button>
+                    <button id="create-room-btn" class="lobby-btn">Create Private Room</button>
+                    <div class="join-section">
+                        <input type="text" id="room-code-input" placeholder="Room Code" maxlength="6" autocomplete="off">
+                        <button id="join-room-btn" class="lobby-btn">Join</button>
+                    </div>
                 </div>
             </div>
 
@@ -487,21 +516,21 @@
                 </svg>
             </div>
             <h2>Rotate Your Device</h2>
-            <p>Dhiha Ei is best played in landscape mode</p>
+            <p>Thaasbai is best played in landscape mode</p>
         </div>
     </div>
 
     <!-- Install PWA Prompt -->
     <div id="install-prompt" class="hidden">
         <div class="install-content">
-            <span>Install Dhiha Ei for the best experience</span>
+            <span>Install Thaasbai for the best experience</span>
             <button id="install-btn" class="install-btn">Install</button>
             <button id="install-dismiss" class="install-dismiss">&times;</button>
         </div>
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=25"></script>
+    <script src="js/bundle.js?v=26"></script>
 
     <!-- PWA Install Handler -->
     <script>
