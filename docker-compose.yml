@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  dhiha-ei:
+  thaasbai:
     build: .
-    container_name: dhiha-ei
+    container_name: thaasbai
     ports:
       - "5002:5002"
     environment:

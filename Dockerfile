@@ -1,4 +1,4 @@
-# Dhiha Ei - Maldivian Card Game
+# Thaasbai - Maldivian Card Games
 # Docker container for Unraid deployment
 
 FROM python:3.11-slim
