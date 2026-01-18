@@ -1961,6 +1961,45 @@
             if (tableCallout) tableCallout.classList.add('hidden');
         }
 
+        // Start random jumping animation for food items
+        startFoodItemJumps() {
+            if (this.jumpInterval) return;
+
+            const drinkItem = document.querySelector('.drink-item');
+            const foodItem = document.querySelector('.food-item');
+
+            const triggerJump = (item) => {
+                if (item) {
+                    item.classList.add('jumping');
+                    setTimeout(() => item.classList.remove('jumping'), 400);
+                }
+            };
+
+            // Random jumps every 3-8 seconds
+            const scheduleNextJump = () => {
+                const delay = 3000 + Math.random() * 5000;
+                this.jumpTimeout = setTimeout(() => {
+                    // Randomly pick drink or food
+                    if (Math.random() < 0.5) {
+                        triggerJump(drinkItem);
+                    } else {
+                        triggerJump(foodItem);
+                    }
+                    scheduleNextJump();
+                }, delay);
+            };
+
+            scheduleNextJump();
+        }
+
+        // Stop food item jumps
+        stopFoodItemJumps() {
+            if (this.jumpTimeout) {
+                clearTimeout(this.jumpTimeout);
+                this.jumpTimeout = null;
+            }
+        }
+
         // Handle swap player button click
         async handleSwapPlayer(position) {
             if (!this.lobbyManager || !this.lobbyManager.isHost()) return;
@@ -3110,6 +3149,7 @@
             this.isProcessing = false;
             this.humanCardsPlayedThisGame = 0;
             this.resetSponsorTooltips();
+            this.startFoodItemJumps();
             this.game.startNewMatch();
             this.renderer.clearPlayedCards();
             this.renderer.clearCollectedTens();

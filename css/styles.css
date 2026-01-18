@@ -1170,6 +1170,20 @@ body {
     width: calc(16 * var(--scale));
     height: calc(20 * var(--scale));
     position: relative;
+    transition: transform 0.1s ease;
+}
+
+.drink-item.jumping,
+.food-item.jumping {
+    animation: item-jump 0.4s ease;
+}
+
+@keyframes item-jump {
+    0% { transform: translateY(0); }
+    30% { transform: translateY(calc(-2 * var(--scale))); }
+    50% { transform: translateY(calc(-3 * var(--scale))); }
+    70% { transform: translateY(calc(-2 * var(--scale))); }
+    100% { transform: translateY(0); }
 }
 
 .drink-body {
