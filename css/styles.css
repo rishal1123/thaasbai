@@ -1191,43 +1191,11 @@ body {
     100% { transform: translateY(0); }
 }
 
-.drink-body {
-    width: 100%;
-    height: 80%;
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    border-radius: calc(1 * var(--scale));
-    position: absolute;
-    bottom: 0;
-}
-
-.drink-straw {
-    width: calc(0.8 * var(--scale));
-    height: 50%;
-    background: #fff;
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%) rotate(-15deg);
-    border-radius: calc(0.4 * var(--scale));
-}
-
-.food-bowl {
-    width: 100%;
-    height: 60%;
-    background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
-    border-radius: 0 0 50% 50%;
-    position: absolute;
-    bottom: 0;
-}
-
+.drink-body,
+.drink-straw,
+.food-bowl,
 .food-contents {
-    width: 80%;
-    height: 40%;
-    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
-    border-radius: 50% 50% 0 0;
-    position: absolute;
-    bottom: 55%;
-    left: 10%;
+    display: none;
 }
 
 .sponsor-label {
