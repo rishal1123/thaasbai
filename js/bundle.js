@@ -959,6 +959,707 @@
     }
 
     // ============================================
+    // DIGU GAME - Rules Class
+    // ============================================
+
+    class DiGuRules {
+        // Card values for scoring: A=15, J/Q/K=10, others=face value
+        static getCardValue(card) {
+            if (card.rank === 14) return 15; // Ace
+            if (card.rank >= 11) return 10;  // J, Q, K
+            return card.rank;                 // 2-10
+        }
+
+        // Calculate total hand value (for penalty scoring)
+        static getHandValue(cards) {
+            return cards.reduce((sum, card) => sum + DiGuRules.getCardValue(card), 0);
+        }
+
+        // Check if cards form a valid set (3-4 same rank, different suits)
+        static isValidSet(cards) {
+            if (cards.length < 3 || cards.length > 4) return false;
+
+            const rank = cards[0].rank;
+            const suits = new Set();
+
+            for (const card of cards) {
+                if (card.rank !== rank) return false;
+                if (suits.has(card.suit)) return false; // Duplicate suit
+                suits.add(card.suit);
+            }
+
+            return true;
+        }
+
+        // Check if cards form a valid run (3+ consecutive same suit, Ace HIGH only)
+        static isValidRun(cards) {
+            if (cards.length < 3) return false;
+
+            const suit = cards[0].suit;
+            const ranks = [];
+
+            for (const card of cards) {
+                if (card.suit !== suit) return false;
+                ranks.push(card.rank);
+            }
+
+            // Sort ranks ascending
+            ranks.sort((a, b) => a - b);
+
+            // Check for consecutive ranks
+            for (let i = 1; i < ranks.length; i++) {
+                if (ranks[i] !== ranks[i - 1] + 1) return false;
+            }
+
+            // Ace (14) can only be high: Q-K-A is valid, A-2-3 is NOT valid
+            // Check if we have an invalid A-2 wrap (Ace followed by 2)
+            if (ranks.includes(14) && ranks.includes(2)) {
+                return false; // No wrap-around allowed
+            }
+
+            return true;
+        }
+
+        // Check if cards form a valid meld (either set or run)
+        static isValidMeld(cards) {
+            if (!cards || cards.length < 3) return false;
+            return DiGuRules.isValidSet(cards) || DiGuRules.isValidRun(cards);
+        }
+
+        // Check if melds form a winning hand (3+3+4 structure, all valid)
+        static isWinningHand(melds) {
+            if (!melds || melds.length !== 3) return false;
+
+            // Check each meld is valid
+            for (const meld of melds) {
+                if (!DiGuRules.isValidMeld(meld)) return false;
+            }
+
+            // Check structure: exactly one 4-card meld, two 3-card melds
+            const lengths = melds.map(m => m.length).sort((a, b) => a - b);
+            return lengths[0] === 3 && lengths[1] === 3 && lengths[2] === 4;
+        }
+
+        // Find all possible melds in a hand (for AI assistance)
+        static findPossibleMelds(cards) {
+            const melds = [];
+
+            // Find sets (same rank)
+            const byRank = {};
+            cards.forEach(card => {
+                if (!byRank[card.rank]) byRank[card.rank] = [];
+                byRank[card.rank].push(card);
+            });
+
+            for (const rank in byRank) {
+                const rankCards = byRank[rank];
+                if (rankCards.length >= 3) {
+                    // 3-card sets
+                    if (rankCards.length === 3) {
+                        melds.push({ type: 'set', cards: [...rankCards] });
+                    } else if (rankCards.length === 4) {
+                        // 4-card set
+                        melds.push({ type: 'set', cards: [...rankCards] });
+                        // Also add all 3-card combinations
+                        for (let i = 0; i < 4; i++) {
+                            const combo = rankCards.filter((_, idx) => idx !== i);
+                            melds.push({ type: 'set', cards: combo });
+                        }
+                    }
+                }
+            }
+
+            // Find runs (consecutive same suit)
+            const bySuit = {};
+            cards.forEach(card => {
+                if (!bySuit[card.suit]) bySuit[card.suit] = [];
+                bySuit[card.suit].push(card);
+            });
+
+            for (const suit in bySuit) {
+                const suitCards = bySuit[suit].sort((a, b) => a.rank - b.rank);
+
+                // Find all consecutive sequences of 3+ cards
+                for (let start = 0; start < suitCards.length - 2; start++) {
+                    let run = [suitCards[start]];
+
+                    for (let i = start + 1; i < suitCards.length; i++) {
+                        if (suitCards[i].rank === run[run.length - 1].rank + 1) {
+                            run.push(suitCards[i]);
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if (run.length >= 3) {
+                        // Add all valid run lengths (3, 4, 5, etc.)
+                        for (let len = 3; len <= run.length; len++) {
+                            for (let offset = 0; offset <= run.length - len; offset++) {
+                                melds.push({
+                                    type: 'run',
+                                    cards: run.slice(offset, offset + len)
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return melds;
+        }
+    }
+
+    // ============================================
+    // DIGU GAME - Player Class
+    // ============================================
+
+    class DiGuPlayer {
+        constructor(position, isHuman = false) {
+            this.position = position;
+            this.isHuman = isHuman;
+            this.hand = [];
+            this.arrangedMelds = [[], [], []]; // 3 meld slots
+            this.name = isHuman ? 'You' : MALDIVIAN_AI_NAMES[position] || `Player ${position + 1}`;
+        }
+
+        setHand(cards) {
+            this.hand = [...cards];
+            this.arrangedMelds = [[], [], []];
+            this.sortHand();
+        }
+
+        sortHand() {
+            const suitOrder = { spades: 0, hearts: 1, clubs: 2, diamonds: 3 };
+            this.hand.sort((a, b) => {
+                if (suitOrder[a.suit] !== suitOrder[b.suit]) {
+                    return suitOrder[a.suit] - suitOrder[b.suit];
+                }
+                return b.rank - a.rank;
+            });
+        }
+
+        addCard(card) {
+            // Add new card to end (rightmost position) - don't rearrange existing cards
+            this.hand.push(card);
+        }
+
+        removeCard(card) {
+            const index = this.hand.findIndex(c => c.suit === card.suit && c.rank === card.rank);
+            if (index !== -1) {
+                return this.hand.splice(index, 1)[0];
+            }
+            return null;
+        }
+
+        hasCard(card) {
+            return this.hand.some(c => c.suit === card.suit && c.rank === card.rank);
+        }
+
+        // Arrange cards into a meld slot
+        arrangeMeld(slotIndex, cards) {
+            if (slotIndex < 0 || slotIndex > 2) return false;
+            this.arrangedMelds[slotIndex] = [...cards];
+            return true;
+        }
+
+        // Clear a meld slot
+        clearMeld(slotIndex) {
+            if (slotIndex < 0 || slotIndex > 2) return;
+            this.arrangedMelds[slotIndex] = [];
+        }
+
+        // Get all cards currently in melds
+        getCardsInMelds() {
+            const cards = [];
+            for (const meld of this.arrangedMelds) {
+                cards.push(...meld);
+            }
+            return cards;
+        }
+
+        // Get cards not yet assigned to melds
+        getUnassignedCards() {
+            const meldCards = this.getCardsInMelds();
+            return this.hand.filter(card =>
+                !meldCards.some(mc => mc.suit === card.suit && mc.rank === card.rank)
+            );
+        }
+
+        // Check if player can declare Digu
+        canDeclareDigu() {
+            // Must have 10 or 11 cards (11 if just drew, will discard the extra)
+            if (this.hand.length < 10 || this.hand.length > 11) return false;
+
+            // Get melds from hand arrangement (flexible: 4+3+3, 3+4+3, or 3+3+4)
+            const result = this.getMeldsFromHand();
+            // If valid is explicitly false, no valid structure was found
+            if (result.valid === false) return false;
+            return DiGuRules.isWinningHand(result.melds);
+        }
+
+        // Get melds based on hand arrangement - flexible structure (3+3+4, 3+4+3, or 4+3+3)
+        getMeldsFromHand() {
+            // Use first 10 cards for melds (11th card is discard)
+            const cards = this.hand.slice(0, 10);
+            if (cards.length < 10) return { melds: [[], [], []], structure: null, boundaries: [] };
+
+            // Try different meld structures from left to right
+            const structures = [
+                [4, 3, 3],  // 4+3+3
+                [3, 4, 3],  // 3+4+3
+                [3, 3, 4]   // 3+3+4
+            ];
+
+            for (const structure of structures) {
+                const meld1 = cards.slice(0, structure[0]);
+                const meld2 = cards.slice(structure[0], structure[0] + structure[1]);
+                const meld3 = cards.slice(structure[0] + structure[1], 10);
+
+                // Check if all three form valid melds
+                if (DiGuRules.isValidMeld(meld1) &&
+                    DiGuRules.isValidMeld(meld2) &&
+                    DiGuRules.isValidMeld(meld3)) {
+                    return {
+                        melds: [meld1, meld2, meld3],
+                        structure: structure,
+                        boundaries: [structure[0], structure[0] + structure[1]]
+                    };
+                }
+            }
+
+            // No valid structure found - return current arrangement for display
+            // Default to 3+3+4 for visual grouping
+            return {
+                melds: [cards.slice(0, 3), cards.slice(3, 6), cards.slice(6, 10)],
+                structure: [3, 3, 4],
+                boundaries: [3, 6],
+                valid: false
+            };
+        }
+
+        // Get hand value for scoring
+        getHandValue() {
+            return DiGuRules.getHandValue(this.hand);
+        }
+
+        get cardCount() {
+            return this.hand.length;
+        }
+    }
+
+    // ============================================
+    // DIGU GAME - AI Player Class
+    // ============================================
+
+    class DiGuAI extends DiGuPlayer {
+        constructor(position) {
+            super(position, false);
+        }
+
+        // Choose whether to draw from stock or discard
+        chooseDrawSource(discardTopCard, hand) {
+            if (!discardTopCard) return 'stock';
+
+            // Check if discard top card helps form melds
+            const currentMelds = DiGuRules.findPossibleMelds(hand);
+            const withDiscard = DiGuRules.findPossibleMelds([...hand, discardTopCard]);
+
+            // If adding discard creates more/better melds, take it
+            if (withDiscard.length > currentMelds.length) {
+                return 'discard';
+            }
+
+            // Check if it completes a set
+            const sameRank = hand.filter(c => c.rank === discardTopCard.rank);
+            if (sameRank.length >= 2) {
+                return 'discard';
+            }
+
+            // Check if it extends a run
+            const sameSuit = hand.filter(c => c.suit === discardTopCard.suit);
+            const ranks = sameSuit.map(c => c.rank);
+            if (ranks.includes(discardTopCard.rank - 1) || ranks.includes(discardTopCard.rank + 1)) {
+                return 'discard';
+            }
+
+            return 'stock';
+        }
+
+        // Choose which card to discard
+        chooseDiscard(hand) {
+            // Find cards that are part of melds
+            const melds = DiGuRules.findPossibleMelds(hand);
+            const cardsInMelds = new Set();
+
+            melds.forEach(meld => {
+                meld.cards.forEach(card => {
+                    cardsInMelds.add(card.id);
+                });
+            });
+
+            // Prefer discarding cards not in any meld
+            const isolatedCards = hand.filter(c => !cardsInMelds.has(c.id));
+
+            if (isolatedCards.length > 0) {
+                // Discard highest value isolated card
+                isolatedCards.sort((a, b) => DiGuRules.getCardValue(b) - DiGuRules.getCardValue(a));
+                return isolatedCards[0];
+            }
+
+            // If all cards are in melds, discard highest value card
+            const sorted = [...hand].sort((a, b) => DiGuRules.getCardValue(b) - DiGuRules.getCardValue(a));
+            return sorted[0];
+        }
+
+        // Automatically arrange melds for AI
+        autoArrangeMelds() {
+            const melds = DiGuRules.findPossibleMelds(this.hand);
+
+            // Try to find a valid 3+3+4 combination
+            for (const meld1 of melds) {
+                if (meld1.cards.length === 3) {
+                    const remaining1 = this.hand.filter(c =>
+                        !meld1.cards.some(mc => mc.suit === c.suit && mc.rank === c.rank)
+                    );
+                    const melds2 = DiGuRules.findPossibleMelds(remaining1);
+
+                    for (const meld2 of melds2) {
+                        if (meld2.cards.length === 3) {
+                            const remaining2 = remaining1.filter(c =>
+                                !meld2.cards.some(mc => mc.suit === c.suit && mc.rank === c.rank)
+                            );
+
+                            if (remaining2.length === 4 && DiGuRules.isValidMeld(remaining2)) {
+                                this.arrangedMelds = [meld1.cards, meld2.cards, remaining2];
+                                return true;
+                            }
+                        }
+                        if (meld2.cards.length === 4) {
+                            const remaining2 = remaining1.filter(c =>
+                                !meld2.cards.some(mc => mc.suit === c.suit && mc.rank === c.rank)
+                            );
+
+                            if (remaining2.length === 3 && DiGuRules.isValidMeld(remaining2)) {
+                                this.arrangedMelds = [meld1.cards, remaining2, meld2.cards];
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        // Check if AI should declare Digu
+        shouldDeclareDigu() {
+            return this.autoArrangeMelds();
+        }
+    }
+
+    // ============================================
+    // DIGU GAME - Main Game Class
+    // ============================================
+
+    class DiGuGame {
+        constructor() {
+            this.players = [];
+            this.stockPile = [];
+            this.discardPile = [];
+            this.currentPlayerIndex = 0;
+            this.gamePhase = 'waiting'; // waiting, draw, meld, discard
+            this.numPlayers = 4; // Always 4 players in teams
+            this.gameOver = false;
+            this.winner = null;
+            this.winningTeam = null;
+            this.scores = [];
+            this.teamScores = [0, 0]; // Team A (0,2) and Team B (1,3)
+
+            // Teams: Player 0 & 2 = Team A, Player 1 & 3 = Team B
+            this.teams = {
+                A: [0, 2], // You and Partner (opposite)
+                B: [1, 3]  // Opponents
+            };
+
+            // Event callbacks
+            this.onStateChange = null;
+            this.onCardDrawn = null;
+            this.onCardDiscarded = null;
+            this.onGameOver = null;
+            this.onPhaseChange = null;
+            this.onTurnChange = null;
+        }
+
+        // Get team for a player index
+        getPlayerTeam(playerIndex) {
+            return this.teams.A.includes(playerIndex) ? 'A' : 'B';
+        }
+
+        // Get partner for a player
+        getPartner(playerIndex) {
+            const team = this.getPlayerTeam(playerIndex);
+            const teammates = this.teams[team];
+            return teammates.find(i => i !== playerIndex);
+        }
+
+        // Initialize a new game
+        startGame(numPlayers = 4) {
+            this.numPlayers = Math.max(2, Math.min(4, numPlayers));
+            this.players = [];
+            this.gameOver = false;
+            this.winner = null;
+            this.scores = Array(this.numPlayers).fill(0);
+
+            // Create players (position 0 is always human)
+            for (let i = 0; i < this.numPlayers; i++) {
+                if (i === 0) {
+                    this.players.push(new DiGuPlayer(i, true));
+                } else {
+                    this.players.push(new DiGuAI(i));
+                }
+            }
+
+            this.dealCards();
+            this.currentPlayerIndex = 0;
+            this.gamePhase = 'draw';
+
+            if (this.onStateChange) this.onStateChange(this.getGameState());
+            if (this.onPhaseChange) this.onPhaseChange('draw');
+        }
+
+        // Deal 10 cards to each player (counter-clockwise like Dhiha Ei)
+        dealCards() {
+            // Create and shuffle deck
+            const deck = new Deck();
+            deck.shuffle();
+
+            // Counter-clockwise dealing order: 0, 3, 2, 1
+            const dealOrder = [0, 3, 2, 1];
+
+            // Deal 10 cards to each player in counter-clockwise order
+            for (let i = 0; i < 10; i++) {
+                for (const playerIndex of dealOrder) {
+                    this.players[playerIndex].addCard(deck.cards.shift());
+                }
+            }
+
+            // Remaining cards go to stock pile
+            this.stockPile = deck.cards;
+            this.discardPile = [];
+
+            // Turn over top card of stock to start discard pile
+            if (this.stockPile.length > 0) {
+                this.discardPile.push(this.stockPile.shift());
+            }
+        }
+
+        // Get current game state
+        getGameState() {
+            return {
+                players: this.players,
+                stockCount: this.stockPile.length,
+                discardTop: this.discardPile.length > 0 ? this.discardPile[this.discardPile.length - 1] : null,
+                discardCount: this.discardPile.length,
+                currentPlayerIndex: this.currentPlayerIndex,
+                gamePhase: this.gamePhase,
+                gameOver: this.gameOver,
+                winner: this.winner,
+                scores: this.scores,
+                numPlayers: this.numPlayers
+            };
+        }
+
+        // Get current player
+        getCurrentPlayer() {
+            return this.players[this.currentPlayerIndex];
+        }
+
+        // Check if it's human's turn
+        isHumanTurn() {
+            return this.currentPlayerIndex === 0;
+        }
+
+        // Draw from stock pile
+        drawFromStock() {
+            if (this.gamePhase !== 'draw') return null;
+            if (this.stockPile.length === 0) {
+                this.reshuffleDiscardToStock();
+            }
+
+            if (this.stockPile.length === 0) return null;
+
+            const card = this.stockPile.shift();
+            this.getCurrentPlayer().addCard(card);
+
+            this.gamePhase = 'meld';
+            if (this.onCardDrawn) this.onCardDrawn(card, 'stock');
+            if (this.onPhaseChange) this.onPhaseChange('meld');
+            if (this.onStateChange) this.onStateChange(this.getGameState());
+
+            return card;
+        }
+
+        // Draw from discard pile
+        drawFromDiscard() {
+            if (this.gamePhase !== 'draw') return null;
+            if (this.discardPile.length === 0) return null;
+
+            const card = this.discardPile.pop();
+            this.getCurrentPlayer().addCard(card);
+
+            this.gamePhase = 'meld';
+            if (this.onCardDrawn) this.onCardDrawn(card, 'discard');
+            if (this.onPhaseChange) this.onPhaseChange('meld');
+            if (this.onStateChange) this.onStateChange(this.getGameState());
+
+            return card;
+        }
+
+        // Discard a card
+        discardCard(card) {
+            if (this.gamePhase !== 'meld' && this.gamePhase !== 'discard') return false;
+
+            const player = this.getCurrentPlayer();
+            const removed = player.removeCard(card);
+
+            if (!removed) return false;
+
+            this.discardPile.push(removed);
+
+            if (this.onCardDiscarded) this.onCardDiscarded(removed, player);
+
+            // Move to next player
+            this.nextTurn();
+
+            return true;
+        }
+
+        // Declare Digu (win)
+        declareDigu() {
+            const player = this.getCurrentPlayer();
+
+            if (!player.canDeclareDigu()) {
+                return { success: false, message: 'Invalid Digu declaration!' };
+            }
+
+            // If player has 11 cards, auto-discard the unmelded card
+            if (player.hand.length === 11) {
+                const unassigned = player.getUnassignedCards();
+                if (unassigned.length === 1) {
+                    const discardCard = player.removeCard(unassigned[0]);
+                    if (discardCard) {
+                        this.discardPile.push(discardCard);
+                    }
+                }
+            }
+
+            // Valid Digu!
+            this.gameOver = true;
+            this.winner = player;
+            this.winningTeam = this.getPlayerTeam(player.position);
+            this.gamePhase = 'gameover';
+
+            // Calculate scores
+            this.calculateScores();
+
+            if (this.onGameOver) {
+                this.onGameOver({
+                    winner: player,
+                    winningTeam: this.winningTeam,
+                    scores: this.scores,
+                    teamScores: this.teamScores,
+                    players: this.players
+                });
+            }
+
+            return { success: true, winner: player, winningTeam: this.winningTeam };
+        }
+
+        // Calculate final scores (team-based)
+        calculateScores() {
+            this.teamScores = [0, 0]; // Reset team scores
+
+            for (let i = 0; i < this.players.length; i++) {
+                if (this.players[i] === this.winner) {
+                    this.scores[i] = 0; // Winner scores 0
+                } else {
+                    this.scores[i] = this.players[i].getHandValue();
+                }
+
+                // Add to team score
+                const team = this.getPlayerTeam(i);
+                if (team === 'A') {
+                    this.teamScores[0] += this.scores[i];
+                } else {
+                    this.teamScores[1] += this.scores[i];
+                }
+            }
+        }
+
+        // Move to next turn (counter-clockwise: 0 -> 3 -> 2 -> 1 -> 0)
+        nextTurn() {
+            // Counter-clockwise: subtract 1, wrap around
+            this.currentPlayerIndex = (this.currentPlayerIndex - 1 + this.numPlayers) % this.numPlayers;
+            this.gamePhase = 'draw';
+
+            if (this.onTurnChange) this.onTurnChange(this.currentPlayerIndex);
+            if (this.onPhaseChange) this.onPhaseChange('draw');
+            if (this.onStateChange) this.onStateChange(this.getGameState());
+        }
+
+        // Reshuffle discard pile into stock when stock is empty
+        reshuffleDiscardToStock() {
+            if (this.discardPile.length <= 1) return;
+
+            // Keep top card of discard
+            const topCard = this.discardPile.pop();
+
+            // Shuffle rest into stock
+            this.stockPile = shuffle([...this.discardPile]);
+            this.discardPile = [topCard];
+        }
+
+        // AI takes its turn
+        async playAITurn() {
+            const player = this.getCurrentPlayer();
+            if (player.isHuman || this.gameOver) return;
+
+            // Draw phase
+            const discardTop = this.discardPile.length > 0 ?
+                this.discardPile[this.discardPile.length - 1] : null;
+
+            const drawSource = player.chooseDrawSource(discardTop, player.hand);
+
+            await delay(500);
+
+            if (drawSource === 'discard' && discardTop) {
+                this.drawFromDiscard();
+            } else {
+                this.drawFromStock();
+            }
+
+            // Check if AI can declare Digu
+            if (player.shouldDeclareDigu()) {
+                await delay(500);
+                this.declareDigu();
+                return;
+            }
+
+            // Discard phase
+            await delay(500);
+            const toDiscard = player.chooseDiscard(player.hand);
+            this.discardCard(toDiscard);
+        }
+
+        // Main game loop for AI turns
+        async continueGame() {
+            while (!this.gameOver && !this.isHumanTurn()) {
+                await this.playAITurn();
+            }
+        }
+    }
+
+    // ============================================
     // GAME CLASS
     // ============================================
 
@@ -1107,9 +1808,16 @@
             this.notifyStateChange();
         }
 
-        // Called after round ends to rotate dealer for next round (counter-clockwise)
-        rotateDealer() {
-            this.dealerPosition = (this.dealerPosition + 3) % 4; // +3 is same as -1 mod 4
+        // Called after round ends - only rotate if dealer's team won
+        rotateDealer(roundWinner) {
+            // Dealer's team: positions 0,2 = team 0, positions 1,3 = team 1
+            const dealerTeam = this.dealerPosition % 2;
+
+            // Only rotate if dealer's team won (or tie counts as no rotation)
+            if (roundWinner === dealerTeam) {
+                this.dealerPosition = (this.dealerPosition + 3) % 4; // counter-clockwise
+            }
+            // If dealer's team lost, same person shuffles again
         }
 
         resetRound() {
@@ -1798,6 +2506,7 @@
             this.renderer = new Renderer();
             this.isProcessing = false;
             this.selectedCard = null;
+            this.lastRoundWinner = -1; // Track last round winner for dealer rotation
 
             // Multiplayer components
             this.lobbyManager = null;
@@ -1820,8 +2529,16 @@
             this.lobbyError = document.getElementById('lobby-error');
             this.multiplayerStatus = document.getElementById('multiplayer-status');
 
+            // Digu game components
+            this.currentGameType = null; // 'dhiha-ei' or 'digu'
+            this.diguGame = null;
+            this.diguSelectedCards = [];
+            this.diguActiveMeldSlot = null;
+            this.diguNumPlayers = 4;
+
             this.setupEventListeners();
             this.setupLobbyEventListeners();
+            this.setupDiguEventListeners();
             this.bindGameEvents();
         }
 
@@ -2001,6 +2718,608 @@
                     this.renderer.showSponsorDetails();
                 });
             }
+        }
+
+        // ============================================
+        // DIGU GAME EVENT LISTENERS
+        // ============================================
+
+        setupDiguEventListeners() {
+            // Digu game card in lobby
+            const diguCard = document.querySelector('.game-card[data-game="digu"]');
+            if (diguCard) {
+                diguCard.querySelector('.game-select-btn').addEventListener('click', () => {
+                    this.selectGame('digu');
+                });
+            }
+
+            // Player count selection buttons
+            document.querySelectorAll('.player-count-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.player-count-btn').forEach(b => b.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    this.diguNumPlayers = parseInt(e.target.dataset.players);
+                });
+            });
+
+            // Digu cancel button
+            const diguCancelBtn = document.getElementById('digu-cancel-btn');
+            if (diguCancelBtn) {
+                diguCancelBtn.addEventListener('click', () => {
+                    document.getElementById('digu-player-count-modal').classList.add('hidden');
+                    this.showGameSelection();
+                });
+            }
+
+            // Digu start button
+            const diguStartBtn = document.getElementById('digu-start-btn');
+            if (diguStartBtn) {
+                diguStartBtn.addEventListener('click', () => {
+                    document.getElementById('digu-player-count-modal').classList.add('hidden');
+                    this.startDiguGame(this.diguNumPlayers);
+                });
+            }
+
+            // Stock pile click
+            const stockPile = document.getElementById('digu-stock');
+            if (stockPile) {
+                stockPile.addEventListener('click', () => this.handleDiguDraw('stock'));
+            }
+
+            // Discard pile click (for drawing) and drag-drop (for discarding)
+            const discardPile = document.getElementById('digu-discard');
+            if (discardPile) {
+                discardPile.addEventListener('click', () => this.handleDiguDraw('discard'));
+
+                // Drag-and-drop to discard a card
+                discardPile.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (this.canDiscardCard()) {
+                        discardPile.classList.add('drag-over');
+                    }
+                });
+
+                discardPile.addEventListener('dragleave', () => {
+                    discardPile.classList.remove('drag-over');
+                });
+
+                discardPile.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    discardPile.classList.remove('drag-over');
+
+                    if (!this.canDiscardCard()) return;
+
+                    try {
+                        const dragData = JSON.parse(e.dataTransfer.getData('application/json'));
+                        const card = { suit: dragData.suit, rank: dragData.rank };
+                        this.handleDiguDiscard(card);
+                    } catch (err) {
+                        console.log('Invalid drag data for discard');
+                    }
+                });
+            }
+
+            // Digu button click
+            const diguBtn = document.getElementById('digu-btn');
+            if (diguBtn) {
+                diguBtn.addEventListener('click', () => this.handleDiguDeclare());
+            }
+
+            // Sort by suit button
+            const sortBySuitBtn = document.getElementById('sort-by-suit-btn');
+            if (sortBySuitBtn) {
+                sortBySuitBtn.addEventListener('click', () => this.sortHandBySuit());
+            }
+
+            // Sort by rank button
+            const sortByRankBtn = document.getElementById('sort-by-rank-btn');
+            if (sortByRankBtn) {
+                sortByRankBtn.addEventListener('click', () => this.sortHandByRank());
+            }
+        }
+
+        // ============================================
+        // DIGU GAME UI METHODS
+        // ============================================
+
+        startDiguGame(numPlayers) {
+            this.currentGameType = 'digu';
+            this.diguNumPlayers = numPlayers;
+
+            // Hide lobby
+            this.hideLobby();
+
+            // Hide Thaasbai board, show Digu board
+            document.getElementById('game-board').classList.add('hidden');
+            document.getElementById('digu-game-board').classList.remove('hidden');
+
+            // Hide Dhiha Ei specific elements
+            const superiorSuit = document.getElementById('superior-suit-display');
+            if (superiorSuit) superiorSuit.classList.add('hidden');
+
+            // Initialize Digu game
+            this.diguGame = new DiGuGame();
+
+            // Bind game events
+            this.diguGame.onStateChange = (state) => this.updateDiguDisplay();
+            this.diguGame.onCardDrawn = (card, source) => this.onDiguCardDrawn(card, source);
+            this.diguGame.onCardDiscarded = (card, player) => this.onDiguCardDiscarded(card, player);
+            this.diguGame.onGameOver = (result) => this.onDiguGameOver(result);
+            this.diguGame.onPhaseChange = (phase) => this.updateDiguPhase(phase);
+            this.diguGame.onTurnChange = (playerIndex) => this.updateDiguTurn(playerIndex);
+
+            // Start the game
+            this.diguGame.startGame(numPlayers);
+
+            // Reset UI state
+            this.diguSelectedCards = [];
+            this.diguActiveMeldSlot = null;
+
+            // Initial display
+            this.updateDiguDisplay();
+        }
+
+        updateDiguDisplay() {
+            if (!this.diguGame) return;
+
+            const state = this.diguGame.getGameState();
+
+            // Update stock count
+            const stockCount = document.getElementById('digu-stock-count');
+            if (stockCount) {
+                stockCount.textContent = state.stockCount;
+            }
+
+            // Update discard pile top card
+            this.renderDiguDiscardTop(state.discardTop);
+
+            // Update player hands
+            this.renderDiguPlayers(state);
+
+            // Update scores
+            this.renderDiguScores(state);
+
+            // Update DIGU button state
+            this.updateDiguButton();
+
+            // Update turn indicator
+            this.updateDiguTurn(state.currentPlayerIndex);
+        }
+
+        renderDiguDiscardTop(card) {
+            const discardTop = document.getElementById('digu-discard-top');
+            if (!discardTop) return;
+
+            discardTop.innerHTML = '';
+
+            if (card) {
+                const cardEl = CardSprite.createCardElement(card, true);
+                cardEl.style.width = 'calc(9 * var(--scale))';
+                cardEl.style.height = 'calc(12.9 * var(--scale))';
+                discardTop.appendChild(cardEl);
+            }
+        }
+
+        renderDiguPlayers(state) {
+            for (let i = 0; i < state.numPlayers; i++) {
+                const player = state.players[i];
+                const playerEl = document.getElementById(`digu-player-${i}`);
+
+                if (!playerEl) continue;
+
+                // Show/hide based on player count
+                if (i >= state.numPlayers) {
+                    playerEl.classList.add('hidden');
+                    continue;
+                }
+                playerEl.classList.remove('hidden');
+
+                // Update label
+                const labelEl = playerEl.querySelector('.digu-player-label');
+                if (labelEl) {
+                    labelEl.textContent = player.name;
+                }
+
+                // Update avatar icon (for AI players)
+                const avatarIcon = playerEl.querySelector('.digu-avatar-icon');
+                if (avatarIcon) {
+                    avatarIcon.textContent = player.name.charAt(0).toUpperCase();
+                }
+
+                // Update card count
+                const countEl = playerEl.querySelector('.digu-card-count');
+                if (countEl) {
+                    countEl.textContent = `${player.hand.length} cards`;
+                }
+
+                // Render hand area
+                const handEl = playerEl.querySelector('.digu-player-hand');
+                if (handEl) {
+                    handEl.innerHTML = '';
+
+                    if (i === 0) {
+                        // Human player - show face up cards with drag-and-drop
+                        // Find all valid consecutive melds (3 or 4 cards) anywhere in hand
+                        const validMelds = this.findAllValidMelds(player.hand);
+                        const meldResult = player.getMeldsFromHand();
+                        const canDeclare = meldResult.valid !== false;
+
+                        player.hand.forEach((card, cardIndex) => {
+                            // Add discard separator before position 10
+                            if (cardIndex === 10) {
+                                const separator = document.createElement('div');
+                                separator.className = 'discard-separator';
+                                handEl.appendChild(separator);
+                            }
+
+                            const cardEl = CardSprite.createCardElement(card, true);
+                            const isSelected = this.diguSelectedCards.some(c =>
+                                c.suit === card.suit && c.rank === card.rank
+                            );
+                            if (isSelected) {
+                                cardEl.classList.add('selected');
+                            }
+
+                            // Check if this card is part of a valid consecutive meld
+                            const meldInfo = validMelds.find(m =>
+                                cardIndex >= m.start && cardIndex < m.start + m.length
+                            );
+
+                            if (meldInfo) {
+                                cardEl.classList.add('valid-meld-card');
+                                if (meldInfo.type === 'set') {
+                                    cardEl.classList.add('meld-set');
+                                } else {
+                                    cardEl.classList.add('meld-run');
+                                }
+                                // Add separator after meld ends (before next card)
+                                if (cardIndex === meldInfo.start + meldInfo.length - 1 && cardIndex < 9) {
+                                    cardEl.classList.add('meld-end');
+                                }
+                            }
+
+                            // Mark as discard card if position 10
+                            if (cardIndex === 10) {
+                                cardEl.classList.add('discard-card-highlight');
+                            }
+
+                            cardEl.addEventListener('click', () => this.handleDiguCardClick(card));
+
+                            // Drag-and-drop for rearranging and discarding
+                            cardEl.draggable = true;
+                            cardEl.dataset.cardIndex = cardIndex;
+                            cardEl.dataset.cardSuit = card.suit;
+                            cardEl.dataset.cardRank = card.rank;
+
+                            cardEl.addEventListener('dragstart', (e) => {
+                                // Store both index and card info for different drop targets
+                                const dragData = JSON.stringify({
+                                    index: cardIndex,
+                                    suit: card.suit,
+                                    rank: card.rank
+                                });
+                                e.dataTransfer.setData('application/json', dragData);
+                                e.dataTransfer.setData('text/plain', cardIndex.toString());
+                                cardEl.classList.add('dragging');
+                            });
+
+                            cardEl.addEventListener('dragend', () => {
+                                cardEl.classList.remove('dragging');
+                                // Remove drag-over from discard pile
+                                const discardPile = document.getElementById('digu-discard');
+                                if (discardPile) discardPile.classList.remove('drag-over');
+                            });
+
+                            cardEl.addEventListener('dragover', (e) => {
+                                e.preventDefault();
+                                cardEl.classList.add('drag-over');
+                            });
+
+                            cardEl.addEventListener('dragleave', () => {
+                                cardEl.classList.remove('drag-over');
+                            });
+
+                            cardEl.addEventListener('drop', (e) => {
+                                e.preventDefault();
+                                cardEl.classList.remove('drag-over');
+                                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                                const toIndex = cardIndex;
+                                if (fromIndex !== toIndex) {
+                                    this.moveCardInHand(fromIndex, toIndex);
+                                }
+                            });
+
+                            handEl.appendChild(cardEl);
+                        });
+                    }
+                    // AI players - no cards shown, just avatar (handled in HTML/CSS)
+                }
+
+                // Update turn indicator
+                playerEl.classList.toggle('current-turn', i === state.currentPlayerIndex);
+            }
+
+            // Hide unused player slots
+            for (let i = state.numPlayers; i < 4; i++) {
+                const playerEl = document.getElementById(`digu-player-${i}`);
+                if (playerEl) {
+                    playerEl.classList.add('hidden');
+                }
+            }
+        }
+
+        renderDiguScores(state) {
+            // Update team scores
+            const teamAScore = document.getElementById('team-a-score');
+            const teamBScore = document.getElementById('team-b-score');
+
+            if (teamAScore && this.diguGame) {
+                teamAScore.textContent = this.diguGame.teamScores[0] || 0;
+            }
+            if (teamBScore && this.diguGame) {
+                teamBScore.textContent = this.diguGame.teamScores[1] || 0;
+            }
+        }
+
+        updateDiguPhase(phase) {
+            const phaseEl = document.getElementById('digu-phase');
+            if (!phaseEl) return;
+
+            phaseEl.classList.remove('draw-phase', 'meld-phase', 'discard-phase');
+
+            let text = '';
+            switch (phase) {
+                case 'draw':
+                    text = 'Draw a card';
+                    phaseEl.classList.add('draw-phase');
+                    break;
+                case 'meld':
+                    text = 'Arrange melds & discard';
+                    phaseEl.classList.add('meld-phase');
+                    break;
+                case 'discard':
+                    text = 'Discard a card';
+                    phaseEl.classList.add('discard-phase');
+                    break;
+                case 'gameover':
+                    text = 'Game Over';
+                    break;
+                default:
+                    text = 'Waiting...';
+            }
+
+            phaseEl.textContent = text;
+        }
+
+        updateDiguTurn(playerIndex) {
+            // Update player area highlights
+            for (let i = 0; i < 4; i++) {
+                const playerEl = document.getElementById(`digu-player-${i}`);
+                if (playerEl) {
+                    playerEl.classList.toggle('current-turn', i === playerIndex);
+                }
+            }
+
+            // Update phase text if it's not human's turn
+            if (playerIndex !== 0 && this.diguGame) {
+                const phaseEl = document.getElementById('digu-phase');
+                if (phaseEl) {
+                    const playerName = this.diguGame.players[playerIndex].name;
+                    phaseEl.textContent = `${playerName}'s turn`;
+                }
+            }
+        }
+
+        updateDiguButton() {
+            const btn = document.getElementById('digu-btn');
+            if (!btn || !this.diguGame) return;
+
+            const player = this.diguGame.players[0];
+            const canDeclare = player.canDeclareDigu() &&
+                              this.diguGame.isHumanTurn() &&
+                              this.diguGame.gamePhase === 'meld';
+
+            btn.disabled = !canDeclare;
+        }
+
+        handleDiguDraw(source) {
+            if (!this.diguGame || !this.diguGame.isHumanTurn()) return;
+            if (this.diguGame.gamePhase !== 'draw') return;
+
+            if (source === 'stock') {
+                this.diguGame.drawFromStock();
+            } else {
+                this.diguGame.drawFromDiscard();
+            }
+
+            this.updateDiguDisplay();
+        }
+
+        handleDiguCardClick(card) {
+            if (!this.diguGame) return;
+
+            // Check if card is already in a meld
+            const player = this.diguGame.players[0];
+            const inMeld = player.getCardsInMelds().some(c =>
+                c.suit === card.suit && c.rank === card.rank
+            );
+            if (inMeld) return;
+
+            // Toggle selection
+            const isSelected = this.diguSelectedCards.some(c =>
+                c.suit === card.suit && c.rank === card.rank
+            );
+
+            if (isSelected) {
+                // Deselect
+                this.diguSelectedCards = this.diguSelectedCards.filter(c =>
+                    !(c.suit === card.suit && c.rank === card.rank)
+                );
+            } else {
+                // Select for meld
+                this.diguSelectedCards.push(card);
+            }
+
+            this.updateDiguDisplay();
+        }
+
+        // Find all valid consecutive melds (3 or 4 cards) in hand
+        findAllValidMelds(hand) {
+            const validMelds = [];
+            const maxIndex = Math.min(hand.length, 10); // Only check first 10 cards
+
+            // Scan for valid melds of size 3 and 4
+            for (let size = 4; size >= 3; size--) {
+                for (let start = 0; start <= maxIndex - size; start++) {
+                    // Check if this position overlaps with existing meld
+                    const overlaps = validMelds.some(m =>
+                        (start >= m.start && start < m.start + m.length) ||
+                        (start + size > m.start && start + size <= m.start + m.length) ||
+                        (start <= m.start && start + size >= m.start + m.length)
+                    );
+                    if (overlaps) continue;
+
+                    const group = hand.slice(start, start + size);
+
+                    // Check if valid set
+                    if (DiGuRules.isValidSet(group)) {
+                        validMelds.push({ start, length: size, type: 'set' });
+                        continue;
+                    }
+
+                    // Check if valid run
+                    if (DiGuRules.isValidRun(group)) {
+                        validMelds.push({ start, length: size, type: 'run' });
+                    }
+                }
+            }
+
+            // Sort by start position
+            validMelds.sort((a, b) => a.start - b.start);
+            return validMelds;
+        }
+
+        // Check if player can discard a card (for drag-drop validation)
+        canDiscardCard() {
+            if (!this.diguGame || !this.diguGame.isHumanTurn()) return false;
+            if (this.diguGame.gamePhase !== 'meld') return false;
+            const player = this.diguGame.players[0];
+            return player.hand.length === 11;
+        }
+
+        // Handle discard - drag card to discard pile
+        handleDiguDiscard(card) {
+            if (!this.diguGame || !this.diguGame.isHumanTurn()) return;
+            if (this.diguGame.gamePhase !== 'meld') return;
+
+            const player = this.diguGame.players[0];
+            if (player.hand.length !== 11) return;
+
+            // Discard this card
+            this.diguGame.discardCard(card);
+            this.diguSelectedCards = [];
+            this.updateDiguDisplay();
+
+            // Continue with AI turns
+            this.diguGame.continueGame();
+        }
+
+        sortHandBySuit() {
+            if (!this.diguGame) return;
+
+            const player = this.diguGame.players[0];
+            const suitOrder = { 'spades': 0, 'hearts': 1, 'diamonds': 2, 'clubs': 3 };
+            const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+
+            player.hand.sort((a, b) => {
+                const suitDiff = suitOrder[a.suit] - suitOrder[b.suit];
+                if (suitDiff !== 0) return suitDiff;
+                return rankOrder[b.rank] - rankOrder[a.rank]; // High to low within suit
+            });
+
+            this.updateDiguDisplay();
+        }
+
+        sortHandByRank() {
+            if (!this.diguGame) return;
+
+            const player = this.diguGame.players[0];
+            const suitOrder = { 'spades': 0, 'hearts': 1, 'diamonds': 2, 'clubs': 3 };
+            const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+
+            player.hand.sort((a, b) => {
+                const rankDiff = rankOrder[b.rank] - rankOrder[a.rank]; // High to low
+                if (rankDiff !== 0) return rankDiff;
+                return suitOrder[a.suit] - suitOrder[b.suit];
+            });
+
+            this.updateDiguDisplay();
+        }
+
+        moveCardInHand(fromIndex, toIndex) {
+            if (!this.diguGame) return;
+
+            const player = this.diguGame.players[0];
+            if (fromIndex < 0 || fromIndex >= player.hand.length) return;
+            if (toIndex < 0 || toIndex >= player.hand.length) return;
+
+            const card = player.hand.splice(fromIndex, 1)[0];
+            player.hand.splice(toIndex, 0, card);
+
+            this.updateDiguDisplay();
+        }
+
+        handleDiguDeclare() {
+            if (!this.diguGame || !this.diguGame.isHumanTurn()) return;
+
+            const result = this.diguGame.declareDigu();
+
+            if (!result.success) {
+                this.renderer.flashMessage(result.message, 2000);
+            }
+        }
+
+        onDiguCardDrawn(card, source) {
+            // Card drawn animation could go here
+            this.updateDiguDisplay();
+        }
+
+        onDiguCardDiscarded(card, player) {
+            // Card discarded animation could go here
+            this.updateDiguDisplay();
+        }
+
+        async onDiguGameOver(result) {
+            this.updateDiguDisplay();
+
+            const winnerName = result.winner.name;
+            const winningTeam = result.winningTeam;
+            const isYourTeamWinner = winningTeam === 'A';
+
+            // Team scores
+            const yourTeamScore = result.teamScores[0];
+            const opponentScore = result.teamScores[1];
+
+            let scoreText = 'Team Scores:\n';
+            scoreText += `Your Team: ${yourTeamScore} points\n`;
+            scoreText += `Opponents: ${opponentScore} points\n\n`;
+            scoreText += `${winnerName} declared DIGU!`;
+
+            const title = isYourTeamWinner ? 'Your Team Wins!' : 'Opponents Win!';
+            const message = scoreText + '\n\n(Lower score is better - winner gets 0)';
+
+            await this.renderer.showMessage(title, message, 'Play Again');
+
+            // Restart or return to lobby
+            this.returnToDiguLobby();
+        }
+
+        returnToDiguLobby() {
+            // Hide Digu board
+            document.getElementById('digu-game-board').classList.add('hidden');
+
+            // Show lobby
+            this.showLobby();
         }
 
         // Show drink callout (appears at 3 cards played)
@@ -3057,9 +4376,11 @@
         showGameSelection() {
             const gameSelection = document.getElementById('game-selection');
             const gameLobby = document.getElementById('game-lobby');
+            const diguModal = document.getElementById('digu-player-count-modal');
 
             if (gameSelection) gameSelection.classList.remove('hidden');
             if (gameLobby) gameLobby.classList.add('hidden');
+            if (diguModal) diguModal.classList.add('hidden');
 
             this.waitingRoom.classList.add('hidden');
             this.nameInputModal.classList.add('hidden');
@@ -3075,28 +4396,32 @@
             const currentGameName = document.getElementById('current-game-name');
 
             this.selectedGame = gameName;
+            this.currentGameType = gameName;
 
             // Update titles based on selected game
             if (gameName === 'dhiha-ei') {
                 if (selectedGameTitle) selectedGameTitle.textContent = 'Dhiha Ei';
                 if (currentGameName) currentGameName.textContent = 'Dhiha Ei';
+
+                // Hide game selection, show game lobby with menu
+                if (gameSelection) gameSelection.classList.add('hidden');
+                if (gameLobby) gameLobby.classList.remove('hidden');
+                this.lobbyMenu.classList.remove('hidden');
+                this.waitingRoom.classList.add('hidden');
+                document.getElementById('matchmaking-screen').classList.add('hidden');
+
+                // Check if this is first load and prompt for name
+                if (!this.playerName) {
+                    this.showNameInput((name) => {
+                        // Name saved, continue showing lobby
+                    });
+                }
             } else if (gameName === 'digu') {
                 if (selectedGameTitle) selectedGameTitle.textContent = 'Digu';
                 if (currentGameName) currentGameName.textContent = 'Digu';
-            }
 
-            // Hide game selection, show game lobby with menu
-            if (gameSelection) gameSelection.classList.add('hidden');
-            if (gameLobby) gameLobby.classList.remove('hidden');
-            this.lobbyMenu.classList.remove('hidden');
-            this.waitingRoom.classList.add('hidden');
-            document.getElementById('matchmaking-screen').classList.add('hidden');
-
-            // Check if this is first load and prompt for name
-            if (!this.playerName) {
-                this.showNameInput((name) => {
-                    // Name saved, continue showing lobby
-                });
+                // Digu is always 4 players in teams - start directly
+                this.startDiguGame(4);
             }
         }
 
@@ -3105,6 +4430,18 @@
             // Hide game container
             document.getElementById('game-container').classList.add('hidden');
             document.getElementById('game-container').classList.remove('multiplayer-mode');
+
+            // Hide Digu game board
+            const diguBoard = document.getElementById('digu-game-board');
+            if (diguBoard) diguBoard.classList.add('hidden');
+
+            // Show Thaasbai board (for when switching games)
+            const gameBoard = document.getElementById('game-board');
+            if (gameBoard) gameBoard.classList.remove('hidden');
+
+            // Show superior suit display (for Dhiha Ei)
+            const superiorSuit = document.getElementById('superior-suit-display');
+            if (superiorSuit) superiorSuit.classList.remove('hidden');
 
             // Show lobby
             this.lobbyOverlay.classList.remove('hidden');
@@ -3254,6 +4591,7 @@
         async startNewMatch() {
             this.isProcessing = false;
             this.selectedCard = null;
+            this.lastRoundWinner = -1;
             this.humanCardsPlayedThisGame = 0;
             this.resetSponsorTooltips();
             this.startFoodItemJumps();
@@ -3271,10 +4609,10 @@
             await this.game.continueGame();
         }
 
-        async startNextRound() {
+        async startNextRound(roundWinner = -1) {
             this.isProcessing = false;
             this.selectedCard = null;
-            this.game.rotateDealer(); // Rotate dealer before new round
+            this.game.rotateDealer(roundWinner); // Only rotate if dealer's team won
             this.game.startRound();
             this.renderer.clearPlayedCards();
             this.renderer.clearCollectedTens();
@@ -3643,13 +4981,15 @@
 
             // In multiplayer, show ready check for next round
             if (this.isMultiplayerMode) {
+                // Store the round winner for when all players are ready
+                this.lastRoundWinner = result.winner;
                 await this.renderer.showMessage(title, text, 'Ready for Next Round');
                 this.showReadyForNextRound();
             } else {
                 // AI game - show options for next round or end game
                 const choice = await this.renderer.showMessageWithOptions(title, text, 'Next Round', 'End Game');
                 if (choice === 'primary') {
-                    this.startNextRound();
+                    this.startNextRound(result.winner);
                 } else {
                     // End game - show final score
                     await this.showAIGameFinalScore();
@@ -3710,7 +5050,8 @@
 
             // If we're the host, deal the new round
             if (this.lobbyManager && this.lobbyManager.isHost()) {
-                this.game.rotateDealer(); // Rotate dealer before new round
+                // Only rotate dealer if their team won the round
+                this.game.rotateDealer(this.lastRoundWinner);
                 this.game.startRound();
                 this.renderer.clearPlayedCards();
                 this.renderer.clearCollectedTens();
@@ -3849,6 +5190,15 @@
                 PresenceManager,
                 getCurrentUserId: () => currentUserId,
                 initializeMultiplayer
+            },
+            // Digu game utilities
+            digu: {
+                DiGuRules,
+                DiGuPlayer,
+                DiGuGame,
+                DiGuAI,
+                getGame: () => ui.diguGame,
+                getState: () => ui.diguGame ? ui.diguGame.getGameState() : null
             }
         };
 

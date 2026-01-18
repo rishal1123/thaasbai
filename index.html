@@ -327,6 +327,84 @@
             </div>
         </main>
 
+        <!-- Digu Game Board (hidden by default) -->
+        <main id="digu-game-board" class="hidden">
+            <!-- Center: Stock & Discard Piles -->
+            <div id="digu-center-area">
+                <div id="digu-piles">
+                    <div id="digu-stock" class="digu-pile clickable" title="Draw from deck">
+                        <div class="pile-label">Stock</div>
+                        <div class="pile-count" id="digu-stock-count">0</div>
+                    </div>
+                    <div id="digu-discard" class="digu-pile clickable" title="Draw from discard">
+                        <div class="pile-label">Discard</div>
+                        <div class="discard-card" id="digu-discard-top"></div>
+                    </div>
+                </div>
+
+                <!-- Phase Indicator -->
+                <div id="digu-phase">Draw a card</div>
+
+                <!-- DIGU Button -->
+                <button id="digu-btn" disabled>DIGU!</button>
+            </div>
+
+            <!-- Meld info hint -->
+            <div id="meld-hint">Arrange 10 cards into 3 melds (3+3+4, 3+4+3, or 4+3+3)</div>
+
+            <!-- Player Areas - positioned around the table -->
+            <div id="digu-player-0" class="digu-player bottom team-a">
+                <div class="digu-player-label">You (Your Team)</div>
+                <div class="digu-player-hand"></div>
+                <div class="hand-sort-buttons">
+                    <button id="sort-by-suit-btn" class="sort-btn">Sort by Suit</button>
+                    <button id="sort-by-rank-btn" class="sort-btn">Sort by Rank</button>
+                </div>
+            </div>
+            <div id="digu-player-1" class="digu-player left team-b">
+                <div class="digu-avatar">
+                    <div class="digu-avatar-icon"></div>
+                </div>
+                <div class="digu-team-label">Opponent</div>
+                <div class="digu-player-label">Player 2</div>
+                <div class="digu-card-count">10 cards</div>
+            </div>
+            <div id="digu-player-2" class="digu-player top team-a">
+                <div class="digu-avatar">
+                    <div class="digu-avatar-icon"></div>
+                </div>
+                <div class="digu-team-label">Partner</div>
+                <div class="digu-player-label">Player 3</div>
+                <div class="digu-card-count">10 cards</div>
+            </div>
+            <div id="digu-player-3" class="digu-player right team-b">
+                <div class="digu-avatar">
+                    <div class="digu-avatar-icon"></div>
+                </div>
+                <div class="digu-team-label">Opponent</div>
+                <div class="digu-player-label">Player 4</div>
+                <div class="digu-card-count">10 cards</div>
+            </div>
+
+            <!-- Scores Panel -->
+            <div id="digu-scores">
+                <div class="digu-scores-title">Team Scores</div>
+                <div class="digu-team-scores">
+                    <div class="digu-team-score team-a">
+                        <span class="team-name">Your Team</span>
+                        <span class="team-score-value" id="team-a-score">0</span>
+                    </div>
+                    <div class="digu-team-score team-b">
+                        <span class="team-name">Opponents</span>
+                        <span class="team-score-value" id="team-b-score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Turn Indicator -->
+            <div id="digu-turn-indicator"></div>
+        </main>
+
         <!-- New game button -->
         <div id="controls">
             <button id="menu-btn">Menu</button>
@@ -421,12 +499,11 @@
                         <p class="game-card-desc">Classic trick-taking game for 4 players in teams</p>
                         <button class="game-select-btn">Play</button>
                     </div>
-                    <div class="game-card coming-soon" data-game="digu">
-                        <div class="coming-soon-badge">Coming Soon</div>
+                    <div class="game-card" data-game="digu">
                         <div class="game-card-icon">🎴</div>
                         <h3 class="game-card-title">Digu</h3>
-                        <p class="game-card-desc">Strategic card matching game</p>
-                        <button class="game-select-btn" disabled>Coming Soon</button>
+                        <p class="game-card-desc">Rummy-style card matching game (2-4 players)</p>
+                        <button class="game-select-btn">Play</button>
                     </div>
                 </div>
             </div>
@@ -576,6 +653,21 @@
                 </div>
             </div>
 
+            <!-- Digu Player Count Modal -->
+            <div id="digu-player-count-modal" class="hidden">
+                <h3>How Many Players?</h3>
+                <p class="modal-subtitle">Play against AI opponents</p>
+                <div class="player-count-options">
+                    <button class="player-count-btn" data-players="2">2 Players</button>
+                    <button class="player-count-btn" data-players="3">3 Players</button>
+                    <button class="player-count-btn selected" data-players="4">4 Players</button>
+                </div>
+                <div class="modal-actions">
+                    <button id="digu-cancel-btn" class="lobby-btn secondary">Cancel</button>
+                    <button id="digu-start-btn" class="lobby-btn primary">Start Game</button>
+                </div>
+            </div>
+
             <!-- Error Display -->
             <div id="lobby-error" class="hidden"></div>
         </div>
@@ -615,7 +707,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=36"></script>
+    <script src="js/bundle.js?v=37"></script>
 
     <!-- PWA Install Handler -->
     <script>
