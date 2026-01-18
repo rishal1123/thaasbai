@@ -1173,9 +1173,11 @@ body {
 .drink-item,
 .food-item {
     width: calc(16 * var(--scale));
-    height: calc(20 * var(--scale));
+    height: calc(16 * var(--scale));
     position: relative;
     transition: transform 0.1s ease;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: calc(0.5 * var(--scale));
 }
 
 .drink-item.jumping,
