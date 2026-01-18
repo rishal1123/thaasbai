@@ -82,7 +82,7 @@ body {
 /* Superior Suit Display - Below Your Team score */
 #superior-suit-display {
     position: fixed;
-    top: calc(16 * var(--scale) + 60px);
+    top: calc(16 * var(--scale) + 30px);
     left: 100px;
     padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale));
     background: linear-gradient(145deg, rgba(10, 20, 30, 0.95) 0%, rgba(20, 40, 60, 0.9) 100%);
@@ -2551,7 +2551,7 @@ html, body {
     }
 
     #player-left {
-        left: calc(4 * var(--scale) + 100px);
+        left: calc(4 * var(--scale) + 50px);
     }
 
     .drink-sponsor {
