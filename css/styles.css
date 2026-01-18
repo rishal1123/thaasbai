@@ -2564,9 +2564,9 @@ html, body {
     position: relative;
 }
 
-/* Mobile Portrait Mode - Force Landscape Layout */
+/* Mobile Portrait Mode - Lobby in portrait, Game in landscape */
 @media screen and (max-width: 900px) and (orientation: portrait) {
-    /* Hide rotate overlay - we force landscape instead */
+    /* Hide rotate overlay - we handle it properly */
     #rotate-overlay {
         display: none !important;
     }
@@ -2579,32 +2579,34 @@ html, body {
         padding: 0;
     }
 
-    /* Force landscape layout by rotating the viewport wrapper */
+    /* Viewport wrapper stays normal for portrait screens */
     #viewport-wrapper {
         position: fixed;
-        /* In portrait: screen width is narrow, height is tall */
-        /* We want landscape: use height as width, width as height */
-        width: 100vh;
-        height: 100vw;
-        /* Rotate 90 degrees clockwise so top of game is at right of phone */
-        transform: rotate(90deg);
-        transform-origin: top left;
-        /* Move into view after rotation */
-        top: 0;
-        left: 100vw;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
     }
 
+    /* Game container rotates to landscape when visible */
     #game-container {
-        display: flex;
-        width: 100%;
-        height: 100%;
+        position: fixed;
+        width: 100vh;
+        height: 100vw;
+        transform: rotate(90deg);
+        transform-origin: top left;
+        top: 0;
+        left: 100vw;
     }
 
+    /* Lobby stays in portrait mode - no rotation */
     #lobby-overlay {
-        display: flex;
+        position: fixed;
         width: 100%;
         height: 100%;
+        top: 0;
+        left: 0;
+        transform: none;
+        display: flex;
     }
 
     /* Player's hand cards - 1.5x larger for touch */
@@ -2656,133 +2658,133 @@ html, body {
         left: calc(8 * var(--scale) + 100px);
     }
 
-    /* ===== LANDSCAPE OPTIMIZED POPUPS & HOME SCREENS ===== */
+    /* ===== PORTRAIT OPTIMIZED LOBBY & HOME SCREENS ===== */
 
-    /* Lobby Content - compact for landscape */
+    /* Lobby Content - full width portrait layout */
     #lobby-content {
-        padding: calc(1.5 * var(--scale));
+        padding: calc(2 * var(--scale));
         min-width: auto;
+        max-width: 95vw;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .lobby-title {
+        font-size: clamp(28px, calc(4 * var(--scale)), 42px);
+        margin-bottom: calc(0.5 * var(--scale));
+    }
+
+    .lobby-subtitle {
+        font-size: clamp(14px, calc(1.8 * var(--scale)), 20px);
+        margin-bottom: calc(1.5 * var(--scale));
+    }
+
+    /* Game Selection - vertical layout for portrait */
+    .game-cards {
+        flex-direction: column;
+        gap: calc(2 * var(--scale));
+        margin-top: calc(1.5 * var(--scale));
+    }
+
+    .game-card {
+        padding: calc(1.5 * var(--scale));
+        width: 100%;
+        max-width: 280px;
+        min-width: auto;
+    }
+
+    .game-card-icon {
+        font-size: clamp(36px, calc(5 * var(--scale)), 56px);
+        margin-bottom: calc(0.8 * var(--scale));
+    }
+
+    .game-card-title {
+        font-size: clamp(18px, calc(2.2 * var(--scale)), 26px);
+    }
+
+    .game-card-desc {
+        font-size: clamp(12px, calc(1.4 * var(--scale)), 16px);
+    }
+
+    .coming-soon-badge {
+        font-size: clamp(10px, calc(1.1 * var(--scale)), 13px);
+        padding: calc(0.3 * var(--scale)) calc(2 * var(--scale));
+    }
+
+    /* Game Lobby - portrait friendly */
+    #game-lobby {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .lobby-header {
+        margin-bottom: calc(1 * var(--scale));
+    }
+
+    .lobby-header h2 {
+        font-size: clamp(24px, calc(3 * var(--scale)), 36px);
+    }
+
+    .lobby-header .game-subtitle {
+        font-size: clamp(13px, calc(1.5 * var(--scale)), 18px);
+    }
+
+    #lobby-menu {
+        gap: calc(1 * var(--scale));
+    }
+
+    .lobby-btn {
+        padding: calc(1 * var(--scale)) calc(2 * var(--scale));
+        font-size: clamp(16px, calc(2 * var(--scale)), 22px);
+        min-height: 50px;
+    }
+
+    .lobby-divider {
+        margin: calc(1 * var(--scale)) 0;
+        font-size: clamp(12px, calc(1.4 * var(--scale)), 16px);
+    }
+
+    /* Waiting Room - portrait friendly */
+    #waiting-room h3 {
+        font-size: clamp(18px, calc(2.2 * var(--scale)), 26px);
+        margin-bottom: calc(1 * var(--scale));
+    }
+
+    #player-slots {
+        gap: calc(0.8 * var(--scale));
+        margin-bottom: calc(1 * var(--scale));
+    }
+
+    .player-slot {
+        padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale));
+        font-size: clamp(14px, calc(1.6 * var(--scale)), 18px);
+    }
+
+    /* Modal Content - portrait friendly */
+    .modal-content {
+        padding: calc(2 * var(--scale));
         max-width: 90vw;
         max-height: 85vh;
         overflow-y: auto;
     }
 
-    .lobby-title {
-        font-size: clamp(20px, calc(2.5 * var(--scale)), 32px);
-        margin-bottom: calc(0.3 * var(--scale));
-    }
-
-    .lobby-subtitle {
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 18px);
+    .modal-content h2 {
+        font-size: clamp(22px, calc(2.8 * var(--scale)), 32px);
         margin-bottom: calc(1 * var(--scale));
     }
 
-    /* Game Selection - horizontal layout */
-    .game-cards {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: calc(1.5 * var(--scale));
-        margin-top: calc(1 * var(--scale));
-    }
-
-    .game-card {
-        padding: calc(1 * var(--scale));
-        width: calc(15 * var(--scale));
-        min-width: 120px;
-        max-width: 160px;
-    }
-
-    .game-card-icon {
-        font-size: clamp(28px, calc(3.5 * var(--scale)), 48px);
-        margin-bottom: calc(0.5 * var(--scale));
-    }
-
-    .game-card-title {
-        font-size: clamp(14px, calc(1.6 * var(--scale)), 20px);
-    }
-
-    .game-card-desc {
-        font-size: clamp(10px, calc(1.1 * var(--scale)), 14px);
-    }
-
-    .coming-soon-badge {
-        font-size: clamp(8px, calc(0.9 * var(--scale)), 11px);
-        padding: calc(0.2 * var(--scale)) calc(2 * var(--scale));
-    }
-
-    /* Game Lobby - compact */
-    #game-lobby {
-        max-height: 85vh;
-        overflow-y: auto;
-    }
-
-    .lobby-header {
-        margin-bottom: calc(0.5 * var(--scale));
-    }
-
-    .lobby-header h2 {
-        font-size: clamp(18px, calc(2.2 * var(--scale)), 28px);
-    }
-
-    .lobby-header .game-subtitle {
-        font-size: clamp(11px, calc(1.2 * var(--scale)), 16px);
-    }
-
-    #lobby-menu {
-        gap: calc(0.6 * var(--scale));
-    }
-
-    .lobby-btn {
-        padding: calc(0.6 * var(--scale)) calc(1.2 * var(--scale));
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 18px);
-    }
-
-    .lobby-divider {
-        margin: calc(0.5 * var(--scale)) 0;
-        font-size: clamp(10px, calc(1.1 * var(--scale)), 14px);
-    }
-
-    /* Waiting Room - compact */
-    #waiting-room h3 {
-        font-size: clamp(14px, calc(1.6 * var(--scale)), 20px);
-        margin-bottom: calc(0.5 * var(--scale));
-    }
-
-    #player-slots {
-        gap: calc(0.5 * var(--scale));
-        margin-bottom: calc(0.8 * var(--scale));
-    }
-
-    .player-slot {
-        padding: calc(0.5 * var(--scale)) calc(1 * var(--scale));
-        font-size: clamp(11px, calc(1.2 * var(--scale)), 16px);
-    }
-
-    /* Modal Content - compact */
-    .modal-content {
-        padding: calc(1.5 * var(--scale));
-        max-width: 85vw;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-
-    .modal-content h2 {
-        font-size: clamp(18px, calc(2.2 * var(--scale)), 28px);
-        margin-bottom: calc(0.8 * var(--scale));
-    }
-
     .modal-content p {
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 18px);
-        margin-bottom: calc(0.5 * var(--scale));
+        font-size: clamp(14px, calc(1.8 * var(--scale)), 20px);
+        margin-bottom: calc(0.8 * var(--scale));
     }
 
     .modal-buttons {
-        gap: calc(0.8 * var(--scale));
+        gap: calc(1 * var(--scale));
     }
 
     .modal-buttons button {
-        padding: calc(0.5 * var(--scale)) calc(1.2 * var(--scale));
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 18px);
+        padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale));
+        font-size: clamp(14px, calc(1.8 * var(--scale)), 20px);
     }
 
     /* Message Overlay - fix for rotated viewport */
