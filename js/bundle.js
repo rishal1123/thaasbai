@@ -1845,6 +1845,22 @@
                     }
                 });
             });
+
+            // Sponsor click handlers - show "cloud time" message
+            const drinkSponsor = document.getElementById('drink-sponsor');
+            const foodSponsor = document.getElementById('food-sponsor');
+
+            if (drinkSponsor) {
+                drinkSponsor.addEventListener('click', () => {
+                    this.renderer.showMessage('Cloud Time', 'Enjoy your break! ☁️');
+                });
+            }
+
+            if (foodSponsor) {
+                foodSponsor.addEventListener('click', () => {
+                    this.renderer.showMessage('Cloud Time', 'Enjoy your break! ☁️');
+                });
+            }
         }
 
         // Handle swap player button click

@@ -1126,12 +1126,8 @@ body {
 .sponsor-logo svg {
     width: calc(54 * var(--scale));
     height: auto;
-    opacity: 0.1;
+    opacity: 1;
     filter: drop-shadow(0 calc(0.2 * var(--scale)) calc(0.5 * var(--scale)) rgba(0, 0, 0, 0.3));
-}
-
-.sponsor-logo.ooredoo svg {
-    opacity: 0.3;
 }
 
 .sponsor-placeholder {
@@ -1141,18 +1137,80 @@ body {
     letter-spacing: calc(0.3 * var(--scale));
 }
 
+.drink-sponsor,
+.food-sponsor {
+    pointer-events: auto;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(0.5 * var(--scale));
+}
+
 .drink-sponsor {
     left: calc(8 * var(--scale));
     top: 50%;
     transform: translateY(-50%);
-    display: none;
 }
 
 .food-sponsor {
     right: calc(8 * var(--scale));
     top: 50%;
     transform: translateY(-50%);
-    display: none;
+}
+
+.drink-item,
+.food-item {
+    width: calc(8 * var(--scale));
+    height: calc(10 * var(--scale));
+    position: relative;
+}
+
+.drink-body {
+    width: 100%;
+    height: 80%;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: calc(0.5 * var(--scale));
+    position: absolute;
+    bottom: 0;
+}
+
+.drink-straw {
+    width: calc(0.4 * var(--scale));
+    height: 50%;
+    background: #fff;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) rotate(-15deg);
+    border-radius: calc(0.2 * var(--scale));
+}
+
+.food-bowl {
+    width: 100%;
+    height: 60%;
+    background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+    border-radius: 0 0 50% 50%;
+    position: absolute;
+    bottom: 0;
+}
+
+.food-contents {
+    width: 80%;
+    height: 40%;
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+    border-radius: 50% 50% 0 0;
+    position: absolute;
+    bottom: 55%;
+    left: 10%;
+}
+
+.sponsor-label {
+    font-size: calc(1.2 * var(--scale));
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: calc(0.1 * var(--scale));
 }
 
 /* Lobby Overlay */
