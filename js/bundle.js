@@ -1692,6 +1692,52 @@
             this.elements.messageButton.addEventListener('click', handleClick);
         }
 
+        // Show detailed sponsor popup with logo and info
+        showSponsorDetails() {
+            this.elements.messageTitle.innerHTML = `
+                <svg viewBox="0 0 200 80" width="150" height="60" style="margin-bottom: 10px;">
+                    <defs>
+                        <linearGradient id="ooredooRedPopup" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E60012"/>
+                            <stop offset="100%" style="stop-color:#C4000F"/>
+                        </linearGradient>
+                    </defs>
+                    <g transform="translate(15, 12)">
+                        <circle cx="28" cy="28" r="26" fill="url(#ooredooRedPopup)"/>
+                        <circle cx="20" cy="22" r="10" fill="white"/>
+                        <circle cx="36" cy="22" r="8" fill="white"/>
+                        <circle cx="28" cy="38" r="7" fill="white"/>
+                        <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none"/>
+                    </g>
+                    <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#E60012" letter-spacing="-1">ooredoo</text>
+                    <text x="77" y="65" font-family="Arial, sans-serif" font-size="12" fill="#E60012" letter-spacing="2">MALDIVES</text>
+                </svg>
+            `;
+            this.elements.messageText.innerHTML = `
+                <div style="text-align: left; line-height: 1.6;">
+                    <p style="margin-bottom: 12px;"><strong>Ooredoo Maldives</strong> - Enriching people's digital lives</p>
+                    <p style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">Experience the fastest 4G+ network across the Maldives. Stay connected with family and friends.</p>
+                    <p style="font-size: 0.85em; opacity: 0.7;">📞 929 | 🌐 ooredoo.mv</p>
+                </div>
+            `;
+            this.elements.messageButton.textContent = 'Close';
+            this.elements.messageButton.style.display = '';
+            this.elements.messageButtonSecondary.classList.add('hidden');
+            this.elements.messageOverlay.classList.remove('hidden');
+            this.elements.messageOverlay.classList.add('sponsor-popup');
+
+            const handleClick = () => {
+                this.elements.messageButton.removeEventListener('click', handleClick);
+                this.elements.messageOverlay.classList.add('hidden');
+                this.elements.messageOverlay.classList.remove('sponsor-popup');
+                // Reset to textContent for future messages
+                this.elements.messageTitle.textContent = '';
+                this.elements.messageText.textContent = '';
+            };
+
+            this.elements.messageButton.addEventListener('click', handleClick);
+        }
+
         // Hide sponsor message (called when user's turn starts)
         hideSponsorMessage() {
             if (this.elements.messageOverlay.classList.contains('sponsor-popup')) {
@@ -1896,10 +1942,10 @@
                 });
             }
 
-            // Lobby sponsor click handlers
+            // Lobby sponsor click handlers - show detailed popup
             document.querySelectorAll('.lobby-sponsor').forEach(sponsor => {
                 sponsor.addEventListener('click', () => {
-                    this.renderer.showSponsorMessage('Ooredoo Maldives 📶', 'Stay connected with the best network!');
+                    this.renderer.showSponsorDetails();
                 });
             });
         }
