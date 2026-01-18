@@ -555,14 +555,16 @@ body {
 @keyframes labelGlow {
     0%, 100% {
         box-shadow:
-            0 0 calc(0.5 * var(--scale)) rgba(255, 215, 0, 0.6),
-            0 0 calc(1 * var(--scale)) rgba(255, 215, 0, 0.4);
+            0 0 calc(1 * var(--scale)) rgba(255, 215, 0, 1),
+            0 0 calc(2 * var(--scale)) rgba(255, 215, 0, 0.8),
+            0 0 calc(4 * var(--scale)) rgba(255, 215, 0, 0.5);
     }
     50% {
         box-shadow:
-            0 0 calc(1 * var(--scale)) rgba(255, 215, 0, 0.9),
-            0 0 calc(2 * var(--scale)) rgba(255, 215, 0, 0.6),
-            0 0 calc(3 * var(--scale)) rgba(255, 215, 0, 0.3);
+            0 0 calc(2 * var(--scale)) rgba(255, 215, 0, 1),
+            0 0 calc(4 * var(--scale)) rgba(255, 215, 0, 0.9),
+            0 0 calc(6 * var(--scale)) rgba(255, 215, 0, 0.7),
+            0 0 calc(10 * var(--scale)) rgba(255, 215, 0, 0.4);
     }
 }
 
