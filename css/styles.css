@@ -1123,7 +1123,7 @@ body {
     transform: translate(-50%, -50%);
     pointer-events: auto;
     cursor: pointer;
-    padding: calc(3 * var(--scale));
+    padding: calc(2.4 * var(--scale));
     border-radius: calc(1 * var(--scale));
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
@@ -1136,7 +1136,7 @@ body {
 }
 
 .sponsor-logo svg {
-    width: calc(54 * var(--scale));
+    width: calc(43 * var(--scale));
     height: auto;
     opacity: 1;
     filter: drop-shadow(0 calc(0.2 * var(--scale)) calc(0.5 * var(--scale)) rgba(0, 0, 0, 0.3));
@@ -1273,19 +1273,19 @@ body {
     border-right: none;
 }
 
-/* Table callout - arrow points up, appears below played cards */
+/* Table callout - arrow points left, appears on right side */
 #table-callout {
-    top: calc(100% + 12 * var(--scale));
-    left: 50%;
-    transform: translateX(-50%);
+    left: calc(100% + 2 * var(--scale));
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 #table-callout .callout-arrow {
-    top: calc(-1.4 * var(--scale));
-    left: 50%;
-    transform: translateX(-50%);
-    border-bottom-color: #9b59b6;
-    border-top: none;
+    left: calc(-1.4 * var(--scale));
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: #9b59b6;
+    border-left: none;
 }
 
 @keyframes callout-bounce {
