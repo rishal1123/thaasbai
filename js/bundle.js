@@ -1610,6 +1610,8 @@
                 const element = this.elements.shuffleCounts[i];
                 if (element) {
                     element.textContent = `Shuffle: ${shuffleCounts[i]}`;
+                    // Highlight the current dealer
+                    element.classList.toggle('current-dealer', i === dealerPosition);
                 }
             }
         }
