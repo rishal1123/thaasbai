@@ -2,6 +2,7 @@
   "name": "Thaasbai - Maldivian Card Games",
   "short_name": "Thaasbai",
   "description": "Collection of traditional Maldivian card games including Dhiha Ei and Digu",
+  "id": "/thaasbai",
   "start_url": "/",
   "display": "fullscreen",
   "orientation": "landscape",
@@ -12,64 +13,70 @@
   "categories": ["games", "entertainment"],
   "icons": [
     {
-      "src": "icons/icon-72.png",
+      "src": "icons/icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-96.png",
+      "src": "icons/icon-96x96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-128.png",
+      "src": "icons/icon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-144.png",
+      "src": "icons/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-152.png",
+      "src": "icons/icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-167.png",
+      "src": "icons/icon-167x167.png",
       "sizes": "167x167",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-180.png",
+      "src": "icons/icon-180x180.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-192.png",
+      "src": "icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-384.png",
+      "src": "icons/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-1024x1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "screenshots": [
@@ -87,14 +94,14 @@
       "short_name": "Quick Match",
       "description": "Find a random game",
       "url": "/?mode=quickmatch",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
       "name": "Play vs AI",
       "short_name": "vs AI",
       "description": "Play against computer",
       "url": "/?mode=ai",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
   "related_applications": [],

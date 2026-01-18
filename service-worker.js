@@ -4,7 +4,7 @@
  */
 
 // IMPORTANT: Increment this version to trigger update
-const CACHE_VERSION = 59;
+const CACHE_VERSION = 60;
 const CACHE_NAME = `thaasbai-v${CACHE_VERSION}`;
 const OFFLINE_URL = '/';
 
@@ -15,7 +15,14 @@ const ASSETS_TO_CACHE = [
   '/css/styles.css',
   '/js/bundle.js',
   '/manifest.json',
-  '/icons/icon.svg'
+  '/icons/icon.svg',
+  // Critical PWA icons
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/icons/icon-180x180.png',
+  '/icons/icon-152x152.png',
+  '/icons/icon-167x167.png',
+  '/icons/icon-120x120.png'
 ];
 
 // Install event - cache essential assets
