@@ -1117,6 +1117,8 @@ body {
     transform: translate(-50%, -50%);
     pointer-events: auto;
     cursor: pointer;
+    padding: calc(3 * var(--scale));
+    border-radius: calc(1 * var(--scale));
 }
 
 .sponsor-logo {
