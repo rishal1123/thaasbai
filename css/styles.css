@@ -1883,6 +1883,21 @@ body {
     display: none;
 }
 
+/* Sponsor Popup - different color scheme */
+#message-overlay.sponsor-popup #message-content {
+    background: linear-gradient(145deg, #2d1b4e, #1a0f2e);
+    border-color: #9b59b6;
+}
+
+#message-overlay.sponsor-popup #message-title {
+    color: #e74c3c;
+}
+
+#message-overlay.sponsor-popup #message-button {
+    background: linear-gradient(145deg, #9b59b6, #8e44ad);
+    color: #fff;
+}
+
 /* Copy Button */
 .copy-btn {
     padding: calc(0.4 * var(--scale)) calc(0.8 * var(--scale));

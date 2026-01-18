@@ -1672,6 +1672,33 @@
             this.elements.messageOverlay.classList.add('hidden');
             this.elements.messageButton.style.display = '';
         }
+
+        // Show sponsored popup with different color - auto-dismisses on user turn
+        showSponsorMessage(title, text) {
+            this.elements.messageTitle.textContent = title;
+            this.elements.messageText.textContent = text;
+            this.elements.messageButton.textContent = 'OK';
+            this.elements.messageButton.style.display = '';
+            this.elements.messageButtonSecondary.classList.add('hidden');
+            this.elements.messageOverlay.classList.remove('hidden');
+            this.elements.messageOverlay.classList.add('sponsor-popup');
+
+            const handleClick = () => {
+                this.elements.messageButton.removeEventListener('click', handleClick);
+                this.elements.messageOverlay.classList.add('hidden');
+                this.elements.messageOverlay.classList.remove('sponsor-popup');
+            };
+
+            this.elements.messageButton.addEventListener('click', handleClick);
+        }
+
+        // Hide sponsor message (called when user's turn starts)
+        hideSponsorMessage() {
+            if (this.elements.messageOverlay.classList.contains('sponsor-popup')) {
+                this.elements.messageOverlay.classList.add('hidden');
+                this.elements.messageOverlay.classList.remove('sponsor-popup');
+            }
+        }
     }
 
     // ============================================
@@ -1852,15 +1879,28 @@
 
             if (drinkSponsor) {
                 drinkSponsor.addEventListener('click', () => {
-                    this.renderer.showMessage('Cloud Time', 'Enjoy your break! ☁️');
+                    this.renderer.showSponsorMessage('Cloud Time ☁️', 'Refreshing Coke - Take a sip and relax!');
                 });
             }
 
             if (foodSponsor) {
                 foodSponsor.addEventListener('click', () => {
-                    this.renderer.showMessage('Cloud Time', 'Enjoy your break! ☁️');
+                    this.renderer.showSponsorMessage('Cloud Time ☁️', 'Crispy Chips - Crunch while you play!');
                 });
             }
+        }
+
+        // Show food sponsor tooltip once per game
+        showFoodSponsorTooltip() {
+            if (!this.foodTooltipShownThisGame) {
+                this.foodTooltipShownThisGame = true;
+                this.renderer.showSponsorMessage('Snack Time! 🍿', 'Click on the chips for a quick break anytime!');
+            }
+        }
+
+        // Reset sponsor tooltip flag for new game
+        resetSponsorTooltips() {
+            this.foodTooltipShownThisGame = false;
         }
 
         // Handle swap player button click
@@ -3010,6 +3050,7 @@
 
         async startNewMatch() {
             this.isProcessing = false;
+            this.resetSponsorTooltips();
             this.game.startNewMatch();
             this.renderer.clearPlayedCards();
             this.renderer.clearCollectedTens();
@@ -3020,6 +3061,9 @@
                 { normal: 0, 'all-tens': 0, shutout: 0 }
             ]);
             this.updateDisplay();
+
+            // Show food sponsor tooltip once per game
+            setTimeout(() => this.showFoodSponsorTooltip(), 1500);
 
             await this.game.continueGame();
         }
@@ -3056,7 +3100,13 @@
                 this.updateMultiplayerTurnIndicator();
             } else {
                 // Single player mode
-                const validCards = this.game.isHumanTurn() ? this.game.getValidCards() : [];
+                const isHumanTurn = this.game.isHumanTurn();
+                const validCards = isHumanTurn ? this.game.getValidCards() : [];
+
+                // Hide sponsor popup when it's user's turn
+                if (isHumanTurn) {
+                    this.renderer.hideSponsorMessage();
+                }
 
                 this.renderer.renderAllHands(
                     this.game.players,
