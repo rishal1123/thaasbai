@@ -93,6 +93,12 @@ body {
     z-index: 15;
     color: var(--ocean-turquoise);
     box-shadow: 0 calc(0.4 * var(--scale)) calc(1.5 * var(--scale)) rgba(0, 0, 0, 0.4);
+    /* Prevent shifting when content changes */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(3.5 * var(--scale));
+    line-height: 1;
 }
 
 #superior-suit-display.hearts,
