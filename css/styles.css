@@ -1119,6 +1119,8 @@ body {
     cursor: pointer;
     padding: calc(3 * var(--scale));
     border-radius: calc(1 * var(--scale));
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .sponsor-logo {
