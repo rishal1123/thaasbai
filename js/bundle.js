@@ -2750,8 +2750,10 @@
                 this.lobbyManager = null;
             }
 
-            // Show main menu
+            // Show game lobby menu (parent container must be visible too)
             this.waitingRoom.classList.add('hidden');
+            document.getElementById('matchmaking-screen').classList.add('hidden');
+            document.getElementById('game-lobby').classList.remove('hidden');
             this.lobbyMenu.classList.remove('hidden');
             document.getElementById('room-code-input').value = '';
         }
@@ -2824,9 +2826,12 @@
                 if (currentGameName) currentGameName.textContent = 'Digu';
             }
 
-            // Hide game selection, show game lobby
+            // Hide game selection, show game lobby with menu
             if (gameSelection) gameSelection.classList.add('hidden');
             if (gameLobby) gameLobby.classList.remove('hidden');
+            this.lobbyMenu.classList.remove('hidden');
+            this.waitingRoom.classList.add('hidden');
+            document.getElementById('matchmaking-screen').classList.add('hidden');
 
             // Check if this is first load and prompt for name
             if (!this.playerName) {
