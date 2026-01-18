@@ -1474,7 +1474,12 @@
                     shutout: [document.getElementById('shutout-0'), document.getElementById('shutout-1')]
                 },
                 superiorSuit: document.getElementById('superior-suit-display'),
-                shuffleCount: document.getElementById('shuffle-count'),
+                shuffleCounts: {
+                    0: document.getElementById('shuffle-count-0'),
+                    1: document.getElementById('shuffle-count-1'),
+                    2: document.getElementById('shuffle-count-2'),
+                    3: document.getElementById('shuffle-count-3')
+                },
                 turnIndicator: document.getElementById('turn-indicator'),
                 messageOverlay: document.getElementById('message-overlay'),
                 messageTitle: document.getElementById('message-title'),
@@ -1599,11 +1604,13 @@
             }
         }
 
-        updateShuffleCount(shuffleCounts, dealerPosition, localPosition = 0) {
-            if (this.elements.shuffleCount) {
-                // Show the local player's shuffle count
-                const playerShuffleCount = shuffleCounts[localPosition];
-                this.elements.shuffleCount.textContent = `Shuffle: ${playerShuffleCount}`;
+        updateShuffleCount(shuffleCounts, dealerPosition) {
+            // Update all players' shuffle counts
+            for (let i = 0; i < 4; i++) {
+                const element = this.elements.shuffleCounts[i];
+                if (element) {
+                    element.textContent = `Shuffle: ${shuffleCounts[i]}`;
+                }
             }
         }
 
@@ -3317,8 +3324,7 @@
             this.renderer.updateWinTypeCounts(state.winTypeCount);
             this.renderer.updateCollectedTens(state.collectedTensCards);
             this.renderer.updateSuperiorSuit(state.superiorSuit);
-            const localPos = this.isMultiplayerMode ? this.game.localPlayerPosition : 0;
-            this.renderer.updateShuffleCount(state.shuffleCounts, state.dealerPosition, localPos);
+            this.renderer.updateShuffleCount(state.shuffleCounts, state.dealerPosition);
             this.renderer.showTurnIndicator(state.currentPlayer, this.game.isLocalPlayerTurn());
 
             // Always update avatars (works for both single and multiplayer)

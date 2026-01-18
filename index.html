@@ -68,7 +68,7 @@
     <link rel="apple-touch-startup-image" href="splash/splash-ipad-9.7-2048x1536.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
     <title>Thaasbai - Maldivian Card Games</title>
-    <link rel="stylesheet" href="css/styles.css?v=47">
+    <link rel="stylesheet" href="css/styles.css?v=48">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -222,6 +222,7 @@
                 </div>
                 <div class="player-hand" id="hand-top"></div>
                 <div class="player-label">Partner</div>
+                <div class="shuffle-count" id="shuffle-count-2">Shuffle: 0</div>
             </div>
 
             <div id="player-left" class="player-area opponent">
@@ -231,6 +232,7 @@
                 </div>
                 <div class="player-hand" id="hand-left"></div>
                 <div class="player-label">Opponent</div>
+                <div class="shuffle-count" id="shuffle-count-1">Shuffle: 0</div>
                 <!-- Coke Can SVG -->
                 <div class="table-item coke-can">
                     <svg viewBox="0 0 40 80" width="40" height="80">
@@ -275,6 +277,7 @@
                 </div>
                 <div class="player-hand" id="hand-right"></div>
                 <div class="player-label">Opponent</div>
+                <div class="shuffle-count" id="shuffle-count-3">Shuffle: 0</div>
                 <!-- Chips Packet SVG -->
                 <div class="table-item chips-packet">
                     <svg viewBox="0 0 50 70" width="50" height="70">
@@ -320,7 +323,7 @@
             <div id="player-bottom" class="player-area human">
                 <div class="player-hand" id="hand-bottom"></div>
                 <div class="player-label">You</div>
-                <div class="shuffle-count" id="shuffle-count">Shuffle: 1</div>
+                <div class="shuffle-count" id="shuffle-count-0">Shuffle: 0</div>
             </div>
         </main>
 
@@ -612,7 +615,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=33"></script>
+    <script src="js/bundle.js?v=34"></script>
 
     <!-- PWA Install Handler -->
     <script>
