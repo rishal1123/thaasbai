@@ -1670,6 +1670,35 @@ body {
     margin-bottom: calc(1.5 * var(--scale));
 }
 
+/* Lobby Sponsor Area */
+.lobby-sponsor {
+    margin-top: calc(2 * var(--scale));
+    padding: calc(1.5 * var(--scale));
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: calc(1 * var(--scale));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.lobby-sponsor-label {
+    display: block;
+    font-size: clamp(11px, calc(1.2 * var(--scale)), 16px);
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: calc(0.5 * var(--scale));
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.lobby-sponsor-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lobby-sponsor-logo svg {
+    opacity: 0.9;
+}
+
 /* Match Confirmation UI */
 .match-found-text {
     font-size: clamp(24px, calc(3 * var(--scale)), 40px);
