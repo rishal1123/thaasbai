@@ -2547,7 +2547,7 @@ html, body {
 
     /* Mobile position adjustments */
     #match-points-panel {
-        right: calc(2 * var(--scale) + 100px);
+        right: calc(2 * var(--scale) + 150px);
     }
 
     #player-left {
