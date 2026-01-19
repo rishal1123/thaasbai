@@ -3962,7 +3962,7 @@
                     phaseEl.classList.add('draw-phase');
                     break;
                 case 'meld':
-                    text = 'Arrange melds & discard';
+                    text = 'Discard';
                     phaseEl.classList.add('meld-phase');
                     break;
                 case 'discard':
