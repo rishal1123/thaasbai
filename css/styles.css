@@ -3761,12 +3761,13 @@ html, body {
         margin-left: 0 !important;
     }
 
-    /* Piles - 2x size, positioned next to center sponsor with safe area */
+    /* Piles - 2x size, side by side in center like sample image */
     #digu-stock {
         width: calc(18 * var(--scale)) !important;
         height: calc(25.8 * var(--scale)) !important;
         border-radius: calc(1.5 * var(--scale)) !important;
-        left: calc(50% - 25 * var(--scale)) !important;
+        top: 50% !important;
+        left: calc(50% - 12 * var(--scale)) !important;
         transform: translate(-100%, -50%) !important;
     }
 
@@ -3774,7 +3775,8 @@ html, body {
         width: calc(18 * var(--scale)) !important;
         height: calc(25.8 * var(--scale)) !important;
         border-radius: calc(1.5 * var(--scale)) !important;
-        left: calc(50% + 25 * var(--scale)) !important;
+        top: 50% !important;
+        left: calc(50% + 12 * var(--scale)) !important;
         transform: translate(0%, -50%) !important;
     }
 
