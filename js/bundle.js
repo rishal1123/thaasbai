@@ -3723,12 +3723,6 @@
 
             const state = this.diguGame.getGameState();
 
-            // Update stock count
-            const stockCount = document.getElementById('digu-stock-count');
-            if (stockCount) {
-                stockCount.textContent = state.stockCount;
-            }
-
             // Update discard pile top card
             this.renderDiguDiscardTop(state.discardTop);
 
