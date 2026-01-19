@@ -3063,6 +3063,9 @@ html, body {
 
 .discard-card .card {
     position: absolute;
+    width: calc(12 * var(--scale));
+    height: calc(17.2 * var(--scale));
+    border-radius: calc(1.2 * var(--scale));
 }
 
 /* Pile Label */
