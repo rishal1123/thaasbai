@@ -1,5 +1,5 @@
 /* Thaasbai - Maldivian Card Games Styles */
-/* Base resolution: 2796x1290 (iPhone 15 Pro Max landscape) - auto-scales to all screens */
+/* Base resolution: 1920x1080 - auto-scales to all screens, background fills viewport */
 
 :root {
     /* Maldivian Color Palette */
@@ -29,9 +29,9 @@
     --highlight-color: rgba(64, 224, 208, 0.6);
     --accent-gold: #FFD700;
 
-    /* Base resolution: 2796x1290 */
-    /* 1 scale unit = 12.9px (100 units = 1290px height) */
-    --scale: 12.9px;
+    /* Base resolution: 1920x1080 */
+    /* 1 scale unit = 10.8px (100 units = 1080px height) */
+    --scale: 10.8px;
 
     /* Text multiplier for better readability */
     --text-mult: 1.6;
@@ -55,27 +55,37 @@ body {
     font-size: calc(1.8 * var(--scale));
 }
 
+/* Full-screen background - fills entire viewport */
+#game-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2340E0D0' fill-opacity='0.1' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") bottom/cover no-repeat,
+        radial-gradient(ellipse at center bottom, var(--lagoon) 0%, var(--ocean-turquoise) 30%, var(--ocean-deep) 70%, var(--night-blue) 100%);
+    z-index: 0;
+}
+
 /* Viewport wrapper - fills screen */
 #viewport-wrapper {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: var(--night-blue);
     position: relative;
 }
 
 #game-container {
-    /* Fixed base resolution: 2796x1290 (iPhone 15 Pro Max landscape) */
-    width: 2796px;
-    height: 1290px;
+    /* Fixed base resolution: 1920x1080 */
+    width: 1920px;
+    height: 1080px;
     position: fixed;
     top: 0;
     left: 0;
     display: flex;
     flex-direction: column;
-    background:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2340E0D0' fill-opacity='0.1' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") bottom/cover no-repeat,
-        radial-gradient(ellipse at center bottom, var(--lagoon) 0%, var(--ocean-turquoise) 30%, var(--ocean-deep) 70%, var(--night-blue) 100%);
+    z-index: 1;
     /* Transform applied via JavaScript for scaling and rotation */
 }
 
@@ -2624,7 +2634,7 @@ html, body {
 
 /* Digu Game Board */
 #digu-game-board {
-    /* Fills parent game-container (2796x1290) */
+    /* Fills parent game-container (1920x1080) */
     width: 100%;
     height: 100%;
     position: absolute;

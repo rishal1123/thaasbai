@@ -62,13 +62,13 @@
 
     // ============================================
     // AUTO-SCALING FOR ALL SCREEN SIZES
-    // Base resolution: 2796x1290 (iPhone 15 Pro Max landscape)
+    // Base resolution: 1920x1080
     // Rotates 90deg when viewport is portrait (width < height)
     // Mobile devices maintain minimum DPI for usable touch targets
     // ============================================
 
-    const BASE_WIDTH = 2796;
-    const BASE_HEIGHT = 1290;
+    const BASE_WIDTH = 1920;
+    const BASE_HEIGHT = 1080;
     let currentGameScale = 1; // Store current scale for drag clone sizing
 
     // Detect mobile/touch device
