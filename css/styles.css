@@ -3241,7 +3241,7 @@ html, body {
 }
 
 .digu-player.bottom {
-    bottom: calc(0.5 * var(--scale));
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -3854,9 +3854,9 @@ html, body {
         font-size: calc(2.4 * var(--scale)) !important;
     }
 
-    /* Player bottom area - lower position with safe area */
+    /* Player bottom area - flush to bottom with safe area */
     .digu-player.bottom {
-        bottom: max(calc(0 * var(--scale)), env(safe-area-inset-bottom, 0px)) !important;
+        bottom: env(safe-area-inset-bottom, 0px) !important;
     }
 
     /* Bottom player shuffle count - fixed left side */
