@@ -3762,18 +3762,28 @@ html, body {
         height: calc(30 * var(--scale)) !important;
     }
 
-    /* Player hand cards - 1.82x size (1.4 * 1.3 = 30% bigger) */
+    /* Player hand cards - 20% bigger and spread out (no stacking) */
     #digu-game-board .digu-player.bottom .digu-player-hand .card {
-        width: calc(16.4 * var(--scale)) !important;
-        height: calc(23.4 * var(--scale)) !important;
-        font-size: calc(5.8 * var(--scale)) !important;
-        border-radius: calc(1.5 * var(--scale)) !important;
-        margin-left: calc(-9 * var(--scale)) !important;
+        width: calc(19.7 * var(--scale)) !important;
+        height: calc(28 * var(--scale)) !important;
+        font-size: calc(7 * var(--scale)) !important;
+        border-radius: calc(1.8 * var(--scale)) !important;
+        margin-left: calc(1 * var(--scale)) !important;
         touch-action: none;
     }
 
     #digu-game-board .digu-player.bottom .digu-player-hand .card:first-child {
         margin-left: 0 !important;
+    }
+
+    /* Hand container - allow horizontal scroll if needed */
+    .digu-player.bottom .digu-player-hand {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        max-width: calc(100vw - 2 * var(--mobile-cutout) - 4 * var(--scale)) !important;
+        padding: calc(1 * var(--scale)) !important;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* Piles - next to table sponsor (left and right of center) */

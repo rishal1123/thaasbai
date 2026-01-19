@@ -3835,17 +3835,33 @@
                 }
             }
 
-            // Check other cards
+            // Highlight closest card in hand
             const handEl = document.querySelector('.digu-player.bottom .digu-player-hand');
             if (handEl) {
-                const cards = handEl.querySelectorAll('.card');
-                cards.forEach((card) => {
-                    if (card === this.touchDragState.dragElement) return;
-                    const rect = card.getBoundingClientRect();
-                    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                        card.classList.add('drag-over');
+                const cards = Array.from(handEl.querySelectorAll('.card'));
+                const handRect = handEl.getBoundingClientRect();
+
+                // Only highlight if within hand area
+                if (y >= handRect.top - 50 && y <= handRect.bottom + 50) {
+                    let closestCard = null;
+                    let closestDistance = Infinity;
+
+                    for (const card of cards) {
+                        if (card === this.touchDragState.dragElement) continue;
+                        const rect = card.getBoundingClientRect();
+                        const cardCenterX = rect.left + rect.width / 2;
+                        const distance = Math.abs(x - cardCenterX);
+
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestCard = card;
+                        }
                     }
-                });
+
+                    if (closestCard && closestDistance < 100) {
+                        closestCard.classList.add('drag-over');
+                    }
+                }
             }
         }
 
@@ -3875,17 +3891,50 @@
                 }
             }
 
-            // Check cards
+            // Check cards - find closest card by horizontal position
             const handEl = document.querySelector('.digu-player.bottom .digu-player-hand');
             if (handEl) {
-                const cards = handEl.querySelectorAll('.card');
-                for (const card of cards) {
-                    if (card === this.touchDragState.dragElement) continue;
-                    const rect = card.getBoundingClientRect();
-                    if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                        const index = parseInt(card.dataset.cardIndex);
+                const cards = Array.from(handEl.querySelectorAll('.card'));
+                const handRect = handEl.getBoundingClientRect();
+
+                // Only process if within hand area (with some vertical tolerance)
+                if (y >= handRect.top - 50 && y <= handRect.bottom + 50) {
+                    let closestCard = null;
+                    let closestDistance = Infinity;
+
+                    for (const card of cards) {
+                        if (card === this.touchDragState.dragElement) continue;
+                        const rect = card.getBoundingClientRect();
+                        const cardCenterX = rect.left + rect.width / 2;
+                        const distance = Math.abs(x - cardCenterX);
+
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestCard = card;
+                        }
+                    }
+
+                    if (closestCard && closestDistance < 100) {
+                        const index = parseInt(closestCard.dataset.cardIndex);
                         if (!isNaN(index)) {
-                            return { type: 'card', index };
+                            // Determine if dropping before or after based on position
+                            const rect = closestCard.getBoundingClientRect();
+                            const cardCenterX = rect.left + rect.width / 2;
+                            const dropBefore = x < cardCenterX;
+
+                            // Adjust index based on original position
+                            const fromIndex = this.touchDragState.startIndex;
+                            let targetIndex = index;
+
+                            if (dropBefore && index > fromIndex) {
+                                targetIndex = index - 1;
+                            } else if (!dropBefore && index < fromIndex) {
+                                targetIndex = index + 1;
+                            } else if (!dropBefore) {
+                                targetIndex = index;
+                            }
+
+                            return { type: 'card', index: targetIndex };
                         }
                     }
                 }
