@@ -1211,6 +1211,24 @@ body {
 .rotate-content p {
     font-size: calc(1.8 * var(--scale));
     color: var(--ocean-turquoise);
+    margin-bottom: calc(2 * var(--scale));
+}
+
+.rotate-dismiss-btn {
+    background: transparent;
+    border: 2px solid var(--ocean-turquoise);
+    color: var(--ocean-turquoise);
+    padding: calc(1 * var(--scale)) calc(2 * var(--scale));
+    font-size: calc(1.5 * var(--scale));
+    border-radius: calc(0.8 * var(--scale));
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rotate-dismiss-btn:hover,
+.rotate-dismiss-btn:active {
+    background: var(--ocean-turquoise);
+    color: var(--night-blue);
 }
 
 /* Scrollbar styling */

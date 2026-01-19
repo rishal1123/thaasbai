@@ -165,10 +165,12 @@
     // FORCE LANDSCAPE ORIENTATION
     // ============================================
 
+    let portraitModeAllowed = false; // User dismissed the rotate overlay
+
     // Try to lock orientation to landscape
     async function lockLandscape() {
         try {
-            // Try Screen Orientation API (works in fullscreen on most browsers)
+            // Try Screen Orientation API (works in fullscreen on most browsers, NOT iOS)
             if (screen.orientation && screen.orientation.lock) {
                 await screen.orientation.lock('landscape');
                 console.log('[Orientation] Locked to landscape');
@@ -180,7 +182,7 @@
         return false;
     }
 
-    // Request fullscreen and lock orientation
+    // Request fullscreen and lock orientation (Android only, iOS doesn't support this)
     async function requestFullscreenLandscape() {
         const elem = document.documentElement;
         try {
@@ -203,7 +205,9 @@
         if (!overlay) return;
 
         const isPortrait = window.innerWidth < window.innerHeight;
-        if (isPortrait && isMobileDevice()) {
+
+        // Show overlay if in portrait on mobile, unless user dismissed it
+        if (isPortrait && isMobileDevice() && !portraitModeAllowed) {
             overlay.classList.add('show');
         } else {
             overlay.classList.remove('show');
@@ -223,10 +227,28 @@
         updateRotateOverlay();
     }
 
-    // Try to lock on first user interaction (required by browsers)
-    document.addEventListener('click', async function onFirstClick() {
-        if (isMobileDevice() && window.innerWidth < window.innerHeight) {
+    // Handle "Play in Portrait Anyway" button
+    document.addEventListener('DOMContentLoaded', () => {
+        const dismissBtn = document.getElementById('play-portrait-btn');
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', () => {
+                portraitModeAllowed = true;
+                const overlay = document.getElementById('rotate-overlay');
+                if (overlay) overlay.classList.remove('show');
+                // Rescale for portrait mode
+                scaleGame();
+            });
+        }
+    });
+
+    // Try to lock on first user interaction (required by browsers, mainly for Android)
+    document.addEventListener('click', async function onFirstClick(e) {
+        // Don't try fullscreen if clicking the dismiss button
+        if (e.target.id === 'play-portrait-btn') return;
+
+        if (isMobileDevice() && window.innerWidth < window.innerHeight && !portraitModeAllowed) {
             await requestFullscreenLandscape();
+            updateRotateOverlay();
         }
         document.removeEventListener('click', onFirstClick);
     }, { once: true });
