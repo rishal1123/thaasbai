@@ -1448,7 +1448,10 @@
             const ranks = [];
 
             for (const card of cards) {
-                if (card.suit !== suit) return false;
+                if (card.suit !== suit) {
+                    console.log('[isValidRun] Different suits:', cards.map(c => `${c.rank}${c.suit}`));
+                    return false;
+                }
                 // Ensure rank is a number (handles potential string coercion)
                 ranks.push(Number(card.rank));
             }
@@ -1458,15 +1461,20 @@
 
             // Check for consecutive ranks
             for (let i = 1; i < ranks.length; i++) {
-                if (ranks[i] !== ranks[i - 1] + 1) return false;
+                if (ranks[i] !== ranks[i - 1] + 1) {
+                    console.log('[isValidRun] Not consecutive:', ranks, 'from cards:', cards.map(c => `${c.rank}${c.suit}`));
+                    return false;
+                }
             }
 
             // Ace (14) can only be high: Q-K-A is valid, A-2-3 is NOT valid
             // Check if we have an invalid A-2 wrap (Ace followed by 2)
             if (ranks.includes(14) && ranks.includes(2)) {
+                console.log('[isValidRun] Invalid A-2 wrap');
                 return false; // No wrap-around allowed
             }
 
+            console.log('[isValidRun] VALID RUN:', ranks, 'suit:', suit);
             return true;
         }
 
