@@ -1449,10 +1449,11 @@
 
             for (const card of cards) {
                 if (card.suit !== suit) return false;
-                ranks.push(card.rank);
+                // Ensure rank is a number (handles potential string coercion)
+                ranks.push(Number(card.rank));
             }
 
-            // Sort ranks ascending
+            // Sort ranks ascending (numerically)
             ranks.sort((a, b) => a - b);
 
             // Check for consecutive ranks
@@ -1526,14 +1527,16 @@
             });
 
             for (const suit in bySuit) {
-                const suitCards = bySuit[suit].sort((a, b) => a.rank - b.rank);
+                // Sort by numeric rank value
+                const suitCards = bySuit[suit].sort((a, b) => Number(a.rank) - Number(b.rank));
 
                 // Find all consecutive sequences of 3+ cards
                 for (let start = 0; start < suitCards.length - 2; start++) {
                     let run = [suitCards[start]];
 
                     for (let i = start + 1; i < suitCards.length; i++) {
-                        if (suitCards[i].rank === run[run.length - 1].rank + 1) {
+                        // Use Number() to ensure numeric comparison
+                        if (Number(suitCards[i].rank) === Number(run[run.length - 1].rank) + 1) {
                             run.push(suitCards[i]);
                         } else {
                             break;
@@ -4078,12 +4081,12 @@
 
             const player = this.diguGame.players[0];
             const suitOrder = { 'spades': 0, 'hearts': 1, 'diamonds': 2, 'clubs': 3 };
-            const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
 
+            // Cards use numeric ranks: 2-10, 11=J, 12=Q, 13=K, 14=A
             player.hand.sort((a, b) => {
                 const suitDiff = suitOrder[a.suit] - suitOrder[b.suit];
                 if (suitDiff !== 0) return suitDiff;
-                return rankOrder[b.rank] - rankOrder[a.rank]; // High to low within suit
+                return b.rank - a.rank; // High to low within suit
             });
 
             this.updateDiguDisplay();
@@ -4094,10 +4097,10 @@
 
             const player = this.diguGame.players[0];
             const suitOrder = { 'spades': 0, 'hearts': 1, 'diamonds': 2, 'clubs': 3 };
-            const rankOrder = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
 
+            // Cards use numeric ranks: 2-10, 11=J, 12=Q, 13=K, 14=A
             player.hand.sort((a, b) => {
-                const rankDiff = rankOrder[b.rank] - rankOrder[a.rank]; // High to low
+                const rankDiff = b.rank - a.rank; // High to low (Ace=14 first)
                 if (rankDiff !== 0) return rankDiff;
                 return suitOrder[a.suit] - suitOrder[b.suit];
             });
