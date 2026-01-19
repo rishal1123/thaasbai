@@ -1442,18 +1442,20 @@
 
         // Check if cards form a valid run (3+ consecutive same suit, Ace HIGH only)
         static isValidRun(cards) {
-            if (cards.length < 3) return false;
+            if (!cards || cards.length < 3) return false;
 
             const suit = cards[0].suit;
             const ranks = [];
 
             for (const card of cards) {
-                if (card.suit !== suit) {
-                    console.log('[isValidRun] Different suits:', cards.map(c => `${c.rank}${c.suit}`));
+                // Check same suit (case-insensitive)
+                if (card.suit.toLowerCase() !== suit.toLowerCase()) {
                     return false;
                 }
-                // Ensure rank is a number (handles potential string coercion)
-                ranks.push(Number(card.rank));
+                // Ensure rank is a number
+                const rankNum = parseInt(card.rank, 10);
+                if (isNaN(rankNum)) return false;
+                ranks.push(rankNum);
             }
 
             // Sort ranks ascending (numerically)
@@ -1462,19 +1464,15 @@
             // Check for consecutive ranks
             for (let i = 1; i < ranks.length; i++) {
                 if (ranks[i] !== ranks[i - 1] + 1) {
-                    console.log('[isValidRun] Not consecutive:', ranks, 'from cards:', cards.map(c => `${c.rank}${c.suit}`));
                     return false;
                 }
             }
 
             // Ace (14) can only be high: Q-K-A is valid, A-2-3 is NOT valid
-            // Check if we have an invalid A-2 wrap (Ace followed by 2)
             if (ranks.includes(14) && ranks.includes(2)) {
-                console.log('[isValidRun] Invalid A-2 wrap');
-                return false; // No wrap-around allowed
+                return false;
             }
 
-            console.log('[isValidRun] VALID RUN:', ranks, 'suit:', suit);
             return true;
         }
 
@@ -1536,15 +1534,15 @@
 
             for (const suit in bySuit) {
                 // Sort by numeric rank value
-                const suitCards = bySuit[suit].sort((a, b) => Number(a.rank) - Number(b.rank));
+                const suitCards = bySuit[suit].sort((a, b) => parseInt(a.rank, 10) - parseInt(b.rank, 10));
 
                 // Find all consecutive sequences of 3+ cards
                 for (let start = 0; start < suitCards.length - 2; start++) {
                     let run = [suitCards[start]];
 
                     for (let i = start + 1; i < suitCards.length; i++) {
-                        // Use Number() to ensure numeric comparison
-                        if (Number(suitCards[i].rank) === Number(run[run.length - 1].rank) + 1) {
+                        // Use parseInt to ensure numeric comparison
+                        if (parseInt(suitCards[i].rank, 10) === parseInt(run[run.length - 1].rank, 10) + 1) {
                             run.push(suitCards[i]);
                         } else {
                             break;
@@ -4028,8 +4026,6 @@
             const validMelds = [];
             const maxIndex = Math.min(hand.length, 10); // Only check first 10 cards
 
-            console.log('[findAllValidMelds] Hand:', hand.map(c => `${c.rank}${c.suit[0]}`).join(', '));
-
             // Scan for valid melds of size 3 and 4
             for (let size = 4; size >= 3; size--) {
                 for (let start = 0; start <= maxIndex - size; start++) {
@@ -4042,26 +4038,20 @@
                     if (overlaps) continue;
 
                     const group = hand.slice(start, start + size);
-                    console.log(`[findAllValidMelds] Checking group at ${start}, size ${size}:`, group.map(c => `${c.rank}${c.suit[0]}`).join(', '));
 
                     // Check if valid set
-                    const isSet = DiGuRules.isValidSet(group);
-                    console.log(`[findAllValidMelds] isValidSet: ${isSet}`);
-                    if (isSet) {
+                    if (DiGuRules.isValidSet(group)) {
                         validMelds.push({ start, length: size, type: 'set' });
                         continue;
                     }
 
                     // Check if valid run
-                    const isRun = DiGuRules.isValidRun(group);
-                    console.log(`[findAllValidMelds] isValidRun: ${isRun}`);
-                    if (isRun) {
+                    if (DiGuRules.isValidRun(group)) {
                         validMelds.push({ start, length: size, type: 'run' });
                     }
                 }
             }
 
-            console.log('[findAllValidMelds] Found melds:', validMelds);
             // Sort by start position
             validMelds.sort((a, b) => a.start - b.start);
             return validMelds;
