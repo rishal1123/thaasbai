@@ -3063,8 +3063,8 @@ html, body {
 
 .discard-card .card {
     position: absolute;
-    width: calc(12 * var(--scale));
-    height: calc(17.2 * var(--scale));
+    width: calc(12.4 * var(--scale));
+    height: calc(17.6 * var(--scale));
     border-radius: calc(1.2 * var(--scale));
 }
 
