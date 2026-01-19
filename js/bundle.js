@@ -674,12 +674,67 @@
     }
 
     // ============================================
-    // AI PLAYER CLASS
+    // AI PLAYER CLASS - Enhanced Strategy
     // ============================================
 
     class AIPlayer extends Player {
         constructor(position, team) {
             super(position, team, false);
+            this.playedCards = []; // Track cards played this round
+            this.suitVoids = {}; // Track which players are void in which suits
+        }
+
+        // Reset memory at start of new round
+        resetMemory() {
+            this.playedCards = [];
+            this.suitVoids = { 0: {}, 1: {}, 2: {}, 3: {} };
+        }
+
+        // Record a played card for memory
+        recordPlay(position, card, ledSuit) {
+            this.playedCards.push({ position, card, ledSuit });
+            // If player didn't follow suit, they're void
+            if (ledSuit && card.suit !== ledSuit) {
+                this.suitVoids[position][ledSuit] = true;
+            }
+        }
+
+        // Check if a player is known to be void in a suit
+        isPlayerVoid(position, suit) {
+            return this.suitVoids[position]?.[suit] === true;
+        }
+
+        // Count how many of a suit have been played
+        countPlayedInSuit(suit) {
+            return this.playedCards.filter(p => p.card.suit === suit).length;
+        }
+
+        // Check if a specific card has been played
+        isCardPlayed(rank, suit) {
+            return this.playedCards.some(p => p.card.rank === rank && p.card.suit === suit);
+        }
+
+        // Get remaining high cards in a suit (not played and not in hand)
+        getRemainingHighCards(suit, minPower = 10) {
+            const played = this.playedCards.filter(p => p.card.suit === suit);
+            const inHand = this.hand.filter(c => c.suit === suit);
+            const allRanks = ['ace', 'king', 'queen', 'jack', '10', '9', '8', '7', '6', '5', '4', '3', '2'];
+
+            return allRanks.filter(rank => {
+                const card = new Card(suit, rank);
+                if (card.getPower() < minPower) return false;
+                const isPlayed = played.some(p => p.card.rank === rank);
+                const isInHand = inHand.some(c => c.rank === rank);
+                return !isPlayed && !isInHand;
+            });
+        }
+
+        // Calculate trick value (points at stake)
+        getTrickValue(trickCards) {
+            return trickCards.reduce((sum, tc) => {
+                if (tc.card?.isTen()) return sum + 10;
+                return sum;
+            }, 0);
         }
 
         chooseCard(ledSuit, superiorSuit, trickCards, gameState) {
@@ -702,72 +757,211 @@
 
         chooseLeadCard(superiorSuit, gameState) {
             const validCards = [...this.hand];
+            const partnerPosition = (this.position + 2) % 4;
+            const leftOpp = (this.position + 1) % 4;
+            const rightOpp = (this.position + 3) % 4;
 
+            // Strategy 1: Lead winning superior suit card to draw out trumps
             if (superiorSuit && this.hasSuit(superiorSuit)) {
                 const superiorCards = this.getCardsOfSuit(superiorSuit);
                 const highSuperior = this.getHighestCard(superiorCards);
-                if (highSuperior.getPower() >= 12) {
+                const remainingHigh = this.getRemainingHighCards(superiorSuit, highSuperior.getPower());
+
+                // If we have the highest remaining trump, lead it
+                if (remainingHigh.length === 0 && highSuperior.getPower() >= 10) {
                     return highSuperior;
                 }
             }
 
+            // Strategy 2: Lead from a suit where opponents are void (partner can trump)
+            for (const card of validCards) {
+                if (card.suit === superiorSuit) continue; // Don't waste trumps
+                const oppLeftVoid = this.isPlayerVoid(leftOpp, card.suit);
+                const oppRightVoid = this.isPlayerVoid(rightOpp, card.suit);
+                const partnerVoid = this.isPlayerVoid(partnerPosition, card.suit);
+
+                // If both opponents are void but partner isn't, lead low
+                if (oppLeftVoid && oppRightVoid && !partnerVoid) {
+                    const suitCards = this.getCardsOfSuit(card.suit);
+                    return this.getLowestCard(suitCards);
+                }
+            }
+
+            // Strategy 3: Lead protected tens (have higher card in same suit)
             const tens = this.getTens();
             for (const ten of tens) {
                 const suitCards = this.getCardsOfSuit(ten.suit);
-                const hasHighProtection = suitCards.some(c => c.getPower() > 10);
-                if (hasHighProtection || (superiorSuit === ten.suit)) {
+                const hasAce = suitCards.some(c => c.rank === 'ace');
+                const hasKing = suitCards.some(c => c.rank === 'king');
+
+                // Lead ten if we have Ace or if it's superior suit with protection
+                if (hasAce || (superiorSuit === ten.suit && (hasAce || hasKing))) {
                     return ten;
                 }
             }
 
+            // Strategy 4: Lead from long suit to establish it
+            const suitCounts = {};
+            for (const card of validCards) {
+                if (card.suit === superiorSuit) continue;
+                suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+            }
+            const longSuit = Object.entries(suitCounts).sort((a, b) => b[1] - a[1])[0];
+            if (longSuit && longSuit[1] >= 3) {
+                const longSuitCards = this.getCardsOfSuit(longSuit[0]);
+                const highCard = this.getHighestCard(longSuitCards);
+                // Lead high from long suit to establish
+                if (highCard.getPower() >= 11) {
+                    return highCard;
+                }
+            }
+
+            // Strategy 5: Lead low card from short suit (not tens)
+            const shortSuits = Object.entries(suitCounts).sort((a, b) => a[1] - b[1]);
+            for (const [suit, count] of shortSuits) {
+                if (count <= 2) {
+                    const suitCards = this.getCardsOfSuit(suit);
+                    const nonTens = suitCards.filter(c => !c.isTen());
+                    if (nonTens.length > 0) {
+                        return this.getLowestCard(nonTens);
+                    }
+                }
+            }
+
+            // Default: lead lowest non-ten card
             return this.getLowestCard(validCards);
         }
 
         chooseFollowCard(validCards, trickCards, superiorSuit, gameState) {
             const currentWinner = this.getCurrentTrickWinner(trickCards, superiorSuit);
             const partnerPosition = (this.position + 2) % 4;
+            const isLastToPlay = trickCards.length === 3;
+            const trickValue = this.getTrickValue(trickCards);
+            const ledSuit = trickCards[0]?.card?.suit;
 
+            // If partner is winning
             if (currentWinner && currentWinner.position === partnerPosition) {
+                // If last to play or trick has value, just dump lowest
+                if (isLastToPlay || trickValue > 0) {
+                    return this.getLowestCard(validCards);
+                }
+
+                // Otherwise, might add a ten if safe
+                const myTens = validCards.filter(c => c.isTen());
+                if (myTens.length > 0 && isLastToPlay) {
+                    // Safe to add ten if we're last
+                    return myTens[0];
+                }
+
                 return this.getLowestCard(validCards);
             }
 
-            const ledSuit = trickCards[0]?.card?.suit;
+            // We need to try to win
             const highestNeeded = this.getHighestTrickCard(trickCards, ledSuit, superiorSuit);
-            const winningCards = validCards.filter(c => c.getPower() > highestNeeded);
+            const winningCards = validCards.filter(c => {
+                const myPower = (superiorSuit && c.suit === superiorSuit)
+                    ? c.getPower() + 100
+                    : c.getPower();
+                return myPower > highestNeeded;
+            });
 
             if (winningCards.length > 0) {
-                const trickHasTen = trickCards.some(tc => tc.card?.isTen());
-                if (trickHasTen) {
-                    return this.getLowestCard(winningCards);
+                // Trick has points - win with lowest winning card
+                if (trickValue > 0) {
+                    return this.getLowestWinningCard(winningCards);
                 }
-                return this.getLowestCard(winningCards);
+
+                // Last to play - always win if we can (trick might get points)
+                if (isLastToPlay) {
+                    return this.getLowestWinningCard(winningCards);
+                }
+
+                // Not last, no points yet - consider if worth winning
+                // Win if we have a strong card anyway
+                const lowestWinner = this.getLowestWinningCard(winningCards);
+                if (lowestWinner.getPower() >= 10) {
+                    return lowestWinner;
+                }
+
+                // Otherwise just play lowest
+                return this.getLowestCard(validCards);
             }
 
+            // Can't win - dump lowest, avoid tens if possible
             return this.getLowestCard(validCards);
         }
 
         chooseOffSuitCard(validCards, trickCards, superiorSuit, gameState) {
             const partnerPosition = (this.position + 2) % 4;
             const currentWinner = this.getCurrentTrickWinner(trickCards, superiorSuit);
+            const trickValue = this.getTrickValue(trickCards);
+            const isLastToPlay = trickCards.length === 3;
+            const ledSuit = trickCards[0]?.card?.suit;
 
+            // Partner is winning - discard carefully
             if (currentWinner && currentWinner.position === partnerPosition) {
+                // If last to play, can safely add ten
+                if (isLastToPlay) {
+                    const myTens = validCards.filter(c => c.isTen() && c.suit !== superiorSuit);
+                    if (myTens.length > 0) {
+                        return myTens[0]; // Add ten to partner's trick
+                    }
+                }
                 return this.getLowestCard(validCards);
             }
 
+            // Should we trump?
             if (superiorSuit) {
-                const superiorCards = validCards.filter(c => c.suit === superiorSuit);
-                if (superiorCards.length > 0) {
-                    return this.getLowestCard(superiorCards);
+                const trumps = validCards.filter(c => c.suit === superiorSuit);
+                if (trumps.length > 0) {
+                    // Check if opponent already trumped higher
+                    const highestTrumpPlayed = trickCards
+                        .filter(tc => tc.card?.suit === superiorSuit)
+                        .reduce((max, tc) => Math.max(max, tc.card.getPower()), 0);
+
+                    const winningTrumps = trumps.filter(t => t.getPower() > highestTrumpPlayed);
+
+                    if (winningTrumps.length > 0) {
+                        // Trump if trick has value
+                        if (trickValue >= 10) {
+                            return this.getLowestCard(winningTrumps);
+                        }
+
+                        // Trump if last to play and enemy is winning
+                        if (isLastToPlay) {
+                            return this.getLowestCard(winningTrumps);
+                        }
+
+                        // Trump with low trump if we have many
+                        if (trumps.length >= 3) {
+                            return this.getLowestCard(winningTrumps);
+                        }
+                    }
                 }
             }
 
-            if (!superiorSuit) {
-                const nonTens = validCards.filter(c => !c.isTen());
-                if (nonTens.length > 0) {
-                    return this.getLowestCard(nonTens);
+            // Can't or won't trump - discard
+            // Avoid discarding tens
+            const nonTens = validCards.filter(c => !c.isTen());
+            if (nonTens.length > 0) {
+                // Discard from short suits to create voids
+                const suitCounts = {};
+                for (const card of nonTens) {
+                    if (card.suit === superiorSuit) continue;
+                    suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
                 }
+
+                // Discard from shortest non-trump suit
+                const shortestSuit = Object.entries(suitCounts).sort((a, b) => a[1] - b[1])[0];
+                if (shortestSuit) {
+                    const shortSuitCards = nonTens.filter(c => c.suit === shortestSuit[0]);
+                    return this.getLowestCard(shortSuitCards);
+                }
+
+                return this.getLowestCard(nonTens);
             }
 
+            // Only have tens - play the one from shortest suit
             return this.getLowestCard(validCards);
         }
 
@@ -778,6 +972,15 @@
         }
 
         getLowestCard(cards) {
+            const nonTens = cards.filter(c => !c.isTen());
+            const searchCards = nonTens.length > 0 ? nonTens : cards;
+            return searchCards.reduce((best, card) =>
+                card.getPower() < best.getPower() ? card : best
+            );
+        }
+
+        getLowestWinningCard(cards) {
+            // Among winning cards, prefer non-tens, then lowest
             const nonTens = cards.filter(c => !c.isTen());
             const searchCards = nonTens.length > 0 ? nonTens : cards;
             return searchCards.reduce((best, card) =>
@@ -2161,7 +2364,27 @@
             this.shuffleCounts[this.dealerPosition]++;
             this.dealCards();
             this.currentTrick = new Trick();
+            // Reset AI memory for new round
+            this.resetAIMemory();
             this.notifyStateChange();
+        }
+
+        // Reset all AI players' memory at round start
+        resetAIMemory() {
+            for (const player of this.players) {
+                if (player instanceof AIPlayer && player.resetMemory) {
+                    player.resetMemory();
+                }
+            }
+        }
+
+        // Record a play to all AI players' memory
+        recordPlayToAI(position, card, ledSuit) {
+            for (const player of this.players) {
+                if (player instanceof AIPlayer && player.recordPlay) {
+                    player.recordPlay(position, card, ledSuit);
+                }
+            }
         }
 
         // Called after round ends - only rotate if dealer's team won
@@ -2256,6 +2479,9 @@
             }
 
             this.currentTrick.addCard(playedCard, player.position, player);
+
+            // Record play to AI memory for card tracking
+            this.recordPlayToAI(player.position, playedCard, ledSuit);
 
             if (this.onCardPlayed) {
                 this.onCardPlayed(playedCard, player);
