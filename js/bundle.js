@@ -1805,6 +1805,52 @@
         get cardCount() {
             return this.hand.length;
         }
+
+        // Auto-arrange cards into valid melds (for end-game display)
+        autoArrangeMelds() {
+            const cards = this.hand.slice(0, 10);
+            if (cards.length < 10) return false;
+
+            const melds = DiGuRules.findPossibleMelds(cards);
+            const structures = [[3, 3, 4], [3, 4, 3], [4, 3, 3]];
+
+            for (const [size1, size2, size3] of structures) {
+                const result = this.findMeldCombination(cards, melds, [size1, size2, size3]);
+                if (result) {
+                    const newHand = [...result[0], ...result[1], ...result[2]];
+                    if (this.hand.length > 10) {
+                        newHand.push(this.hand[10]);
+                    }
+                    this.hand = newHand;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Find a valid combination of melds with specified sizes
+        findMeldCombination(cards, melds, sizes) {
+            const [size1, size2, size3] = sizes;
+            const melds1 = melds.filter(m => m.cards.length === size1);
+
+            for (const m1 of melds1) {
+                const used1 = new Set(m1.cards.map(c => `${c.suit}-${c.rank}`));
+                const remaining1 = cards.filter(c => !used1.has(`${c.suit}-${c.rank}`));
+
+                const remainingMelds = DiGuRules.findPossibleMelds(remaining1);
+                const melds2 = remainingMelds.filter(m => m.cards.length === size2);
+
+                for (const m2 of melds2) {
+                    const used2 = new Set(m2.cards.map(c => `${c.suit}-${c.rank}`));
+                    const remaining2 = remaining1.filter(c => !used2.has(`${c.suit}-${c.rank}`));
+
+                    if (remaining2.length === size3 && DiGuRules.isValidMeld(remaining2)) {
+                        return [m1.cards, m2.cards, remaining2];
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     // ============================================
@@ -4526,8 +4572,8 @@
                 const cardsEl = document.createElement('div');
                 cardsEl.className = 'result-player-cards';
 
-                // Auto-arrange melds for AI players before displaying
-                if (!player.isHuman && typeof player.autoArrangeMelds === 'function') {
+                // Auto-arrange melds for all players before displaying
+                if (typeof player.autoArrangeMelds === 'function') {
                     player.autoArrangeMelds();
                 }
 
