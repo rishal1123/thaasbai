@@ -2583,10 +2583,11 @@ html, body {
 /* Mobile Portrait Mode - Lobby in portrait, Game in landscape */
 /* Uses aspect-ratio for more reliable phone detection */
 @media screen and (max-width: 932px) and (aspect-ratio < 1) {
-    /* Recalculate scale for rotated mobile view */
+    /* Recalculate scale for rotated mobile view - fill entire screen */
     :root {
-        /* After 90deg rotation: width=vh, height=vw, so scale based on vw (the shorter side) */
-        --scale: min(1vw, 1.78vh);
+        /* After 90deg rotation: logical width=vh, logical height=vw */
+        /* Scale based on the smaller dimension for proper fit */
+        --scale: min(1vw, 0.5625vh);
     }
 
     /* Hide rotate overlay - we handle it properly */
@@ -2600,6 +2601,7 @@ html, body {
         overflow: hidden;
         margin: 0;
         padding: 0;
+        background: var(--night-blue);
     }
 
     /* Viewport wrapper stays normal for portrait screens */
@@ -2608,34 +2610,45 @@ html, body {
         width: 100%;
         height: 100%;
         overflow: hidden;
+        background: var(--night-blue);
     }
 
-    /* Game container rotates to landscape - 16:9 within rotated space */
+    /* Game container rotates to landscape - fills entire screen */
     #game-container {
         position: fixed;
-        /* After rotation: logical width=vh, logical height=vw */
-        /* Constrain to 16:9 within the rotated space */
-        width: min(100vh, 177.78vw);
-        height: min(100vw, 56.25vh);
+        /* After rotation: width becomes vh, height becomes vw */
+        width: 100vh;
+        height: 100vw;
         max-width: none;
         max-height: none;
         transform: rotate(90deg);
         transform-origin: top left;
         top: 0;
         left: 100vw;
+        /* Ensure background fills */
+        background-size: cover;
+        background-position: center;
     }
 
-    /* Digu game board also rotates to landscape - 16:9 */
+    /* Game board fills the container */
+    #game-board {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Digu game board also rotates to landscape - fills entire screen */
     #digu-game-board {
         position: fixed;
-        width: min(100vh, 177.78vw);
-        height: min(100vw, 56.25vh);
+        width: 100vh;
+        height: 100vw;
         max-width: none;
         max-height: none;
         transform: rotate(90deg);
         transform-origin: top left;
         top: 0;
         left: 100vw;
+        background-size: cover;
+        background-position: center;
     }
 
     /* Lobby stays in portrait mode - no rotation */
@@ -2649,18 +2662,46 @@ html, body {
         display: flex;
     }
 
-    /* Player's hand cards - 1.5x larger for touch */
-    #player-bottom .card,
-    #hand-bottom .card {
-        width: calc(13.5 * var(--scale));
-        height: calc(19.35 * var(--scale));
-        border-radius: calc(1.5 * var(--scale));
+    /* Table scales to fill mobile screen */
+    #game-board::before {
+        width: calc(75 * var(--scale)) !important;
+        height: calc(55 * var(--scale)) !important;
     }
 
-    /* Played cards in center - 1.5x larger */
+    #game-board::after {
+        width: calc(68 * var(--scale)) !important;
+        height: calc(48 * var(--scale)) !important;
+    }
+
+    /* Player positions adjusted for full screen */
+    #player-bottom {
+        bottom: calc(2 * var(--scale));
+    }
+
+    #player-top {
+        top: calc(2 * var(--scale));
+    }
+
+    #player-left {
+        left: calc(2 * var(--scale));
+    }
+
+    #player-right {
+        right: calc(2 * var(--scale));
+    }
+
+    /* Player's hand cards - larger for touch */
+    #player-bottom .card,
+    #hand-bottom .card {
+        width: calc(11 * var(--scale));
+        height: calc(15.75 * var(--scale));
+        border-radius: calc(1.2 * var(--scale));
+    }
+
+    /* Played cards in center */
     .played-card {
-        width: calc(10.5 * var(--scale));
-        height: calc(15 * var(--scale));
+        width: calc(9 * var(--scale));
+        height: calc(12.9 * var(--scale));
     }
 
     .played-card .card {
@@ -2668,34 +2709,42 @@ html, body {
         height: 100%;
     }
 
-    /* Base card size - 1.5x larger */
+    /* Base card size */
     .card {
-        width: calc(10.5 * var(--scale));
-        height: calc(15 * var(--scale));
+        width: calc(9 * var(--scale));
+        height: calc(12.9 * var(--scale));
     }
 
-    /* Adjust play area for larger cards */
+    /* Adjust play area */
     #play-area {
-        width: calc(42 * var(--scale));
-        height: calc(42 * var(--scale));
+        width: calc(38 * var(--scale));
+        height: calc(38 * var(--scale));
     }
 
     /* Adjust card overlap in hand */
     .player-hand .card {
-        margin: 0 calc(-2.5 * var(--scale));
+        margin: 0 calc(-2 * var(--scale));
     }
 
-    /* Mobile position adjustments */
+    /* UI elements positioned for full screen */
     #match-points-panel {
-        right: calc(2 * var(--scale) + 150px);
+        top: calc(1 * var(--scale));
+        right: calc(1 * var(--scale));
+        padding: calc(1 * var(--scale));
     }
 
-    #player-left {
-        left: calc(4 * var(--scale) + 50px);
+    #superior-suit-display {
+        top: calc(1 * var(--scale));
+        left: calc(1 * var(--scale));
     }
 
     .drink-sponsor {
-        left: calc(8 * var(--scale) + 100px);
+        left: calc(1 * var(--scale));
+        bottom: calc(25 * var(--scale));
+    }
+
+    .table-sponsor {
+        font-size: clamp(8px, calc(1.2 * var(--scale)), 12px);
     }
 
     /* ===== PORTRAIT OPTIMIZED LOBBY & HOME SCREENS ===== */
@@ -3781,31 +3830,31 @@ html, body {
     font-weight: 600;
 }
 
-/* Mobile optimized Digu layout - fit within 16:9 ratio */
-@media screen and (max-width: 900px) {
-    /* 50px reserved on left/right for display cutouts */
+/* Mobile optimized Digu layout - fill screen */
+@media screen and (max-width: 932px) {
+    /* Safe area for notches/cutouts */
     :root {
-        --mobile-cutout: 50px;
+        --mobile-cutout: env(safe-area-inset-left, 20px);
     }
 
-    /* Digu game board - fit 16:9 with 50px cutout margins */
+    /* Digu game board - fill screen with safe area padding */
     #digu-game-board {
-        padding-left: calc(var(--mobile-cutout) + env(safe-area-inset-left, 0px));
-        padding-right: calc(var(--mobile-cutout) + env(safe-area-inset-right, 0px));
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-left: calc(env(safe-area-inset-left, 10px) + 10px);
+        padding-right: calc(env(safe-area-inset-right, 10px) + 10px);
+        padding-top: env(safe-area-inset-top, 5px);
+        padding-bottom: env(safe-area-inset-bottom, 5px);
         overflow: hidden;
     }
 
-    /* Scale down table to fit 16:9 */
+    /* Table scales to fill mobile screen */
     #digu-game-board::before {
-        width: calc(50 * var(--scale)) !important;
-        height: calc(36 * var(--scale)) !important;
+        width: calc(70 * var(--scale)) !important;
+        height: calc(50 * var(--scale)) !important;
     }
 
     #digu-game-board::after {
-        width: calc(44 * var(--scale)) !important;
-        height: calc(30 * var(--scale)) !important;
+        width: calc(64 * var(--scale)) !important;
+        height: calc(44 * var(--scale)) !important;
     }
 
     /* Player hand cards - 20% bigger and spread out (no stacking) */
@@ -3827,7 +3876,7 @@ html, body {
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         overflow-y: hidden !important;
-        max-width: calc(100vw - 2 * var(--mobile-cutout) - 4 * var(--scale)) !important;
+        max-width: calc(100% - 4 * var(--scale)) !important;
         padding: calc(1 * var(--scale)) !important;
         -webkit-overflow-scrolling: touch;
     }
