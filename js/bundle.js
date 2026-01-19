@@ -61,6 +61,78 @@
     });
 
     // ============================================
+    // AUTO-SCALING FOR ALL SCREEN SIZES
+    // Base resolution: 2796x1290 (iPhone 15 Pro Max landscape)
+    // Rotates 90deg when viewport is portrait (width < height)
+    // ============================================
+
+    const BASE_WIDTH = 2796;
+    const BASE_HEIGHT = 1290;
+
+    function scaleGame() {
+        const gameContainer = document.getElementById('game-container');
+        const diguGameBoard = document.getElementById('digu-game-board');
+        const lobbyOverlay = document.getElementById('lobby-overlay');
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const isPortrait = vw < vh;
+
+        // In portrait mode, swap dimensions for scale calculation (game rotates 90deg)
+        const effectiveWidth = isPortrait ? vh : vw;
+        const effectiveHeight = isPortrait ? vw : vh;
+
+        // Calculate scale to fit viewport while maintaining aspect ratio
+        const scaleX = effectiveWidth / BASE_WIDTH;
+        const scaleY = effectiveHeight / BASE_HEIGHT;
+        const scale = Math.min(scaleX, scaleY);
+
+        // Build transform: rotate if portrait, then scale
+        let gameTransform;
+        if (isPortrait) {
+            // Rotate 90deg clockwise, then scale
+            // After rotation: game width aligns with viewport height, game height with viewport width
+            gameTransform = `rotate(90deg) scale(${scale})`;
+        } else {
+            gameTransform = `scale(${scale})`;
+        }
+
+        // Apply transform to game container
+        if (gameContainer) {
+            gameContainer.style.transform = gameTransform;
+        }
+
+        // Apply transform to Digu game board (when visible)
+        if (diguGameBoard) {
+            diguGameBoard.style.transform = gameTransform;
+        }
+
+        // Lobby stays in native orientation (no rotation)
+        if (lobbyOverlay) {
+            const lobbyScaleX = vw / BASE_WIDTH;
+            const lobbyScaleY = vh / BASE_HEIGHT;
+            const lobbyScale = Math.min(lobbyScaleX, lobbyScaleY);
+            lobbyOverlay.style.transform = `scale(${lobbyScale})`;
+        }
+
+        console.log(`[Scale] Viewport: ${vw}x${vh}, Portrait: ${isPortrait}, Scale: ${scale.toFixed(3)}`);
+    }
+
+    // Scale on load and resize
+    window.addEventListener('resize', scaleGame);
+    window.addEventListener('orientationchange', () => {
+        // Delay to allow orientation change to complete
+        setTimeout(scaleGame, 100);
+    });
+
+    // Initial scale on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', scaleGame);
+    } else {
+        scaleGame();
+    }
+
+    // ============================================
     // WEBSOCKET MULTIPLAYER CONFIGURATION
     // ============================================
 

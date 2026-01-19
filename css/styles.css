@@ -1,5 +1,5 @@
 /* Thaasbai - Maldivian Card Games Styles */
-/* Optimized for 16:9 ratio screens (1920x1080) - scales automatically */
+/* Base resolution: 2796x1290 (iPhone 15 Pro Max landscape) - auto-scales to all screens */
 
 :root {
     /* Maldivian Color Palette */
@@ -29,11 +29,11 @@
     --highlight-color: rgba(64, 224, 208, 0.6);
     --accent-gold: #FFD700;
 
-    /* 16:9 aspect ratio scaling - based on height for landscape */
-    /* 1vh = 1% of viewport height, scale accordingly */
-    --scale: min(1vh, 0.5625vw);
+    /* Base resolution: 2796x1290 */
+    /* 1 scale unit = 12.9px (100 units = 1290px height) */
+    --scale: 12.9px;
 
-    /* Text multiplier for better readability (best practice: 16px minimum) */
+    /* Text multiplier for better readability */
     --text-mult: 1.6;
 }
 
@@ -51,22 +51,33 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Base font size: minimum 16px, scales with viewport */
-    font-size: clamp(16px, calc(1.8 * var(--scale)), 24px);
+    /* Base font size scales with --scale */
+    font-size: calc(1.8 * var(--scale));
+}
+
+/* Viewport wrapper - fills screen, centers game */
+#viewport-wrapper {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: var(--night-blue);
 }
 
 #game-container {
-    /* 16:9 aspect ratio container */
-    width: min(100vw, 177.78vh); /* 16:9 = 1.7778 */
-    height: min(100vh, 56.25vw); /* 9:16 = 0.5625 */
-    max-width: 1920px;
-    max-height: 1080px;
+    /* Fixed base resolution: 2796x1290 (iPhone 15 Pro Max landscape) */
+    width: 2796px;
+    height: 1290px;
     display: flex;
     flex-direction: column;
     background:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2340E0D0' fill-opacity='0.1' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") bottom/cover no-repeat,
         radial-gradient(ellipse at center bottom, var(--lagoon) 0%, var(--ocean-turquoise) 30%, var(--ocean-deep) 70%, var(--night-blue) 100%);
     position: relative;
+    transform-origin: center center;
+    /* Scale is applied via JavaScript */
 }
 
 #game-container::before {
@@ -2580,393 +2591,31 @@ html, body {
     }
 }
 
-/* Mobile Portrait Mode - 19:9 ratio phones, Game rotates to landscape */
-/* After 90deg rotation: width=100vh (~19 units), height=100vw (~9 units) */
-@media screen and (max-width: 932px) and (aspect-ratio < 1) {
-    /* Scale based on vw (phone width = game height after rotation = 9 units) */
-    /* 1vw = 1% of game height, so 100vw = full game height */
-    :root {
-        --scale: 1vw;
-    }
-
-    /* Hide rotate overlay - we handle rotation via CSS */
+/* Mobile touch enhancements - auto-scaling handles all sizes */
+@media (pointer: coarse) {
+    /* Hide rotate overlay - auto-scaling handles all orientations */
     #rotate-overlay {
         display: none !important;
     }
 
-    html, body {
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        background: var(--night-blue);
+    /* iOS PWA button touch feedback */
+    button, .clickable, [role="button"] {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        cursor: pointer;
     }
 
-    /* Viewport wrapper fills screen */
-    #viewport-wrapper {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        background: var(--night-blue);
+    /* Touch feedback */
+    button:active, .clickable:active, [role="button"]:active {
+        transform: scale(0.95);
+        opacity: 0.9;
     }
 
-    /* Game container rotates 90deg - 19:9 landscape */
-    #game-container {
-        position: fixed !important;
-        width: 100vh !important;  /* Game width = phone height (~19 units) */
-        height: 100vw !important; /* Game height = phone width (~9 units) */
-        max-width: none !important;
-        max-height: none !important;
-        transform: rotate(90deg) !important;
-        transform-origin: top left !important;
-        top: 0 !important;
-        left: 100vw !important;
-        background-size: cover !important;
-        background-position: center !important;
-    }
-
-    /* Game board fills the rotated container */
-    #game-board {
-        width: 100% !important;
-        height: 100% !important;
-        position: relative !important;
-    }
-
-    /* Digu game board - 19:9 landscape */
-    #digu-game-board {
-        position: fixed !important;
-        width: 100vh !important;
-        height: 100vw !important;
-        max-width: none !important;
-        max-height: none !important;
-        transform: rotate(90deg) !important;
-        transform-origin: top left !important;
-        top: 0 !important;
-        left: 100vw !important;
-        background-size: cover !important;
-        background-position: center !important;
-    }
-
-    /* Lobby stays in portrait mode - no rotation */
-    #lobby-overlay {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        top: 0;
-        left: 0;
-        transform: none;
-        display: flex;
-    }
-
-    /* Table - oval that fits 19:9 screen */
-    /* Width uses vh (game width), height uses vw (game height) */
-    #game-board::before {
-        width: 85vh !important;
-        height: 80vw !important;
-    }
-
-    #game-board::after {
-        width: 80vh !important;
-        height: 72vw !important;
-    }
-
-    /* Player positions for 19:9 ratio */
-    #player-bottom {
-        bottom: 2vw !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-    }
-
-    #player-top {
-        top: 2vw !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-    }
-
-    #player-left {
-        left: 2vh !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-    }
-
-    #player-right {
-        right: 2vh !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-    }
-
-    /* Player's hand cards - sized for 19:9 */
-    #player-bottom .card,
-    #hand-bottom .card {
-        width: calc(9 * var(--scale));
-        height: calc(12.9 * var(--scale));
-        border-radius: calc(1 * var(--scale));
-    }
-
-    /* Played cards in center */
-    .played-card {
-        width: calc(7 * var(--scale));
-        height: calc(10 * var(--scale));
-    }
-
-    .played-card .card {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* Base card size */
-    .card {
-        width: calc(7 * var(--scale));
-        height: calc(10 * var(--scale));
-    }
-
-    /* Play area - centered for 19:9 */
-    #play-area {
-        width: 40vh !important;
-        height: 45vw !important;
-    }
-
-    /* Card overlap in hand */
-    .player-hand .card {
-        margin: 0 calc(-1.5 * var(--scale));
-    }
-
-    /* UI elements positioned for 19:9 */
-    #match-points-panel {
-        top: 2vw !important;
-        right: 2vh !important;
-        padding: calc(1 * var(--scale));
-        min-width: auto;
-    }
-
-    .match-score span {
-        font-size: clamp(16px, calc(4 * var(--scale)), 28px);
-    }
-
-    #superior-suit-display {
-        top: 12vw !important;
-        left: 2vh !important;
-        padding: calc(0.5 * var(--scale)) calc(1 * var(--scale));
-        font-size: clamp(10px, calc(2 * var(--scale)), 16px);
-    }
-
-    .drink-sponsor {
-        left: 2vh !important;
-        bottom: 22vw !important;
-        font-size: clamp(8px, calc(1.5 * var(--scale)), 12px);
-    }
-
-    .table-sponsor {
-        font-size: clamp(6px, calc(1.2 * var(--scale)), 10px);
-    }
-
-    /* Team labels */
-    .team-label {
-        font-size: clamp(8px, calc(1.6 * var(--scale)), 12px);
-        padding: calc(0.3 * var(--scale)) calc(0.6 * var(--scale));
-    }
-
-    /* Player labels */
-    .player-label {
-        font-size: clamp(8px, calc(1.6 * var(--scale)), 12px);
-    }
-
-    /* ===== PORTRAIT OPTIMIZED LOBBY & HOME SCREENS ===== */
-
-    /* Lobby Content - full width portrait layout */
-    #lobby-content {
-        padding: calc(2 * var(--scale));
-        min-width: auto;
-        max-width: 95vw;
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-
-    .lobby-title {
-        font-size: clamp(28px, calc(4 * var(--scale)), 42px);
-        margin-bottom: calc(0.5 * var(--scale));
-    }
-
-    .lobby-subtitle {
-        font-size: clamp(14px, calc(1.8 * var(--scale)), 20px);
-        margin-bottom: calc(1.5 * var(--scale));
-    }
-
-    /* Game Selection - vertical layout for portrait */
-    .game-cards {
-        flex-direction: column;
-        gap: calc(2 * var(--scale));
-        margin-top: calc(1.5 * var(--scale));
-    }
-
-    .game-card {
-        padding: calc(1.5 * var(--scale));
-        width: 100%;
-        max-width: 280px;
-        min-width: auto;
-    }
-
-    .game-card-icon {
-        font-size: clamp(36px, calc(5 * var(--scale)), 56px);
-        margin-bottom: calc(0.8 * var(--scale));
-    }
-
-    .game-card-title {
-        font-size: clamp(18px, calc(2.2 * var(--scale)), 26px);
-    }
-
-    .game-card-desc {
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 16px);
-    }
-
-    .coming-soon-badge {
-        font-size: clamp(10px, calc(1.1 * var(--scale)), 13px);
-        padding: calc(0.3 * var(--scale)) calc(2 * var(--scale));
-    }
-
-    /* Game Lobby - portrait friendly */
-    #game-lobby {
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-
-    .lobby-header {
-        margin-bottom: calc(1 * var(--scale));
-    }
-
-    .lobby-header h2 {
-        font-size: clamp(24px, calc(3 * var(--scale)), 36px);
-    }
-
-    .lobby-header .game-subtitle {
-        font-size: clamp(13px, calc(1.5 * var(--scale)), 18px);
-    }
-
-    #lobby-menu {
-        gap: calc(1 * var(--scale));
-    }
-
-    .lobby-btn {
-        padding: calc(1 * var(--scale)) calc(2 * var(--scale));
-        font-size: clamp(16px, calc(2 * var(--scale)), 22px);
-        min-height: 50px;
-    }
-
-    .lobby-divider {
-        margin: calc(1 * var(--scale)) 0;
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 16px);
-    }
-
-    /* Waiting Room - portrait friendly */
-    #waiting-room h3 {
-        font-size: clamp(18px, calc(2.2 * var(--scale)), 26px);
-        margin-bottom: calc(1 * var(--scale));
-    }
-
-    #player-slots {
-        gap: calc(0.8 * var(--scale));
-        margin-bottom: calc(1 * var(--scale));
-    }
-
-    .player-slot {
-        padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale));
-        font-size: clamp(14px, calc(1.6 * var(--scale)), 18px);
-    }
-
-    /* Modal Content - portrait friendly */
-    .modal-content {
-        padding: calc(2 * var(--scale));
-        max-width: 90vw;
-        max-height: 85vh;
-        overflow-y: auto;
-    }
-
-    .modal-content h2 {
-        font-size: clamp(22px, calc(2.8 * var(--scale)), 32px);
-        margin-bottom: calc(1 * var(--scale));
-    }
-
-    .modal-content p {
-        font-size: clamp(14px, calc(1.8 * var(--scale)), 20px);
-        margin-bottom: calc(0.8 * var(--scale));
-    }
-
-    .modal-buttons {
-        gap: calc(1 * var(--scale));
-    }
-
-    .modal-buttons button {
-        padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale));
-        font-size: clamp(14px, calc(1.8 * var(--scale)), 20px);
-    }
-
-    /* Message Overlay - inside rotated game container */
-    #message-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 3000;
-    }
-
-    /* Message Overlay - landscape optimized */
-    #message-content {
-        padding: calc(1.5 * var(--scale));
-        max-width: 60vh; /* Use vh since container is rotated */
-    }
-
-    #message-title {
-        font-size: clamp(16px, calc(2 * var(--scale)), 24px);
-        margin-bottom: calc(0.5 * var(--scale));
-    }
-
-    #message-text {
-        font-size: clamp(11px, calc(1.3 * var(--scale)), 16px);
-        margin-bottom: calc(0.8 * var(--scale));
-    }
-
-    #message-button {
-        padding: calc(0.5 * var(--scale)) calc(1.5 * var(--scale));
-        font-size: clamp(11px, calc(1.3 * var(--scale)), 16px);
-    }
-
-    /* Sponsor callouts - landscape friendly */
-    .sponsor-callout {
-        font-size: clamp(10px, calc(1.1 * var(--scale)), 14px);
-    }
-
-    /* Name Input Modal - compact */
-    #name-input-modal .modal-content {
-        padding: calc(1.2 * var(--scale));
-    }
-
-    #name-input-modal h3 {
-        font-size: clamp(14px, calc(1.6 * var(--scale)), 20px);
-        margin-bottom: calc(0.5 * var(--scale));
-    }
-
-    #name-input-modal input {
-        padding: calc(0.5 * var(--scale));
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 18px);
-        margin-bottom: calc(0.8 * var(--scale));
-    }
-
-    .modal-actions {
-        gap: calc(0.5 * var(--scale));
-    }
-
-    .modal-actions button {
-        padding: calc(0.4 * var(--scale)) calc(1 * var(--scale));
-        font-size: clamp(11px, calc(1.2 * var(--scale)), 16px);
-    }
-
-    /* Flash Message - compact */
-    #flash-message {
-        padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale));
-        font-size: clamp(12px, calc(1.4 * var(--scale)), 18px);
+    /* Prevent text selection on game elements */
+    .card, .pile, .player-area {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
     }
 }
 
@@ -2976,18 +2625,17 @@ html, body {
 
 /* Digu Game Board */
 #digu-game-board {
-    /* 16:9 aspect ratio container - same as game-container */
-    width: min(100vw, 177.78vh);
-    height: min(100vh, 56.25vw);
-    max-width: 1920px;
-    max-height: 1080px;
+    /* Fixed base resolution: 2796x1290 (same as game-container) */
+    width: 2796px;
+    height: 1290px;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     background:
         radial-gradient(ellipse at center bottom, var(--lagoon) 0%, var(--ocean-turquoise) 30%, var(--ocean-deep) 70%, var(--night-blue) 100%);
-    margin: auto;
+    transform-origin: center center;
+    /* Scale is applied via JavaScript */
 }
 
 #digu-game-board.hidden {
@@ -3854,223 +3502,6 @@ html, body {
     color: var(--night-blue);
     border: 1px solid rgba(255, 215, 0, 0.8);
     font-weight: 600;
-}
-
-/* Mobile optimized Digu layout - 19:9 ratio, 2x cards */
-@media screen and (max-width: 932px) {
-    /* Digu game board - full screen */
-    #digu-game-board {
-        padding: 0 !important;
-        overflow: hidden;
-        width: 100% !important;
-        height: 100% !important;
-    }
-
-    /* Table for 19:9 ratio - uses vh for width, vw for height after rotation */
-    #digu-game-board::before {
-        width: 85vh !important;
-        height: 80vw !important;
-    }
-
-    #digu-game-board::after {
-        width: 80vh !important;
-        height: 72vw !important;
-    }
-
-    /* Player hand cards - 2X SIZE for touch */
-    #digu-game-board .digu-player.bottom .digu-player-hand .card {
-        width: calc(16 * var(--scale)) !important;
-        height: calc(23 * var(--scale)) !important;
-        font-size: calc(5.6 * var(--scale)) !important;
-        border-radius: calc(1.5 * var(--scale)) !important;
-        margin-left: calc(0.5 * var(--scale)) !important;
-        touch-action: none;
-    }
-
-    #digu-game-board .digu-player.bottom .digu-player-hand .card:first-child {
-        margin-left: 0 !important;
-    }
-
-    /* Hand container - use FULL WIDTH */
-    .digu-player.bottom .digu-player-hand {
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        width: 100vh !important;
-        max-width: 100vh !important;
-        padding: calc(0.5 * var(--scale)) 0 !important;
-        -webkit-overflow-scrolling: touch;
-        justify-content: center !important;
-    }
-
-    /* Piles - 2X SIZE, positioned for 19:9 */
-    #digu-stock {
-        width: calc(14 * var(--scale)) !important;
-        height: calc(20 * var(--scale)) !important;
-        border-radius: calc(1.5 * var(--scale)) !important;
-        top: 50% !important;
-        left: calc(50% - 10vh) !important;
-        transform: translate(-50%, -50%) !important;
-    }
-
-    #digu-discard {
-        width: calc(14 * var(--scale)) !important;
-        height: calc(20 * var(--scale)) !important;
-        border-radius: calc(1.5 * var(--scale)) !important;
-        top: 50% !important;
-        left: calc(50% + 10vh) !important;
-        transform: translate(-50%, -50%) !important;
-    }
-
-    /* Card inside discard pile - 2X SIZE */
-    #digu-discard .discard-card .card {
-        width: calc(14 * var(--scale)) !important;
-        height: calc(20 * var(--scale)) !important;
-        font-size: calc(5 * var(--scale)) !important;
-        border-radius: calc(1.5 * var(--scale)) !important;
-    }
-
-    /* Card inside stock pile - 2X SIZE */
-    #digu-stock .card {
-        width: calc(14 * var(--scale)) !important;
-        height: calc(20 * var(--scale)) !important;
-        border-radius: calc(1.5 * var(--scale)) !important;
-    }
-
-    /* Hide pile labels on mobile */
-    #digu-game-board .pile-label {
-        display: none !important;
-    }
-
-    /* Player hand area - taller for 2x cards */
-    .digu-player.bottom .digu-player-hand {
-        min-height: calc(24 * var(--scale));
-    }
-
-    /* Meld end margin */
-    .digu-player.bottom .digu-player-hand .card.meld-end {
-        margin-right: calc(2 * var(--scale)) !important;
-    }
-
-    /* Hide card count on mobile */
-    .digu-card-count {
-        display: none !important;
-    }
-
-    /* Hide sort buttons on mobile */
-    .hand-sort-buttons {
-        display: none !important;
-    }
-
-    /* Bottom player - full width at bottom, 19:9 ratio */
-    .digu-player.bottom {
-        width: 100vh !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 2vw !important;
-        padding: 0 !important;
-        gap: 0 !important;
-        flex-direction: column-reverse !important;
-        transform: none !important;
-    }
-
-    /* Top player (partner) - align to top, centered horizontally */
-    #digu-player-2 {
-        top: 2vw !important;
-        left: 50vh !important;
-        transform: translateX(-50%) !important;
-    }
-
-    /* Left player - 2vh from left edge, centered vertically */
-    #digu-player-1 {
-        left: 2vh !important;
-        top: 50vw !important;
-        transform: translateY(-50%) !important;
-    }
-
-    /* Right player - 2vh from right edge, centered vertically */
-    #digu-player-3 {
-        right: 2vh !important;
-        top: 50vw !important;
-        transform: translateY(-50%) !important;
-    }
-
-    /* Digu scores panel - top-right for 19:9 */
-    #digu-scores {
-        top: 2vw !important;
-        right: 2vh !important;
-        padding: calc(0.8 * var(--scale)) calc(1 * var(--scale)) !important;
-        min-width: auto !important;
-    }
-
-    /* Digu phase indicator - centered top */
-    #digu-phase {
-        top: 2vw !important;
-        left: 50vh !important;
-        transform: translateX(-50%) !important;
-    }
-
-    /* Center area */
-    #digu-center-area {
-        gap: calc(1 * var(--scale)) !important;
-    }
-
-    /* Improve touch targets for drag and drop */
-    #digu-game-board .digu-player.bottom .digu-player-hand .card {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        user-select: none;
-    }
-
-    /* Ensure cards don't rotate */
-    #digu-game-board .card {
-        transform: rotate(0deg) !important;
-    }
-
-    #digu-game-board .card:hover {
-        transform: translateY(calc(-1 * var(--scale))) rotate(0deg) !important;
-    }
-
-    #digu-game-board .card.selected {
-        transform: translateY(calc(-2 * var(--scale))) rotate(0deg) !important;
-    }
-
-    /* Make discard pile a better drop target */
-    #digu-discard.drag-over {
-        transform: translate(-50%, -50%) scale(1.1) !important;
-        box-shadow: 0 0 calc(3 * var(--scale)) var(--sunset-gold) !important;
-    }
-
-    /* iOS PWA button touch feedback */
-    button, .clickable, [role="button"] {
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-        cursor: pointer;
-    }
-
-    /* Active state for iOS touch feedback */
-    button:active, .clickable:active, [role="button"]:active {
-        transform: scale(0.95);
-        opacity: 0.9;
-    }
-
-    /* Pile touch feedback */
-    #digu-stock:active, #digu-discard:active {
-        transform: translate(-50%, -50%) scale(0.95) !important;
-        opacity: 0.9;
-    }
-
-    /* iOS-friendly scrolling for hand */
-    .digu-player.bottom .digu-player-hand {
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE/Edge */
-    }
-
-    .digu-player.bottom .digu-player-hand::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
-    }
 }
 
 /* ============================================
