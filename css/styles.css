@@ -3846,26 +3846,24 @@ html, body {
     font-weight: 600;
 }
 
-/* Mobile optimized Digu layout - iPhone 15 Pro Max ratio */
+/* Mobile optimized Digu layout - full width, 2x cards only */
 @media screen and (max-width: 932px) {
-    /* Digu game board - fill screen */
+    /* Digu game board - use full screen width */
     #digu-game-board {
-        padding-left: env(safe-area-inset-left, 5px);
-        padding-right: env(safe-area-inset-right, 5px);
-        padding-top: env(safe-area-inset-top, 3px);
-        padding-bottom: env(safe-area-inset-bottom, 3px);
+        padding: 0 !important;
         overflow: hidden;
+        width: 100% !important;
     }
 
-    /* Table fills screen */
+    /* Table fills full width */
     #digu-game-board::before {
-        width: calc(200 * var(--scale)) !important;
-        height: calc(90 * var(--scale)) !important;
+        width: 95% !important;
+        height: calc(85 * var(--scale)) !important;
     }
 
     #digu-game-board::after {
-        width: calc(190 * var(--scale)) !important;
-        height: calc(82 * var(--scale)) !important;
+        width: 90% !important;
+        height: calc(78 * var(--scale)) !important;
     }
 
     /* Player hand cards - 2X SIZE for touch */
@@ -3874,7 +3872,7 @@ html, body {
         height: calc(23 * var(--scale)) !important;
         font-size: calc(5.6 * var(--scale)) !important;
         border-radius: calc(1.5 * var(--scale)) !important;
-        margin-left: calc(1 * var(--scale)) !important;
+        margin-left: calc(0.5 * var(--scale)) !important;
         touch-action: none;
     }
 
@@ -3882,14 +3880,16 @@ html, body {
         margin-left: 0 !important;
     }
 
-    /* Hand container - allow horizontal scroll */
+    /* Hand container - use FULL WIDTH, allow horizontal scroll */
     .digu-player.bottom .digu-player-hand {
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         overflow-y: hidden !important;
-        max-width: calc(100% - 4 * var(--scale)) !important;
-        padding: calc(1 * var(--scale)) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: calc(0.5 * var(--scale)) 0 !important;
         -webkit-overflow-scrolling: touch;
+        justify-content: center !important;
     }
 
     /* Piles - 2X SIZE */
@@ -3931,44 +3931,14 @@ html, body {
         display: none !important;
     }
 
-    #digu-game-board .pile-count {
-        font-size: calc(4 * var(--scale)) !important;
-    }
-
     /* Player hand area - taller for 2x cards */
     .digu-player.bottom .digu-player-hand {
         min-height: calc(24 * var(--scale));
     }
 
-    /* Meld end margin - scaled */
+    /* Meld end margin */
     .digu-player.bottom .digu-player-hand .card.meld-end {
-        margin-right: calc(3 * var(--scale)) !important;
-    }
-
-    /* DIGU button - larger */
-    #digu-btn {
-        font-size: calc(4 * var(--scale)) !important;
-        padding: calc(2 * var(--scale)) calc(4 * var(--scale)) !important;
-        border-radius: calc(1.5 * var(--scale)) !important;
-        min-width: calc(20 * var(--scale)) !important;
-        min-height: calc(8 * var(--scale)) !important;
-    }
-
-    /* Avatars */
-    .digu-avatar {
-        width: calc(8 * var(--scale)) !important;
-        height: calc(8 * var(--scale)) !important;
-    }
-
-    .digu-avatar-icon {
-        font-size: calc(5 * var(--scale)) !important;
-    }
-
-    /* Labels - larger */
-    .digu-player-label,
-    .digu-team-label {
-        font-size: calc(3 * var(--scale)) !important;
-        padding: calc(0.5 * var(--scale)) calc(1 * var(--scale)) !important;
+        margin-right: calc(2 * var(--scale)) !important;
     }
 
     /* Hide card count on mobile */
@@ -3976,54 +3946,27 @@ html, body {
         display: none !important;
     }
 
-    /* Phase indicator - larger */
-    #digu-phase {
-        font-size: calc(3.5 * var(--scale)) !important;
-        padding: calc(1.5 * var(--scale)) calc(3 * var(--scale)) !important;
-        top: calc(2 * var(--scale)) !important;
-    }
-
-    /* Shuffle counts - larger */
-    .digu-shuffle-count {
-        font-size: calc(2.5 * var(--scale)) !important;
-        padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale)) !important;
-    }
-
     /* Hide sort buttons on mobile */
     .hand-sort-buttons {
         display: none !important;
     }
 
-    /* Scores panel - top right, larger */
-    #digu-scores {
-        padding: calc(1.5 * var(--scale)) calc(2 * var(--scale)) !important;
-        font-size: calc(2.5 * var(--scale)) !important;
-        top: calc(1 * var(--scale)) !important;
-        right: calc(2 * var(--scale) + env(safe-area-inset-right, 0px)) !important;
+    /* Bottom player - use full width */
+    .digu-player.bottom {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Meld hint - larger */
-    #meld-hint {
-        font-size: calc(2.5 * var(--scale)) !important;
-    }
-
-    /* Player bottom - cards at bottom */
+    /* Player bottom - cards at bottom, full width */
     .digu-player.bottom {
         bottom: env(safe-area-inset-bottom, 0px) !important;
         gap: 0 !important;
         flex-direction: column-reverse !important;
-    }
-
-    /* Label styling on mobile for bottom player */
-    .digu-player.bottom .digu-player-label {
-        font-size: clamp(12px, calc(3 * var(--scale)), 20px) !important;
-    }
-
-    /* Bottom player shuffle count - left side */
-    #digu-player-0 .digu-shuffle-count {
-        position: absolute !important;
-        left: calc(-12 * var(--scale)) !important;
-        bottom: calc(10 * var(--scale)) !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
         transform: none !important;
     }
 
@@ -4034,23 +3977,23 @@ html, body {
         transform: translateX(-50%) !important;
     }
 
-    /* Left player */
+    /* Left player - edge of screen */
     #digu-player-1 {
-        left: calc(2 * var(--scale) + env(safe-area-inset-left, 0px)) !important;
+        left: 0 !important;
         top: 50% !important;
         transform: translateY(-50%) !important;
     }
 
-    /* Right player */
+    /* Right player - edge of screen */
     #digu-player-3 {
-        right: calc(2 * var(--scale) + env(safe-area-inset-right, 0px)) !important;
+        right: 0 !important;
         top: 50% !important;
         transform: translateY(-50%) !important;
     }
 
     /* Center area */
     #digu-center-area {
-        gap: calc(1.5 * var(--scale)) !important;
+        gap: calc(1 * var(--scale)) !important;
     }
 
     /* Improve touch targets for drag and drop */
