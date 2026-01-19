@@ -3487,13 +3487,13 @@
 
             const player = this.diguGame.players[0];
             const hasValidMelds = player.canDeclareDigu();
-            // Can declare at any time during your turn if you have valid melds
-            const canDeclare = hasValidMelds && this.diguGame.isHumanTurn();
+            const isMyTurn = this.diguGame.isHumanTurn();
 
-            // Show button only when all cards form valid melds
-            if (hasValidMelds) {
+            // Show button only on your turn when all cards form valid melds
+            // You can arrange cards at any time, but button only appears on your turn
+            if (hasValidMelds && isMyTurn) {
                 btn.classList.remove('hidden');
-                btn.disabled = !canDeclare;
+                btn.disabled = false;
             } else {
                 btn.classList.add('hidden');
             }
