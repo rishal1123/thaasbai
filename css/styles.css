@@ -4352,28 +4352,40 @@ html, body {
 }
 
 /* ============================================
-   iOS PWA SPECIFIC STYLES
+   MOBILE PWA SPECIFIC STYLES (iOS & Android)
    ============================================ */
 
-/* iOS device detection via JS class */
-html.ios {
-    /* Smoother animations on iOS */
+/* Mobile device detection via JS class */
+html.mobile {
+    /* Smoother animations */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-html.ios-standalone {
-    /* Standalone PWA mode on iOS */
-    /* Additional safe area handling */
+/* iOS specific */
+html.ios {
+    /* iOS-specific optimizations */
 }
 
-html.ios-standalone #game-container {
+/* Android specific */
+html.android {
+    /* Android-specific optimizations */
+}
+
+/* Standalone PWA mode (both iOS and Android) */
+html.standalone {
+    /* PWA mode active */
+}
+
+html.standalone #game-container,
+html.ios-standalone #game-container,
+html.android-standalone #game-container {
     /* Ensure full screen in PWA mode */
     min-height: 100vh;
     min-height: -webkit-fill-available;
 }
 
-/* iOS notch/Dynamic Island safe areas */
+/* Notch/cutout safe areas (iOS Dynamic Island, Android display cutouts) */
 @supports (padding-top: max(0px)) {
     #digu-game-board {
         padding-top: max(env(safe-area-inset-top, 0px), 0px);
@@ -4383,21 +4395,32 @@ html.ios-standalone #game-container {
     }
 }
 
-/* Ensure cards are touchable on iOS */
-html.ios .card {
+/* Ensure cards are touchable on mobile */
+html.mobile .card {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
 }
 
-/* iOS-optimized button styling */
-html.ios button {
+/* Mobile-optimized button styling */
+html.mobile button {
     -webkit-appearance: none;
     appearance: none;
 }
 
-/* Prevent iOS zoom on input focus */
-html.ios input, html.ios select, html.ios textarea {
-    font-size: 16px !important; /* Prevents iOS zoom on focus */
+/* Prevent zoom on input focus (both iOS and Android) */
+html.mobile input, html.mobile select, html.mobile textarea {
+    font-size: 16px !important; /* Prevents zoom on focus */
+}
+
+/* Android-specific touch feedback */
+html.android button:active,
+html.android .clickable:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Android navigation bar safe area */
+html.android-standalone #game-container {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }

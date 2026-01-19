@@ -8,16 +8,20 @@
     'use strict';
 
     // ============================================
-    // iOS PWA DETECTION AND SETUP
+    // MOBILE PWA DETECTION AND SETUP (iOS & Android)
     // ============================================
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
+    const isMobile = isIOS || isAndroid || /webOS|BlackBerry|Opera Mini|IEMobile/.test(navigator.userAgent);
     const isStandalone = window.navigator.standalone === true ||
-                         window.matchMedia('(display-mode: standalone)').matches;
-    const isIOSPWA = isIOS && isStandalone;
+                         window.matchMedia('(display-mode: standalone)').matches ||
+                         window.matchMedia('(display-mode: fullscreen)').matches;
+    const isMobilePWA = isMobile && isStandalone;
 
-    // Prevent iOS bounce/rubber-banding
-    if (isIOS) {
+    // Apply mobile PWA fixes for both iOS and Android
+    if (isMobile) {
+        // Prevent bounce/rubber-banding
         document.addEventListener('touchmove', function(e) {
             // Allow scrolling within scrollable elements
             if (e.target.closest('.digu-player-hand')) return;
@@ -34,10 +38,18 @@
             lastTouchEnd = now;
         }, { passive: false });
 
-        // Add iOS class for CSS targeting
-        document.documentElement.classList.add('ios');
+        // Add device classes for CSS targeting
+        document.documentElement.classList.add('mobile');
+        if (isIOS) {
+            document.documentElement.classList.add('ios');
+        }
+        if (isAndroid) {
+            document.documentElement.classList.add('android');
+        }
         if (isStandalone) {
-            document.documentElement.classList.add('ios-standalone');
+            document.documentElement.classList.add('standalone');
+            if (isIOS) document.documentElement.classList.add('ios-standalone');
+            if (isAndroid) document.documentElement.classList.add('android-standalone');
         }
     }
 
