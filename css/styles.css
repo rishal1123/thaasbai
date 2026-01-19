@@ -2624,10 +2624,10 @@ html, body {
 
 /* Digu Game Board */
 #digu-game-board {
-    /* Fixed base resolution: 2796x1290 (same as game-container) */
-    width: 2796px;
-    height: 1290px;
-    position: fixed;
+    /* Fills parent game-container (2796x1290) */
+    width: 100%;
+    height: 100%;
+    position: absolute;
     top: 0;
     left: 0;
     display: flex;
@@ -2635,7 +2635,7 @@ html, body {
     align-items: center;
     background:
         radial-gradient(ellipse at center bottom, var(--lagoon) 0%, var(--ocean-turquoise) 30%, var(--ocean-deep) 70%, var(--night-blue) 100%);
-    /* Transform applied via JavaScript for scaling and rotation */
+    /* Inherits transform from parent #game-container */
 }
 
 #digu-game-board.hidden {

@@ -71,7 +71,6 @@
 
     function scaleGame() {
         const gameContainer = document.getElementById('game-container');
-        const diguGameBoard = document.getElementById('digu-game-board');
 
         const vw = window.innerWidth;
         const vh = window.innerHeight;
@@ -90,28 +89,23 @@
         const scaledWidth = BASE_WIDTH * scale;
         const scaledHeight = BASE_HEIGHT * scale;
 
-        // Apply styles to game containers
-        const applyTransform = (element) => {
-            if (!element) return;
-
+        // Apply transform to game container (which contains both Dhiha Ei and Digu)
+        if (gameContainer) {
             if (isPortrait) {
                 // In portrait: rotate 90deg, then scale, then center
                 // After rotation, width becomes height and vice versa
                 const offsetX = (vw - scaledHeight) / 2;
                 const offsetY = (vh - scaledWidth) / 2;
-                element.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(90deg) scale(${scale})`;
-                element.style.transformOrigin = 'top left';
+                gameContainer.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(90deg) scale(${scale})`;
+                gameContainer.style.transformOrigin = 'top left';
             } else {
                 // In landscape: just scale and center
                 const offsetX = (vw - scaledWidth) / 2;
                 const offsetY = (vh - scaledHeight) / 2;
-                element.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-                element.style.transformOrigin = 'top left';
+                gameContainer.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+                gameContainer.style.transformOrigin = 'top left';
             }
-        };
-
-        applyTransform(gameContainer);
-        applyTransform(diguGameBoard);
+        }
 
         console.log(`[Scale] Viewport: ${vw}x${vh}, Portrait: ${isPortrait}, Scale: ${scale.toFixed(3)}`);
     }
