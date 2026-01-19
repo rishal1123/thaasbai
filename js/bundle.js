@@ -3697,8 +3697,8 @@
 
             if (card) {
                 const cardEl = CardSprite.createCardElement(card, true);
-                cardEl.style.width = 'calc(9 * var(--scale))';
-                cardEl.style.height = 'calc(12.9 * var(--scale))';
+                cardEl.style.width = '100%';
+                cardEl.style.height = '100%';
                 discardTop.appendChild(cardEl);
             }
         }
@@ -4515,6 +4515,11 @@
                 // Player cards with meld grouping
                 const cardsEl = document.createElement('div');
                 cardsEl.className = 'result-player-cards';
+
+                // Auto-arrange melds for AI players before displaying
+                if (!player.isHuman && typeof player.autoArrangeMelds === 'function') {
+                    player.autoArrangeMelds();
+                }
 
                 const meldDetails = player.getMeldDetails();
                 for (const meld of meldDetails) {
