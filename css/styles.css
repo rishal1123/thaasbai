@@ -3300,13 +3300,14 @@ html, body {
 }
 
 .digu-player-label {
-    padding: calc(0.4 * var(--scale)) calc(1 * var(--scale));
-    background: linear-gradient(135deg, rgba(27, 40, 56, 0.9) 0%, rgba(0, 105, 148, 0.8) 100%);
-    border-radius: calc(1.5 * var(--scale));
+    padding: calc(0.6 * var(--scale)) calc(1.4 * var(--scale));
+    background: linear-gradient(135deg, rgba(27, 40, 56, 0.8) 0%, rgba(0, 105, 148, 0.7) 100%);
+    border-radius: calc(2 * var(--scale));
     color: var(--text-light);
-    font-size: clamp(12px, calc(1.5 * var(--scale)), 18px);
+    font-size: clamp(16px, calc(1.8 * var(--scale)), 24px);
     font-weight: 600;
     border: 1px solid rgba(64, 224, 208, 0.4);
+    margin: calc(0.6 * var(--scale)) 0;
 }
 
 .digu-player.bottom .digu-player-label {
@@ -3943,9 +3944,9 @@ html, body {
         flex-direction: column-reverse !important;
     }
 
-    /* Hide label on mobile for bottom player */
+    /* Label styling on mobile for bottom player */
     .digu-player.bottom .digu-player-label {
-        display: none !important;
+        font-size: clamp(14px, calc(2.5 * var(--scale)), 20px) !important;
     }
 
     /* Bottom player shuffle count - left side */
