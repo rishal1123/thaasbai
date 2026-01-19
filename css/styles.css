@@ -3737,11 +3737,12 @@ html, body {
 
 /* Mobile optimized Digu layout - 2x card size for touch */
 @media screen and (max-width: 900px) {
-    /* Digu game board with safe area insets */
+    /* Digu game board with safe area insets + 50px on left/right */
     #digu-game-board {
         --digu-mobile-scale: 2;
-        padding-left: env(safe-area-inset-left, 0px);
-        padding-right: env(safe-area-inset-right, 0px);
+        --mobile-side-inset: 50px;
+        padding-left: calc(var(--mobile-side-inset) + env(safe-area-inset-left, 0px));
+        padding-right: calc(var(--mobile-side-inset) + env(safe-area-inset-right, 0px));
         padding-top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -3888,20 +3889,25 @@ html, body {
         transform: translateX(-50%) !important;
     }
 
-    /* Bottom player shuffle count - fixed left side */
+    /* Bottom player shuffle count - fixed left side with 50px inset */
     #digu-player-0 .digu-shuffle-count {
-        left: max(calc(2 * var(--scale)), calc(2 * var(--scale) + env(safe-area-inset-left, 0px))) !important;
+        left: calc(50px + env(safe-area-inset-left, 0px) + 2 * var(--scale)) !important;
         bottom: max(calc(3 * var(--scale)), calc(3 * var(--scale) + env(safe-area-inset-bottom, 0px))) !important;
     }
 
-    /* Left player with safe area */
+    /* Left player with 50px inset */
     #digu-player-1 {
-        left: max(calc(2 * var(--scale)), calc(2 * var(--scale) + env(safe-area-inset-left, 0px))) !important;
+        left: calc(50px + env(safe-area-inset-left, 0px) + 2 * var(--scale)) !important;
     }
 
-    /* Right player with safe area */
+    /* Right player with 50px inset */
     #digu-player-3 {
-        right: max(calc(2 * var(--scale)), calc(2 * var(--scale) + env(safe-area-inset-right, 0px))) !important;
+        right: calc(50px + env(safe-area-inset-right, 0px) + 2 * var(--scale)) !important;
+    }
+
+    /* Scores panel with 50px inset */
+    #digu-scores {
+        right: calc(50px + env(safe-area-inset-right, 0px) + 2 * var(--scale)) !important;
     }
 
     /* Center area adjustments */
