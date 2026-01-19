@@ -3876,9 +3876,9 @@ html, body {
         font-size: calc(2.4 * var(--scale)) !important;
     }
 
-    /* Player bottom area - cards 40px from bottom */
+    /* Player bottom area - cards at bottom of screen */
     .digu-player.bottom {
-        bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: env(safe-area-inset-bottom, 0px) !important;
         gap: 0 !important;
         flex-direction: column-reverse !important;
     }
