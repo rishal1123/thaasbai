@@ -2566,7 +2566,8 @@ html, body {
 }
 
 /* Mobile Portrait Mode - Lobby in portrait, Game in landscape */
-@media screen and (max-width: 900px) and (orientation: portrait) {
+/* Only applies to touch devices to avoid affecting desktop browsers with narrow windows */
+@media screen and (max-width: 900px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
     /* Hide rotate overlay - we handle it properly */
     #rotate-overlay {
         display: none !important;
