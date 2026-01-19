@@ -68,7 +68,7 @@
     <link rel="apple-touch-startup-image" href="splash/splash-ipad-9.7-2048x1536.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
     <title>Thaasbai - Maldivian Card Games</title>
-    <link rel="stylesheet" href="css/styles.css?v=59">
+    <link rel="stylesheet" href="css/styles.css?v=60">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -329,24 +329,25 @@
 
         <!-- Digu Game Board (hidden by default) -->
         <main id="digu-game-board" class="hidden">
-            <!-- Center: Stock & Discard Piles -->
-            <div id="digu-center-area">
-                <div id="digu-piles">
-                    <div id="digu-stock" class="digu-pile clickable" title="Draw from deck">
-                        <div class="pile-label">Stock</div>
-                        <div class="pile-count" id="digu-stock-count">0</div>
-                    </div>
-                    <div id="digu-discard" class="digu-pile clickable" title="Draw from discard">
-                        <div class="pile-label">Discard</div>
-                        <div class="discard-card" id="digu-discard-top"></div>
-                    </div>
-                </div>
+            <!-- Stock Pile - Left Side of Table -->
+            <div id="digu-stock" class="digu-pile clickable" title="Draw from deck">
+                <div class="pile-label">Stock</div>
+                <div class="pile-count" id="digu-stock-count">0</div>
+            </div>
 
+            <!-- Center: Phase & Button -->
+            <div id="digu-center-area">
                 <!-- Phase Indicator -->
                 <div id="digu-phase">Draw a card</div>
 
                 <!-- DIGU Button -->
                 <button id="digu-btn" disabled>DIGU!</button>
+            </div>
+
+            <!-- Discard Pile - Right Side of Table -->
+            <div id="digu-discard" class="digu-pile clickable" title="Draw from discard">
+                <div class="pile-label">Discard</div>
+                <div class="discard-card" id="digu-discard-top"></div>
             </div>
 
             <!-- Meld info hint -->
@@ -768,7 +769,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=37"></script>
+    <script src="js/bundle.js?v=38"></script>
 
     <!-- PWA Install Handler -->
     <script>

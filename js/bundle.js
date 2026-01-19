@@ -2847,7 +2847,11 @@
                 startIndex: -1,
                 startCard: null,
                 startX: 0,
-                startY: 0
+                startY: 0,
+                offsetX: 0,
+                offsetY: 0,
+                touchId: null,
+                hasMoved: false
             };
 
             this.setupEventListeners();
@@ -3074,16 +3078,29 @@
                 });
             }
 
-            // Stock pile click
+            // Stock pile click/tap
             const stockPile = document.getElementById('digu-stock');
             if (stockPile) {
                 stockPile.addEventListener('click', () => this.handleDiguDraw('stock'));
+                // Touch support for mobile
+                stockPile.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.handleDiguDraw('stock');
+                }, { passive: false });
             }
 
-            // Discard pile click (for drawing) and drag-drop (for discarding)
+            // Discard pile click/tap (for drawing) and drag-drop (for discarding)
             const discardPile = document.getElementById('digu-discard');
             if (discardPile) {
                 discardPile.addEventListener('click', () => this.handleDiguDraw('discard'));
+                // Touch support for mobile
+                discardPile.addEventListener('touchend', (e) => {
+                    // Only handle tap if we're not in the middle of a drag operation
+                    if (!this.touchDragState.isDragging) {
+                        e.preventDefault();
+                        this.handleDiguDraw('discard');
+                    }
+                }, { passive: false });
 
                 // Drag-and-drop to discard a card
                 discardPile.addEventListener('dragover', (e) => {
@@ -3643,12 +3660,14 @@
             this.updateDiguDisplay();
         }
 
-        // Touch drag handlers for mobile
+        // Touch drag handlers for mobile - improved for better responsiveness
         handleTouchDragStart(e, cardEl, cardIndex, card) {
-            // Prevent scrolling while dragging
+            // Prevent default to stop scrolling
             e.preventDefault();
+            e.stopPropagation();
 
             const touch = e.touches[0];
+            const rect = cardEl.getBoundingClientRect();
 
             this.touchDragState = {
                 isDragging: true,
@@ -3657,50 +3676,60 @@
                 startCard: card,
                 startX: touch.clientX,
                 startY: touch.clientY,
+                offsetX: touch.clientX - rect.left,
+                offsetY: touch.clientY - rect.top,
                 dragClone: null,
-                longPressTimer: null,
-                hasMoved: false
+                hasMoved: false,
+                touchId: touch.identifier
             };
 
-            // Add dragging class after a short delay to distinguish from tap
-            this.touchDragState.longPressTimer = setTimeout(() => {
-                if (this.touchDragState.isDragging) {
-                    // Create clone for visual feedback
-                    const clone = cardEl.cloneNode(true);
-                    clone.classList.add('touch-drag-clone');
-                    clone.style.position = 'fixed';
-                    clone.style.left = `${touch.clientX - 30}px`;
-                    clone.style.top = `${touch.clientY - 45}px`;
-                    clone.style.zIndex = '1000';
-                    clone.style.pointerEvents = 'none';
-                    clone.style.opacity = '0.9';
-                    clone.style.transform = 'scale(1.1)';
-                    clone.style.boxShadow = '0 5px 20px rgba(0,0,0,0.5)';
-                    document.body.appendChild(clone);
-                    this.touchDragState.dragClone = clone;
+            // Create clone immediately for visual feedback
+            const clone = cardEl.cloneNode(true);
+            clone.classList.add('touch-drag-clone');
+            clone.style.cssText = `
+                position: fixed !important;
+                left: ${touch.clientX - this.touchDragState.offsetX}px;
+                top: ${touch.clientY - this.touchDragState.offsetY}px;
+                z-index: 10000 !important;
+                pointer-events: none !important;
+                opacity: 0.95 !important;
+                transform: scale(1.05) !important;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.6) !important;
+                transition: none !important;
+            `;
+            document.body.appendChild(clone);
+            this.touchDragState.dragClone = clone;
 
-                    cardEl.classList.add('dragging');
-                }
-            }, 150);
+            cardEl.classList.add('dragging');
         }
 
         handleTouchDragMove(e) {
             if (!this.touchDragState.isDragging) return;
             e.preventDefault();
+            e.stopPropagation();
 
-            const touch = e.touches[0];
+            // Find the correct touch
+            let touch = null;
+            for (let i = 0; i < e.touches.length; i++) {
+                if (e.touches[i].identifier === this.touchDragState.touchId) {
+                    touch = e.touches[i];
+                    break;
+                }
+            }
+            if (!touch) touch = e.touches[0];
+
             const dx = Math.abs(touch.clientX - this.touchDragState.startX);
             const dy = Math.abs(touch.clientY - this.touchDragState.startY);
 
-            // Mark as moved if moved more than threshold
-            if (dx > 10 || dy > 10) {
+            // Mark as moved if moved more than small threshold
+            if (dx > 5 || dy > 5) {
                 this.touchDragState.hasMoved = true;
             }
 
-            // Move the clone
+            // Move the clone to follow finger
             if (this.touchDragState.dragClone) {
-                this.touchDragState.dragClone.style.left = `${touch.clientX - 30}px`;
-                this.touchDragState.dragClone.style.top = `${touch.clientY - 45}px`;
+                this.touchDragState.dragClone.style.left = `${touch.clientX - this.touchDragState.offsetX}px`;
+                this.touchDragState.dragClone.style.top = `${touch.clientY - this.touchDragState.offsetY}px`;
 
                 // Highlight potential drop targets
                 this.highlightTouchDropTarget(touch.clientX, touch.clientY);
@@ -3709,13 +3738,18 @@
 
         handleTouchDragEnd(e) {
             if (!this.touchDragState.isDragging) return;
+            e.preventDefault();
+            e.stopPropagation();
 
-            // Clear long press timer
-            if (this.touchDragState.longPressTimer) {
-                clearTimeout(this.touchDragState.longPressTimer);
+            // Find the correct touch
+            let touch = null;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === this.touchDragState.touchId) {
+                    touch = e.changedTouches[i];
+                    break;
+                }
             }
-
-            const touch = e.changedTouches[0];
+            if (!touch) touch = e.changedTouches[0];
 
             // Remove clone
             if (this.touchDragState.dragClone) {
@@ -3730,14 +3764,14 @@
             // Clear highlights
             this.clearTouchDropHighlights();
 
-            // Only process drop if we actually moved
+            // Process drop if we moved enough
             if (this.touchDragState.hasMoved) {
-                // Find drop target
+                // Find drop target at touch end position
                 const dropTarget = this.findTouchDropTarget(touch.clientX, touch.clientY);
 
                 if (dropTarget) {
                     if (dropTarget.type === 'card') {
-                        // Move card to new position
+                        // Move card to new position in hand
                         this.moveCardInHand(this.touchDragState.startIndex, dropTarget.index);
                     } else if (dropTarget.type === 'discard') {
                         // Discard the card
@@ -3756,7 +3790,11 @@
                 startIndex: -1,
                 startCard: null,
                 startX: 0,
-                startY: 0
+                startY: 0,
+                offsetX: 0,
+                offsetY: 0,
+                touchId: null,
+                hasMoved: false
             };
         }
 
