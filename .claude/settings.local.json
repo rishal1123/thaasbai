@@ -25,7 +25,8 @@
       "Bash(pip show:*)",
       "Bash(pip install:*)",
       "Bash(python generate-icons.py:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(powershell -Command \"\\(Get-Content css/styles.css | Select-String -Pattern ''}'' -AllMatches\\).Matches.Count\")"
     ]
   }
 }
