@@ -4578,19 +4578,46 @@
                 }
 
                 const meldDetails = player.getMeldDetails();
+                let validMeldScore = 0;
+                let invalidMeldScore = 0;
+
                 for (const meld of meldDetails) {
                     const meldGroup = document.createElement('div');
                     meldGroup.className = `meld-group ${meld.valid ? `valid-${meld.type}` : 'invalid'}`;
+
+                    // Calculate meld value
+                    const meldValue = meld.cards.reduce((sum, c) => sum + DiGuRules.getCardValue(c), 0);
+                    if (meld.valid) {
+                        validMeldScore += meldValue;
+                    } else {
+                        invalidMeldScore += meldValue;
+                    }
 
                     for (const card of meld.cards) {
                         const cardEl = CardSprite.createCardElement(card, true);
                         meldGroup.appendChild(cardEl);
                     }
 
+                    // Add meld value label
+                    const meldValueLabel = document.createElement('span');
+                    meldValueLabel.className = `meld-value-label ${meld.valid ? 'valid' : 'invalid'}`;
+                    meldValueLabel.textContent = meldValue;
+                    meldGroup.appendChild(meldValueLabel);
+
                     cardsEl.appendChild(meldGroup);
                 }
 
                 playerRow.appendChild(cardsEl);
+
+                // Add score summary row
+                const scoreSummary = document.createElement('div');
+                scoreSummary.className = 'player-score-summary';
+                scoreSummary.innerHTML = `
+                    <span class="valid-score">Valid: +${validMeldScore}</span>
+                    <span class="invalid-score">Invalid: -${invalidMeldScore}</span>
+                `;
+                playerRow.appendChild(scoreSummary);
+
                 playersContainer.appendChild(playerRow);
             }
 

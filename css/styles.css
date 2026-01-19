@@ -3852,6 +3852,46 @@ html, body {
     border: 1px solid rgba(255, 107, 107, 0.4);
 }
 
+/* Meld value labels */
+.meld-value-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(2.5 * var(--scale));
+    padding: 0 calc(0.3 * var(--scale));
+    font-size: clamp(10px, calc(1.1 * var(--scale)), 14px);
+    font-weight: bold;
+    border-radius: calc(0.3 * var(--scale));
+}
+
+.meld-value-label.valid {
+    color: var(--palm-green);
+    background: rgba(46, 204, 113, 0.2);
+}
+
+.meld-value-label.invalid {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.2);
+}
+
+/* Player score summary */
+.player-score-summary {
+    display: flex;
+    gap: calc(1 * var(--scale));
+    font-size: clamp(10px, calc(1.1 * var(--scale)), 14px);
+    margin-top: calc(0.3 * var(--scale));
+}
+
+.player-score-summary .valid-score {
+    color: var(--palm-green);
+    font-weight: bold;
+}
+
+.player-score-summary .invalid-score {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
 /* Action Buttons */
 .digu-result-buttons {
     display: flex;
