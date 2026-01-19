@@ -98,15 +98,15 @@ body {
 
 /* Superior Suit Display - Below Your Team score */
 #superior-suit-display {
-    position: fixed;
-    top: calc(16 * var(--scale) + 40px);
-    left: 100px;
+    position: absolute;
+    top: calc(19 * var(--scale));
+    left: calc(8 * var(--scale));
     padding: calc(0.8 * var(--scale)) calc(1.5 * var(--scale));
     background: linear-gradient(145deg, rgba(10, 20, 30, 0.95) 0%, rgba(20, 40, 60, 0.9) 100%);
     border: calc(0.25 * var(--scale)) solid var(--ocean-turquoise);
     border-radius: calc(1 * var(--scale));
     font-weight: 700;
-    font-size: clamp(18px, calc(2.2 * var(--scale)), 28px);
+    font-size: calc(2.2 * var(--scale));
     z-index: 15;
     color: var(--ocean-turquoise);
     box-shadow: 0 calc(0.4 * var(--scale)) calc(1.5 * var(--scale)) rgba(0, 0, 0, 0.4);
@@ -132,7 +132,7 @@ body {
 
 /* Match Points Panel - Redesigned Right Side */
 #match-points-panel {
-    position: fixed;
+    position: absolute;
     top: calc(1.5 * var(--scale));
     right: calc(2 * var(--scale));
     padding: calc(1.5 * var(--scale)) calc(2 * var(--scale));
@@ -219,9 +219,9 @@ body {
 
 /* Score Panel - Redesigned */
 #score-panel {
-    position: fixed;
+    position: absolute;
     top: calc(1.5 * var(--scale));
-    left: 100px;
+    left: calc(8 * var(--scale));
     display: flex;
     flex-direction: row;
     gap: calc(1.5 * var(--scale));
@@ -876,7 +876,7 @@ body {
 
 /* Turn Indicator */
 #turn-indicator {
-    position: fixed;
+    position: absolute;
     bottom: calc(20 * var(--scale));
     left: 50%;
     transform: translateX(-50%);
@@ -885,7 +885,7 @@ body {
     border: calc(0.2 * var(--scale)) solid var(--ocean-turquoise);
     border-radius: calc(2.5 * var(--scale));
     color: var(--text-light);
-    font-size: clamp(18px, calc(2.2 * var(--scale)), 28px);
+    font-size: calc(2.2 * var(--scale));
     z-index: 20;
     display: none;
 }
@@ -905,7 +905,7 @@ body {
 
 /* Message Display */
 #message-display {
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -914,7 +914,7 @@ body {
     border: calc(0.2 * var(--scale)) solid var(--ocean-turquoise);
     border-radius: calc(1.5 * var(--scale));
     color: var(--text-light);
-    font-size: clamp(20px, calc(2.4 * var(--scale)), 32px);
+    font-size: calc(2.4 * var(--scale));
     z-index: 100;
     display: none;
     text-align: center;
@@ -1158,7 +1158,7 @@ body {
 
 /* Controls */
 #controls {
-    position: fixed;
+    position: absolute;
     bottom: calc(1 * var(--scale));
     right: calc(2 * var(--scale));
     display: flex;
@@ -3333,7 +3333,7 @@ html, body {
 
 /* Digu Scores Panel */
 #digu-scores {
-    position: fixed;
+    position: absolute;
     top: calc(1.5 * var(--scale));
     right: calc(2 * var(--scale));
     padding: calc(1.2 * var(--scale)) calc(1.8 * var(--scale));
@@ -3467,9 +3467,9 @@ html, body {
     white-space: nowrap;
 }
 
-/* Bottom player (human) - positioned on left side of screen */
+/* Bottom player (human) - positioned on left side of game board */
 #digu-player-0 .digu-shuffle-count {
-    position: fixed;
+    position: absolute;
     left: calc(2 * var(--scale));
     bottom: calc(3 * var(--scale));
     transform: none;
