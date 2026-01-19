@@ -4051,10 +4051,10 @@
                 top: ${touch.clientY - this.touchDragState.offsetY}px;
                 z-index: 10000 !important;
                 pointer-events: none !important;
-                opacity: 0.95 !important;
-                transform: scale(1.1) ${rotation} !important;
+                opacity: 0.9 !important;
+                transform: ${rotation} !important;
                 transform-origin: center center !important;
-                box-shadow: 0 8px 30px rgba(0,0,0,0.6) !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
                 transition: none !important;
                 animation: none !important;
                 width: ${rect.width}px !important;
