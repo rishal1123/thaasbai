@@ -8,6 +8,47 @@
     'use strict';
 
     // ============================================
+    // iOS PWA DETECTION AND SETUP
+    // ============================================
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone === true ||
+                         window.matchMedia('(display-mode: standalone)').matches;
+    const isIOSPWA = isIOS && isStandalone;
+
+    // Prevent iOS bounce/rubber-banding
+    if (isIOS) {
+        document.addEventListener('touchmove', function(e) {
+            // Allow scrolling within scrollable elements
+            if (e.target.closest('.digu-player-hand')) return;
+            e.preventDefault();
+        }, { passive: false });
+
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+
+        // Add iOS class for CSS targeting
+        document.documentElement.classList.add('ios');
+        if (isStandalone) {
+            document.documentElement.classList.add('ios-standalone');
+        }
+    }
+
+    // Prevent context menu on long press (iOS/Android)
+    document.addEventListener('contextmenu', function(e) {
+        if (e.target.closest('.card, .pile, button, .clickable')) {
+            e.preventDefault();
+        }
+    });
+
+    // ============================================
     // WEBSOCKET MULTIPLAYER CONFIGURATION
     // ============================================
 

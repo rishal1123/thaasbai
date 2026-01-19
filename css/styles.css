@@ -1,5 +1,62 @@
 /* Thaasbai - Maldivian Card Games Styles */
 /* Optimized for 16:9 ratio screens - scales automatically */
+/* Apple PWA compliant */
+
+/* ============================================
+   iOS PWA FIXES - Apple Standards
+   ============================================ */
+
+/* Prevent iOS overscroll bounce */
+html {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* iOS safe areas and touch handling */
+html, body {
+    /* Prevent pull-to-refresh */
+    overscroll-behavior-y: none;
+    /* Prevent text selection on long press */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Prevent tap highlight */
+    -webkit-tap-highlight-color: transparent;
+    /* Prevent callout on long press */
+    -webkit-touch-callout: none;
+    /* Smooth momentum scrolling where needed */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Standalone mode (PWA) specific styles */
+@media all and (display-mode: standalone) {
+    body {
+        /* Extra padding for notch in standalone */
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+}
+
+/* iOS 15+ Dynamic Island support */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .ios-safe-top {
+        padding-top: env(safe-area-inset-top, 20px);
+    }
+    .ios-safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .ios-safe-left {
+        padding-left: env(safe-area-inset-left, 0px);
+    }
+    .ios-safe-right {
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+}
 
 :root {
     /* Maldivian Color Palette */
@@ -43,19 +100,32 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--ocean-deep);
     min-height: 100vh;
+    min-height: -webkit-fill-available; /* iOS fix for 100vh */
     overflow: hidden;
     /* Base font size: minimum 16px, scales with viewport */
     font-size: clamp(16px, calc(1.8 * var(--scale)), 24px);
+    /* iOS PWA touch fixes */
+    touch-action: manipulation; /* Disable double-tap zoom */
+    -webkit-text-size-adjust: 100%; /* Prevent font size adjustment */
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 
 #game-container {
     width: 100vw;
     height: 100vh;
+    height: -webkit-fill-available; /* iOS fix */
     display: flex;
     flex-direction: column;
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
     background:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%2340E0D0' fill-opacity='0.1' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E") bottom/cover no-repeat,
         radial-gradient(ellipse at center bottom, var(--lagoon) 0%, var(--ocean-turquoise) 30%, var(--ocean-deep) 70%, var(--night-blue) 100%);
@@ -3972,6 +4042,37 @@ html, body {
         transform: translate(-50%, -50%) scale(1.1) !important;
         box-shadow: 0 0 calc(3 * var(--scale)) var(--sunset-gold) !important;
     }
+
+    /* iOS PWA button touch feedback */
+    button, .clickable, [role="button"] {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        cursor: pointer;
+    }
+
+    /* Active state for iOS touch feedback */
+    button:active, .clickable:active, [role="button"]:active {
+        transform: scale(0.95);
+        opacity: 0.9;
+    }
+
+    /* Pile touch feedback */
+    #digu-stock:active, #digu-discard:active {
+        transform: translate(-50%, -50%) scale(0.95) !important;
+        opacity: 0.9;
+    }
+
+    /* iOS-friendly scrolling for hand */
+    .digu-player.bottom .digu-player-hand {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .digu-player.bottom .digu-player-hand::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
 }
 
 /* ============================================
@@ -4248,4 +4349,55 @@ html, body {
                 inset 0 0 calc(1 * var(--scale)) rgba(255, 215, 0, 0.3);
     border-color: var(--sunset-gold);
     transform: scale(1.05);
+}
+
+/* ============================================
+   iOS PWA SPECIFIC STYLES
+   ============================================ */
+
+/* iOS device detection via JS class */
+html.ios {
+    /* Smoother animations on iOS */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html.ios-standalone {
+    /* Standalone PWA mode on iOS */
+    /* Additional safe area handling */
+}
+
+html.ios-standalone #game-container {
+    /* Ensure full screen in PWA mode */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+}
+
+/* iOS notch/Dynamic Island safe areas */
+@supports (padding-top: max(0px)) {
+    #digu-game-board {
+        padding-top: max(env(safe-area-inset-top, 0px), 0px);
+        padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+        padding-left: max(env(safe-area-inset-left, 0px), 50px);
+        padding-right: max(env(safe-area-inset-right, 0px), 50px);
+    }
+}
+
+/* Ensure cards are touchable on iOS */
+html.ios .card {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* iOS-optimized button styling */
+html.ios button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Prevent iOS zoom on input focus */
+html.ios input, html.ios select, html.ios textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
 }
