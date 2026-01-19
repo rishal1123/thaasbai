@@ -3870,29 +3870,28 @@ html, body {
         font-size: calc(2.4 * var(--scale)) !important;
     }
 
-    /* Player bottom area - cards flush to bottom */
+    /* Player bottom area - cards 40px from bottom */
     .digu-player.bottom {
-        bottom: env(safe-area-inset-bottom, 0px) !important;
+        bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
         gap: 0 !important;
         flex-direction: column-reverse !important;
     }
 
-    /* Hide label and sort buttons on mobile to maximize card space */
+    /* Hide label and sort buttons on mobile */
     .digu-player.bottom .digu-player-label {
         display: none !important;
     }
 
     .digu-player.bottom .hand-sort-buttons {
-        position: absolute !important;
-        top: calc(-5 * var(--scale)) !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
+        display: none !important;
     }
 
-    /* Bottom player shuffle count - fixed left side with 50px inset */
+    /* Bottom player shuffle count - next to left side of cards */
     #digu-player-0 .digu-shuffle-count {
-        left: calc(50px + env(safe-area-inset-left, 0px) + 2 * var(--scale)) !important;
-        bottom: max(calc(3 * var(--scale)), calc(3 * var(--scale) + env(safe-area-inset-bottom, 0px))) !important;
+        position: absolute !important;
+        left: calc(-12 * var(--scale)) !important;
+        bottom: calc(10 * var(--scale)) !important;
+        transform: none !important;
     }
 
     /* Left player with 50px inset */
