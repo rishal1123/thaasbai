@@ -2196,11 +2196,6 @@
             // Remaining cards go to stock pile
             this.stockPile = deck.cards;
             this.discardPile = [];
-
-            // Turn over top card of stock to start discard pile
-            if (this.stockPile.length > 0) {
-                this.discardPile.push(this.stockPile.shift());
-            }
         }
 
         // Get current game state
