@@ -4572,8 +4572,8 @@
                 const cardsEl = document.createElement('div');
                 cardsEl.className = 'result-player-cards';
 
-                // Auto-arrange melds for all players before displaying
-                if (typeof player.autoArrangeMelds === 'function') {
+                // Auto-arrange melds for AI players only (human keeps their arrangement)
+                if (!player.isHuman && typeof player.autoArrangeMelds === 'function') {
                     player.autoArrangeMelds();
                 }
 
