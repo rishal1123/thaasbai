@@ -4834,8 +4834,8 @@
         }
 
         onDiguCardDiscarded(card, player) {
-            // Clear draw notification on discard
-            this.hideDiguDrawNotification();
+            // Don't hide draw notification on discard - let timeout handle it
+            // This allows AI draw notifications to stay visible
             this.updateDiguDisplay();
         }
 
