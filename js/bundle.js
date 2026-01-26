@@ -1746,11 +1746,13 @@
     // ============================================
 
     class DiGuRules {
-        // Card values for scoring: A=15, J/Q/K=10, others=face value
+        // Card values for scoring: A=15, K=13, Q=12, J=11, others=face value
         static getCardValue(card) {
-            if (card.rank === 14) return 15; // Ace
-            if (card.rank >= 11) return 10;  // J, Q, K
-            return card.rank;                 // 2-10
+            if (card.rank === 14) return 15; // Ace = 15
+            if (card.rank === 13) return 13; // King = 13
+            if (card.rank === 12) return 12; // Queen = 12
+            if (card.rank === 11) return 11; // Jack = 11
+            return card.rank;                 // 2-10 = face value
         }
 
         // Calculate total hand value (for penalty scoring)
