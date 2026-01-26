@@ -4828,13 +4828,82 @@
         }
 
         onDiguCardDrawn(card, source) {
-            // Card drawn animation could go here
+            // Show draw notification
+            this.showDiguDrawNotification(card, source);
             this.updateDiguDisplay();
         }
 
         onDiguCardDiscarded(card, player) {
-            // Card discarded animation could go here
+            // Clear draw notification on discard
+            this.hideDiguDrawNotification();
             this.updateDiguDisplay();
+        }
+
+        showDiguDrawNotification(card, source) {
+            // Get or create notification element
+            let notifEl = document.getElementById('digu-draw-notification');
+            if (!notifEl) {
+                notifEl = document.createElement('div');
+                notifEl.id = 'digu-draw-notification';
+                notifEl.className = 'digu-draw-notification';
+                const gameArea = document.getElementById('digu-game-area');
+                if (gameArea) gameArea.appendChild(notifEl);
+            }
+
+            const playerName = this.diguGame.players[this.diguGame.currentPlayerIndex].name;
+            const isHuman = this.diguGame.currentPlayerIndex === 0;
+
+            if (source === 'discard') {
+                // Show which card was taken from discard
+                const cardDisplay = `${card.rankDisplay || this.getRankDisplay(card.rank)}${this.getSuitSymbol(card.suit)}`;
+                const cardColor = (card.suit === 'hearts' || card.suit === 'diamonds') ? 'red' : 'black';
+                notifEl.innerHTML = `
+                    <span class="draw-player">${isHuman ? 'You' : playerName}</span> drew
+                    <span class="draw-card ${cardColor}">${cardDisplay}</span> from discard
+                `;
+                notifEl.className = 'digu-draw-notification from-discard';
+            } else {
+                // Stock draw - don't show card for opponents
+                if (isHuman) {
+                    const cardDisplay = `${card.rankDisplay || this.getRankDisplay(card.rank)}${this.getSuitSymbol(card.suit)}`;
+                    const cardColor = (card.suit === 'hearts' || card.suit === 'diamonds') ? 'red' : 'black';
+                    notifEl.innerHTML = `
+                        <span class="draw-player">You</span> drew
+                        <span class="draw-card ${cardColor}">${cardDisplay}</span> from stock
+                    `;
+                } else {
+                    notifEl.innerHTML = `
+                        <span class="draw-player">${playerName}</span> drew from stock
+                    `;
+                }
+                notifEl.className = 'digu-draw-notification from-stock';
+            }
+
+            notifEl.classList.add('visible');
+
+            // Auto-hide after delay
+            clearTimeout(this.diguDrawNotifTimeout);
+            this.diguDrawNotifTimeout = setTimeout(() => {
+                notifEl.classList.remove('visible');
+            }, 3000);
+        }
+
+        hideDiguDrawNotification() {
+            const notifEl = document.getElementById('digu-draw-notification');
+            if (notifEl) {
+                notifEl.classList.remove('visible');
+            }
+            clearTimeout(this.diguDrawNotifTimeout);
+        }
+
+        getRankDisplay(rank) {
+            const displays = { 14: 'A', 13: 'K', 12: 'Q', 11: 'J' };
+            return displays[rank] || rank.toString();
+        }
+
+        getSuitSymbol(suit) {
+            const symbols = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
+            return symbols[suit] || suit;
         }
 
         // Touch drag handlers for mobile - improved for rotated game container
