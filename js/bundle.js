@@ -4846,8 +4846,8 @@
                 notifEl = document.createElement('div');
                 notifEl.id = 'digu-draw-notification';
                 notifEl.className = 'digu-draw-notification';
-                const gameArea = document.getElementById('digu-game-area');
-                if (gameArea) gameArea.appendChild(notifEl);
+                const gameBoard = document.getElementById('digu-game-board');
+                if (gameBoard) gameBoard.appendChild(notifEl);
             }
 
             const playerName = this.diguGame.players[this.diguGame.currentPlayerIndex].name;
