@@ -456,10 +456,14 @@
 .digu-player-hand {
     display: flex;
     gap: calc(-2 * var(--scale));
+    min-height: calc(12 * var(--scale));
 }
 
 .digu-player.bottom .digu-player-hand {
     gap: calc(-1.5 * var(--scale));
+    min-height: calc(20 * var(--scale));
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Hand sort buttons */
@@ -616,6 +620,19 @@
     height: calc(19.35 * var(--scale));
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
+    display: block;
+    position: relative;
+    background: var(--card-white);
+    border-radius: calc(0.96 * var(--scale));
+    overflow: hidden;
+}
+
+/* Ensure card images display in Digu */
+.digu-player.bottom .digu-player-hand .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .digu-player.bottom .digu-player-hand .card:hover {
