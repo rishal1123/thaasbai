@@ -1,26 +1,125 @@
 """
 Thaasbai - Multiplayer Game Server
 Python WebSocket server using Flask-SocketIO
-Supports: Dhiha Ei, Digu (coming soon)
+Supports: Dhiha Ei, Digu
 """
 
 import os
 import random
 import string
 import time
+import json
 import threading
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+
+# Admin config
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'thaasbai2024')
+SPONSORS_FILE = 'sponsors.json'
+CAMPAIGNS_FILE = 'campaigns.json'
+
+import uuid
+import hashlib
+from datetime import datetime
+
+def hash_password(password):
+    """Simple password hashing"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def load_campaigns():
+    """Load campaigns data from JSON file"""
+    if os.path.exists(CAMPAIGNS_FILE):
+        try:
+            with open(CAMPAIGNS_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            pass
+    return {
+        'customers': {},
+        'campaigns': {},
+        'active_sponsors': {
+            'table': None,
+            'drink': None,
+            'food': None,
+            'matchmaking': None,
+            'waiting_room': None
+        }
+    }
+
+def save_campaigns(data):
+    """Save campaigns data to JSON file"""
+    with open(CAMPAIGNS_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+# Load campaigns data
+campaigns_data = load_campaigns()
+
+def load_sponsors():
+    """Load sponsors from JSON file"""
+    if os.path.exists(SPONSORS_FILE):
+        try:
+            with open(SPONSORS_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            pass
+    # Default sponsors config
+    return {
+        'table': {
+            'name': 'Ooredoo Maldives',
+            'logo': '/icons/sponsors/ooredoo.svg',
+            'url': 'https://www.ooredoo.mv',
+            'enabled': True,
+            'callout': 'Stay connected! 📶'
+        },
+        'drink': {
+            'name': 'Drink Sponsor',
+            'logo': '',
+            'url': '',
+            'enabled': False,
+            'callout': ''
+        },
+        'food': {
+            'name': 'Food Sponsor',
+            'logo': '',
+            'url': '',
+            'enabled': False,
+            'callout': ''
+        },
+        'matchmaking': {
+            'name': 'Ooredoo Maldives',
+            'logo': '/icons/sponsors/ooredoo.svg',
+            'url': 'https://www.ooredoo.mv',
+            'enabled': True,
+            'callout': ''
+        },
+        'waiting_room': {
+            'name': 'Ooredoo Maldives',
+            'logo': '/icons/sponsors/ooredoo.svg',
+            'url': 'https://www.ooredoo.mv',
+            'enabled': True,
+            'callout': ''
+        }
+    }
+
+def save_sponsors(sponsors):
+    """Save sponsors to JSON file"""
+    with open(SPONSORS_FILE, 'w') as f:
+        json.dump(sponsors, f, indent=2)
+
+# In-memory sponsor cache
+sponsors_cache = load_sponsors()
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # In-memory storage for rooms and players
-rooms = {}
+rooms = {}  # Dhiha Ei rooms
+digu_rooms = {}  # Digu rooms
 player_sessions = {}  # Maps session ID to room and position
-matchmaking_queue = []  # List of {sid, name, joinedAt}
+matchmaking_queue = []  # List of {sid, name, joinedAt} for Dhiha Ei
+digu_matchmaking_queue = []  # List of {sid, name, joinedAt} for Digu
 
 def generate_room_code():
     """Generate a 6-character room code"""
@@ -52,6 +151,525 @@ def index():
 def serve_static(path):
     return send_from_directory('.', path)
 
+# Sponsor API endpoints
+
+@app.route('/api/sponsors', methods=['GET'])
+def get_sponsors():
+    """Get all sponsor configurations from active campaigns"""
+    # Reload campaigns data from file to get latest changes
+    fresh_data = load_campaigns()
+    campaigns = fresh_data.get('campaigns', {})
+
+    # Default sponsor structure for all slots
+    slots = ['table', 'drink', 'food', 'matchmaking', 'waiting_room']
+    result = {}
+
+    for slot in slots:
+        # Find active campaign for this slot
+        active_campaign = None
+        for campaign_id, campaign in campaigns.items():
+            if campaign.get('sponsor_slot') == slot and campaign.get('active'):
+                active_campaign = campaign
+                break
+
+        if active_campaign:
+            result[slot] = {
+                'enabled': True,
+                'name': active_campaign.get('name', ''),
+                'logo': active_campaign.get('logo', ''),
+                'url': active_campaign.get('url', ''),
+                'callout': active_campaign.get('callout', '')
+            }
+        else:
+            result[slot] = {
+                'enabled': False,
+                'name': '',
+                'logo': '',
+                'url': '',
+                'callout': ''
+            }
+
+    return jsonify(result)
+
+@app.route('/api/sponsors', methods=['POST'])
+def update_sponsors():
+    """Update sponsor configurations (requires admin password)"""
+    global sponsors_cache
+    data = request.get_json()
+
+    # Verify admin password
+    password = data.get('password')
+    if password != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    # Update sponsors
+    sponsors = data.get('sponsors')
+    if sponsors:
+        sponsors_cache = sponsors
+        save_sponsors(sponsors)
+        return jsonify({'success': True, 'message': 'Sponsors updated'})
+
+    return jsonify({'error': 'No sponsor data provided'}), 400
+
+@app.route('/api/sponsors/<sponsor_id>', methods=['POST'])
+def update_sponsor(sponsor_id):
+    """Update a single sponsor (requires admin password)"""
+    global sponsors_cache
+    data = request.get_json()
+
+    # Verify admin password
+    password = data.get('password')
+    if password != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    if sponsor_id not in sponsors_cache:
+        return jsonify({'error': 'Invalid sponsor ID'}), 404
+
+    # Update sponsor fields
+    sponsor_data = data.get('sponsor')
+    if sponsor_data:
+        sponsors_cache[sponsor_id].update(sponsor_data)
+        save_sponsors(sponsors_cache)
+        return jsonify({'success': True, 'message': f'Sponsor {sponsor_id} updated'})
+
+    return jsonify({'error': 'No sponsor data provided'}), 400
+
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    """Validate admin password"""
+    data = request.get_json()
+    password = data.get('password')
+
+    if password == ADMIN_PASSWORD:
+        return jsonify({'success': True})
+    return jsonify({'error': 'Invalid password'}), 401
+
+@app.route('/api/admin/upload', methods=['POST'])
+def upload_sponsor_image():
+    """Upload sponsor image"""
+    password = request.form.get('password')
+    if password != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image provided'}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    # Save to icons/sponsors folder
+    sponsors_dir = os.path.join('.', 'icons', 'sponsors')
+    os.makedirs(sponsors_dir, exist_ok=True)
+
+    filename = file.filename.replace(' ', '_')
+    filepath = os.path.join(sponsors_dir, filename)
+    file.save(filepath)
+
+    return jsonify({
+        'success': True,
+        'url': f'/icons/sponsors/{filename}'
+    })
+
+# ===========================================
+# CUSTOMER MANAGEMENT API
+# ===========================================
+
+@app.route('/api/admin/customers', methods=['GET'])
+def get_customers():
+    """Get all customers (admin only)"""
+    password = request.args.get('password')
+    if password != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    # Return customers without passwords
+    customers = {}
+    for cid, customer in campaigns_data['customers'].items():
+        customers[cid] = {k: v for k, v in customer.items() if k != 'password'}
+    return jsonify(customers)
+
+@app.route('/api/admin/customers', methods=['POST'])
+def create_customer():
+    """Create a new customer (admin only)"""
+    global campaigns_data
+    data = request.get_json()
+
+    if data.get('password') != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid admin password'}), 401
+
+    customer_name = data.get('name')
+    customer_email = data.get('email')
+    customer_password = data.get('customerPassword')
+
+    if not all([customer_name, customer_email, customer_password]):
+        return jsonify({'error': 'Name, email and password are required'}), 400
+
+    # Check if email already exists
+    for cid, c in campaigns_data['customers'].items():
+        if c['email'] == customer_email:
+            return jsonify({'error': 'Email already exists'}), 400
+
+    customer_id = str(uuid.uuid4())[:8]
+    campaigns_data['customers'][customer_id] = {
+        'name': customer_name,
+        'email': customer_email,
+        'password': hash_password(customer_password),
+        'created_at': datetime.now().isoformat()
+    }
+    save_campaigns(campaigns_data)
+
+    return jsonify({
+        'success': True,
+        'customerId': customer_id,
+        'message': f'Customer {customer_name} created'
+    })
+
+@app.route('/api/admin/customers/<customer_id>', methods=['PUT'])
+def update_customer(customer_id):
+    """Update a customer (admin only)"""
+    global campaigns_data
+    data = request.get_json()
+
+    if data.get('password') != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid admin password'}), 401
+
+    if customer_id not in campaigns_data['customers']:
+        return jsonify({'error': 'Customer not found'}), 404
+
+    customer = campaigns_data['customers'][customer_id]
+
+    if data.get('name'):
+        customer['name'] = data['name']
+    if data.get('email'):
+        customer['email'] = data['email']
+    if data.get('customerPassword'):
+        customer['password'] = hash_password(data['customerPassword'])
+
+    save_campaigns(campaigns_data)
+    return jsonify({'success': True, 'message': 'Customer updated'})
+
+@app.route('/api/admin/customers/<customer_id>', methods=['DELETE'])
+def delete_customer(customer_id):
+    """Delete a customer (admin only)"""
+    global campaigns_data
+    data = request.get_json()
+
+    if data.get('password') != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid admin password'}), 401
+
+    if customer_id not in campaigns_data['customers']:
+        return jsonify({'error': 'Customer not found'}), 404
+
+    # Delete all campaigns for this customer
+    campaigns_data['campaigns'] = {
+        cid: c for cid, c in campaigns_data['campaigns'].items()
+        if c['customer_id'] != customer_id
+    }
+
+    # Clear active sponsors if they belonged to this customer's campaigns
+    for slot in campaigns_data['active_sponsors']:
+        campaign_id = campaigns_data['active_sponsors'][slot]
+        if campaign_id and campaign_id in campaigns_data['campaigns']:
+            if campaigns_data['campaigns'][campaign_id]['customer_id'] == customer_id:
+                campaigns_data['active_sponsors'][slot] = None
+
+    del campaigns_data['customers'][customer_id]
+    save_campaigns(campaigns_data)
+
+    return jsonify({'success': True, 'message': 'Customer deleted'})
+
+# ===========================================
+# CAMPAIGN MANAGEMENT API
+# ===========================================
+
+@app.route('/api/admin/campaigns', methods=['GET'])
+def get_all_campaigns():
+    """Get all campaigns (admin only)"""
+    password = request.args.get('password')
+    if password != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    return jsonify(campaigns_data['campaigns'])
+
+@app.route('/api/admin/campaigns', methods=['POST'])
+def create_campaign():
+    """Create a new campaign (admin only)"""
+    global campaigns_data
+    data = request.get_json()
+
+    if data.get('password') != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid admin password'}), 401
+
+    customer_id = data.get('customerId')
+    if customer_id not in campaigns_data['customers']:
+        return jsonify({'error': 'Customer not found'}), 404
+
+    campaign_id = str(uuid.uuid4())[:8]
+    campaigns_data['campaigns'][campaign_id] = {
+        'customer_id': customer_id,
+        'name': data.get('name', 'New Campaign'),
+        'sponsor_slot': data.get('sponsorSlot', 'table'),
+        'logo': data.get('logo', ''),
+        'url': data.get('url', ''),
+        'callout': data.get('callout', ''),
+        'start_date': data.get('startDate', datetime.now().isoformat()[:10]),
+        'end_date': data.get('endDate', ''),
+        'active': data.get('active', False),
+        'stats': {
+            'impressions': 0,
+            'clicks': 0
+        },
+        'created_at': datetime.now().isoformat()
+    }
+    save_campaigns(campaigns_data)
+
+    return jsonify({
+        'success': True,
+        'campaignId': campaign_id,
+        'message': 'Campaign created'
+    })
+
+@app.route('/api/admin/campaigns/<campaign_id>', methods=['PUT'])
+def update_campaign(campaign_id):
+    """Update a campaign (admin only)"""
+    global campaigns_data
+    data = request.get_json()
+
+    if data.get('password') != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid admin password'}), 401
+
+    if campaign_id not in campaigns_data['campaigns']:
+        return jsonify({'error': 'Campaign not found'}), 404
+
+    campaign = campaigns_data['campaigns'][campaign_id]
+
+    # Map camelCase to snake_case
+    field_mapping = {
+        'sponsorSlot': 'sponsor_slot',
+        'startDate': 'start_date',
+        'endDate': 'end_date',
+        'customerId': 'customer_id'
+    }
+
+    # Update allowed fields (accept both camelCase and snake_case)
+    allowed_fields = ['name', 'sponsor_slot', 'logo', 'url', 'callout', 'start_date', 'end_date', 'active', 'customer_id']
+
+    for camel, snake in field_mapping.items():
+        if camel in data:
+            data[snake] = data[camel]
+
+    for field in allowed_fields:
+        if field in data:
+            campaign[field] = data[field]
+
+    save_campaigns(campaigns_data)
+    return jsonify({'success': True, 'message': 'Campaign updated'})
+
+@app.route('/api/admin/campaigns/<campaign_id>', methods=['DELETE'])
+def delete_campaign(campaign_id):
+    """Delete a campaign (admin only)"""
+    global campaigns_data
+    data = request.get_json()
+
+    if data.get('password') != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid admin password'}), 401
+
+    if campaign_id not in campaigns_data['campaigns']:
+        return jsonify({'error': 'Campaign not found'}), 404
+
+    # Clear from active sponsors if needed
+    for slot in campaigns_data['active_sponsors']:
+        if campaigns_data['active_sponsors'][slot] == campaign_id:
+            campaigns_data['active_sponsors'][slot] = None
+
+    del campaigns_data['campaigns'][campaign_id]
+    save_campaigns(campaigns_data)
+
+    return jsonify({'success': True, 'message': 'Campaign deleted'})
+
+@app.route('/api/admin/campaigns/<campaign_id>/activate', methods=['POST'])
+def activate_campaign(campaign_id):
+    """Set a campaign as the active sponsor for its slot (admin only)"""
+    global campaigns_data
+    data = request.get_json()
+
+    if data.get('password') != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid admin password'}), 401
+
+    if campaign_id not in campaigns_data['campaigns']:
+        return jsonify({'error': 'Campaign not found'}), 404
+
+    campaign = campaigns_data['campaigns'][campaign_id]
+    slot = campaign['sponsor_slot']
+
+    # Deactivate current active campaign for this slot
+    current_active = campaigns_data['active_sponsors'].get(slot)
+    if current_active and current_active in campaigns_data['campaigns']:
+        campaigns_data['campaigns'][current_active]['active'] = False
+
+    # Activate new campaign
+    campaigns_data['active_sponsors'][slot] = campaign_id
+    campaign['active'] = True
+
+    save_campaigns(campaigns_data)
+
+    return jsonify({
+        'success': True,
+        'message': f'Campaign activated for {slot} slot'
+    })
+
+# ===========================================
+# STATISTICS API
+# ===========================================
+
+@app.route('/api/stats/impression', methods=['POST'])
+def record_impression():
+    """Record an ad impression"""
+    global campaigns_data
+    data = request.get_json()
+    slot = data.get('slot')
+
+    if slot and slot in campaigns_data['active_sponsors']:
+        campaign_id = campaigns_data['active_sponsors'][slot]
+        if campaign_id and campaign_id in campaigns_data['campaigns']:
+            campaigns_data['campaigns'][campaign_id]['stats']['impressions'] += 1
+            save_campaigns(campaigns_data)
+            return jsonify({'success': True})
+
+    return jsonify({'success': False})
+
+@app.route('/api/stats/click', methods=['POST'])
+def record_click():
+    """Record an ad click"""
+    global campaigns_data
+    data = request.get_json()
+    slot = data.get('slot')
+
+    if slot and slot in campaigns_data['active_sponsors']:
+        campaign_id = campaigns_data['active_sponsors'][slot]
+        if campaign_id and campaign_id in campaigns_data['campaigns']:
+            campaigns_data['campaigns'][campaign_id]['stats']['clicks'] += 1
+            save_campaigns(campaigns_data)
+            return jsonify({'success': True})
+
+    return jsonify({'success': False})
+
+@app.route('/api/admin/stats/<campaign_id>', methods=['GET'])
+def get_campaign_stats(campaign_id):
+    """Get campaign statistics (admin only)"""
+    password = request.args.get('password')
+    if password != ADMIN_PASSWORD:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    if campaign_id not in campaigns_data['campaigns']:
+        return jsonify({'error': 'Campaign not found'}), 404
+
+    campaign = campaigns_data['campaigns'][campaign_id]
+    stats = campaign['stats']
+
+    # Calculate CTR
+    ctr = 0
+    if stats['impressions'] > 0:
+        ctr = round((stats['clicks'] / stats['impressions']) * 100, 2)
+
+    return jsonify({
+        'impressions': stats['impressions'],
+        'clicks': stats['clicks'],
+        'ctr': ctr,
+        'campaign_name': campaign['name'],
+        'slot': campaign['sponsor_slot']
+    })
+
+# ===========================================
+# CUSTOMER PORTAL API
+# ===========================================
+
+@app.route('/api/customer/login', methods=['POST'])
+def customer_login():
+    """Customer login"""
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({'error': 'Email and password required'}), 400
+
+    hashed = hash_password(password)
+
+    for customer_id, customer in campaigns_data['customers'].items():
+        if customer['email'] == email and customer['password'] == hashed:
+            return jsonify({
+                'success': True,
+                'customerId': customer_id,
+                'name': customer['name']
+            })
+
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+@app.route('/api/customer/<customer_id>/campaigns', methods=['GET'])
+def get_customer_campaigns(customer_id):
+    """Get campaigns for a customer"""
+    password = request.args.get('password')
+
+    # Verify customer credentials
+    if customer_id not in campaigns_data['customers']:
+        return jsonify({'error': 'Customer not found'}), 404
+
+    customer = campaigns_data['customers'][customer_id]
+    if hash_password(password) != customer['password']:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    # Get customer's campaigns with stats
+    customer_campaigns = {}
+    for cid, campaign in campaigns_data['campaigns'].items():
+        if campaign['customer_id'] == customer_id:
+            stats = campaign['stats']
+            ctr = 0
+            if stats['impressions'] > 0:
+                ctr = round((stats['clicks'] / stats['impressions']) * 100, 2)
+
+            customer_campaigns[cid] = {
+                **campaign,
+                'ctr': ctr
+            }
+
+    return jsonify(customer_campaigns)
+
+@app.route('/api/customer/<customer_id>/stats', methods=['GET'])
+def get_customer_total_stats(customer_id):
+    """Get total stats across all campaigns for a customer"""
+    password = request.args.get('password')
+
+    if customer_id not in campaigns_data['customers']:
+        return jsonify({'error': 'Customer not found'}), 404
+
+    customer = campaigns_data['customers'][customer_id]
+    if hash_password(password) != customer['password']:
+        return jsonify({'error': 'Invalid password'}), 401
+
+    total_impressions = 0
+    total_clicks = 0
+    active_campaigns = 0
+
+    for campaign in campaigns_data['campaigns'].values():
+        if campaign['customer_id'] == customer_id:
+            total_impressions += campaign['stats']['impressions']
+            total_clicks += campaign['stats']['clicks']
+            if campaign['active']:
+                active_campaigns += 1
+
+    total_ctr = 0
+    if total_impressions > 0:
+        total_ctr = round((total_clicks / total_impressions) * 100, 2)
+
+    return jsonify({
+        'totalImpressions': total_impressions,
+        'totalClicks': total_clicks,
+        'totalCTR': total_ctr,
+        'activeCampaigns': active_campaigns,
+        'totalCampaigns': sum(1 for c in campaigns_data['campaigns'].values() if c['customer_id'] == customer_id)
+    })
+
 # WebSocket Events
 
 @socketio.on('connect')
@@ -64,7 +682,7 @@ def handle_disconnect():
     sid = request.sid
     print(f'Client disconnected: {sid}')
 
-    # Remove from matchmaking queue if present
+    # Remove from Dhiha Ei matchmaking queue if present
     global matchmaking_queue
     was_in_queue = any(p['sid'] == sid for p in matchmaking_queue)
     matchmaking_queue = [p for p in matchmaking_queue if p['sid'] != sid]
@@ -77,13 +695,53 @@ def handle_disconnect():
                 'playersNeeded': 4 - len(matchmaking_queue)
             }, to=player['sid'])
 
+    # Remove from Digu matchmaking queue if present
+    global digu_matchmaking_queue
+    was_in_digu_queue = any(p['sid'] == sid for p in digu_matchmaking_queue)
+    digu_matchmaking_queue = [p for p in digu_matchmaking_queue if p['sid'] != sid]
+    if was_in_digu_queue:
+        print(f'Removed disconnected player from Digu queue. Queue size: {len(digu_matchmaking_queue)}')
+        for player in digu_matchmaking_queue:
+            socketio.emit('digu_queue_update', {
+                'playersInQueue': len(digu_matchmaking_queue),
+                'playersNeeded': 4 - len(digu_matchmaking_queue)
+            }, to=player['sid'])
+
     # Clean up player from room
     if sid in player_sessions:
         session = player_sessions[sid]
         room_id = session['roomId']
         position = session['position']
+        game_type = session.get('gameType', 'dhihaei')
 
-        if room_id in rooms:
+        # Handle Digu rooms
+        if game_type == 'digu' and room_id in digu_rooms:
+            room = digu_rooms[room_id]
+
+            if position in room['players']:
+                player_name = room['players'][position].get('name', f'Player {position + 1}')
+
+                if room['metadata']['status'] == 'playing':
+                    room['players'][position]['connected'] = False
+                    print(f'Player {player_name} disconnected from Digu game in room {room_id}')
+                    emit('digu_player_left', {
+                        'position': position,
+                        'playerName': player_name,
+                        'reason': 'disconnected',
+                        'players': room['players']
+                    }, room=room_id)
+                else:
+                    del room['players'][position]
+                    room['metadata']['playerCount'] = len(room['players'])
+
+                    if len(room['players']) == 0:
+                        del digu_rooms[room_id]
+                        print(f'Digu room {room_id} deleted (empty)')
+                    else:
+                        emit('digu_players_changed', {'players': room['players']}, room=room_id)
+
+        # Handle Dhiha Ei rooms
+        elif room_id in rooms:
             room = rooms[room_id]
 
             if position in room['players']:
@@ -736,6 +1394,528 @@ def handle_leave_queue():
 
 # Need to import request for sid access
 from flask import request
+
+# ===========================================
+# DIGU MULTIPLAYER
+# ===========================================
+
+def get_digu_room_state(room_id):
+    """Get serializable Digu room state"""
+    if room_id not in digu_rooms:
+        return None
+    room = digu_rooms[room_id]
+    return {
+        'roomId': room_id,
+        'metadata': room['metadata'],
+        'players': room['players'],
+        'gameState': room.get('gameState'),
+        'hands': room.get('hands')
+    }
+
+@socketio.on('create_digu_room')
+def handle_create_digu_room(data):
+    """Create a new Digu room (2-4 players)"""
+    sid = request.sid
+    player_name = data.get('playerName', 'Player')
+    max_players = data.get('maxPlayers', 4)
+
+    # Validate max_players
+    if max_players < 2 or max_players > 4:
+        max_players = 4
+
+    room_id = generate_room_code()
+
+    digu_rooms[room_id] = {
+        'metadata': {
+            'host': sid,
+            'created': time.time(),
+            'status': 'waiting',
+            'playerCount': 1,
+            'maxPlayers': max_players,
+            'gameType': 'digu'
+        },
+        'players': {
+            0: {
+                'oderId': sid,
+                'name': player_name,
+                'ready': False,
+                'connected': True
+            }
+        },
+        'gameState': None,
+        'hands': {}
+    }
+
+    player_sessions[sid] = {
+        'roomId': room_id,
+        'position': 0,
+        'gameType': 'digu'
+    }
+
+    join_room(room_id)
+
+    print(f'Digu room {room_id} created by {player_name} (max {max_players} players)')
+
+    emit('digu_room_created', {
+        'roomId': room_id,
+        'position': 0,
+        'players': digu_rooms[room_id]['players'],
+        'maxPlayers': max_players
+    })
+
+@socketio.on('join_digu_room')
+def handle_join_digu_room(data):
+    """Join an existing Digu room"""
+    sid = request.sid
+    room_id = data.get('roomId', '').upper().strip()
+    player_name = data.get('playerName', 'Player')
+
+    if room_id not in digu_rooms:
+        emit('error', {'message': 'Room not found'})
+        return
+
+    room = digu_rooms[room_id]
+
+    if room['metadata']['status'] != 'waiting':
+        emit('error', {'message': 'Game already in progress'})
+        return
+
+    max_players = room['metadata']['maxPlayers']
+
+    # Find empty slot
+    position = None
+    for i in range(max_players):
+        if i not in room['players']:
+            position = i
+            break
+
+    if position is None:
+        emit('error', {'message': 'Room is full'})
+        return
+
+    # Add player
+    room['players'][position] = {
+        'oderId': sid,
+        'name': player_name,
+        'ready': False,
+        'connected': True
+    }
+    room['metadata']['playerCount'] = len(room['players'])
+
+    player_sessions[sid] = {
+        'roomId': room_id,
+        'position': position,
+        'gameType': 'digu'
+    }
+
+    join_room(room_id)
+
+    print(f'{player_name} joined Digu room {room_id} at position {position}')
+
+    # Notify the joining player
+    emit('digu_room_joined', {
+        'roomId': room_id,
+        'position': position,
+        'players': room['players'],
+        'maxPlayers': max_players
+    })
+
+    # Notify others in room
+    emit('digu_players_changed', {'players': room['players']}, room=room_id, include_self=False)
+
+@socketio.on('leave_digu_room')
+def handle_leave_digu_room():
+    """Leave a Digu room"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+    position = session['position']
+
+    if room_id in digu_rooms:
+        room = digu_rooms[room_id]
+
+        if position in room['players']:
+            player_name = room['players'][position].get('name', f'Player {position + 1}')
+            is_playing = room['metadata']['status'] == 'playing'
+
+            del room['players'][position]
+            room['metadata']['playerCount'] = len(room['players'])
+
+            leave_room(room_id)
+
+            # Delete room if empty
+            if len(room['players']) == 0:
+                del digu_rooms[room_id]
+                print(f'Digu room {room_id} deleted (empty)')
+            else:
+                if is_playing:
+                    # Notify others that player left during game
+                    print(f'Player {player_name} left Digu game in room {room_id}')
+                    emit('digu_player_left', {
+                        'position': position,
+                        'playerName': player_name,
+                        'reason': 'left',
+                        'players': room['players']
+                    }, room=room_id)
+                else:
+                    emit('digu_players_changed', {'players': room['players']}, room=room_id)
+        else:
+            leave_room(room_id)
+
+    del player_sessions[sid]
+    emit('digu_left_room', {})
+
+@socketio.on('digu_set_ready')
+def handle_digu_set_ready(data):
+    """Set player ready status in Digu room"""
+    sid = request.sid
+    ready = data.get('ready', False)
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+    position = session['position']
+
+    if room_id in digu_rooms and position in digu_rooms[room_id]['players']:
+        digu_rooms[room_id]['players'][position]['ready'] = ready
+        emit('digu_players_changed', {'players': digu_rooms[room_id]['players']}, room=room_id)
+
+@socketio.on('start_digu_game')
+def handle_start_digu_game(data):
+    """Host starts the Digu game"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+
+    # Only host can start
+    if session['position'] != 0:
+        emit('error', {'message': 'Only host can start the game'})
+        return
+
+    if room_id not in digu_rooms:
+        return
+
+    room = digu_rooms[room_id]
+    min_players = 2
+
+    # Verify minimum players and all ready
+    if len(room['players']) < min_players:
+        emit('error', {'message': f'Need at least {min_players} players to start'})
+        return
+
+    all_ready = all(p.get('ready', False) for p in room['players'].values())
+    if not all_ready:
+        emit('error', {'message': 'All players must be ready'})
+        return
+
+    # Set game state
+    room['metadata']['status'] = 'playing'
+    room['gameState'] = data.get('gameState', {})
+    room['hands'] = data.get('hands', {})
+
+    print(f'Digu game started in room {room_id} with {len(room["players"])} players')
+
+    emit('digu_game_started', {
+        'gameState': room['gameState'],
+        'hands': room['hands'],
+        'players': room['players']
+    }, room=room_id)
+
+@socketio.on('digu_draw_card')
+def handle_digu_draw_card(data):
+    """Player draws a card from stock or discard"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+    position = session['position']
+
+    source = data.get('source')  # 'stock' or 'discard'
+    card = data.get('card')  # The card drawn (for discard pile)
+
+    print(f'Digu card drawn in room {room_id}: from {source} by position {position}')
+
+    # Broadcast to all other players in room
+    emit('digu_remote_card_drawn', {
+        'source': source,
+        'card': card,
+        'position': position
+    }, room=room_id, include_self=False)
+
+@socketio.on('digu_discard_card')
+def handle_digu_discard_card(data):
+    """Player discards a card"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+    position = session['position']
+
+    card = data.get('card')
+
+    print(f'Digu card discarded in room {room_id}: {card} by position {position}')
+
+    # Broadcast to all other players in room
+    emit('digu_remote_card_discarded', {
+        'card': card,
+        'position': position
+    }, room=room_id, include_self=False)
+
+@socketio.on('digu_declare')
+def handle_digu_declare(data):
+    """Player declares Digu"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+    position = session['position']
+
+    melds = data.get('melds')  # The player's melds
+    isValid = data.get('isValid', False)  # Whether the declaration is valid
+
+    print(f'Digu declared in room {room_id} by position {position}, valid: {isValid}')
+
+    # Broadcast to all other players in room
+    emit('digu_remote_declare', {
+        'position': position,
+        'melds': melds,
+        'isValid': isValid
+    }, room=room_id, include_self=False)
+
+@socketio.on('digu_update_state')
+def handle_digu_update_state(data):
+    """Update Digu game state"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+
+    if room_id in digu_rooms:
+        digu_rooms[room_id]['gameState'] = data.get('gameState', {})
+
+        emit('digu_state_updated', {
+            'gameState': digu_rooms[room_id]['gameState']
+        }, room=room_id, include_self=False)
+
+@socketio.on('digu_game_over')
+def handle_digu_game_over(data):
+    """Digu game ended"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+    position = session['position']
+
+    results = data.get('results')
+
+    print(f'Digu game over in room {room_id}')
+
+    # Broadcast to all players in room
+    emit('digu_remote_game_over', {
+        'results': results,
+        'declaredBy': position
+    }, room=room_id, include_self=False)
+
+@socketio.on('digu_new_match')
+def handle_digu_new_match(data):
+    """Start a new Digu match (host only)"""
+    sid = request.sid
+
+    if sid not in player_sessions:
+        return
+
+    session = player_sessions[sid]
+    if session.get('gameType') != 'digu':
+        return
+
+    room_id = session['roomId']
+
+    # Only host broadcasts new matches
+    if session['position'] != 0:
+        return
+
+    if room_id in digu_rooms:
+        digu_rooms[room_id]['gameState'] = data.get('gameState', {})
+        digu_rooms[room_id]['hands'] = data.get('hands', {})
+
+        print(f'New Digu match started in room {room_id}')
+
+        emit('digu_match_started', {
+            'gameState': digu_rooms[room_id]['gameState'],
+            'hands': digu_rooms[room_id]['hands']
+        }, room=room_id)
+
+# ===========================================
+# DIGU QUICK MATCH
+# ===========================================
+
+def remove_from_digu_queue(sid):
+    """Remove a player from the Digu matchmaking queue"""
+    global digu_matchmaking_queue
+    digu_matchmaking_queue = [p for p in digu_matchmaking_queue if p['sid'] != sid]
+
+def broadcast_digu_queue_status():
+    """Broadcast current Digu queue count to all waiting players"""
+    count = len(digu_matchmaking_queue)
+    for player in digu_matchmaking_queue:
+        socketio.emit('digu_queue_update', {
+            'playersInQueue': count,
+            'playersNeeded': 4 - count
+        }, to=player['sid'])
+
+@socketio.on('join_digu_queue')
+def handle_join_digu_queue(data):
+    """Join the Digu matchmaking queue"""
+    sid = request.sid
+    player_name = data.get('playerName', 'Player')
+
+    # Remove if already in queue (rejoin)
+    remove_from_digu_queue(sid)
+
+    # Check if already in a room
+    if sid in player_sessions:
+        emit('error', {'message': 'Already in a room. Leave first.'})
+        return
+
+    # Add to queue
+    digu_matchmaking_queue.append({
+        'sid': sid,
+        'name': player_name,
+        'joinedAt': time.time()
+    })
+
+    print(f'{player_name} joined Digu matchmaking queue. Queue size: {len(digu_matchmaking_queue)}')
+
+    emit('digu_queue_joined', {
+        'playersInQueue': len(digu_matchmaking_queue),
+        'playersNeeded': max(0, 4 - len(digu_matchmaking_queue))
+    })
+
+    # Broadcast updated queue status to all waiting
+    broadcast_digu_queue_status()
+
+    # Check if we can start a match (4 players)
+    check_and_start_digu_match()
+
+def check_and_start_digu_match():
+    """Check if we have 4 players and start a Digu match"""
+    global digu_matchmaking_queue
+
+    if len(digu_matchmaking_queue) >= 4:
+        # Take first 4 players
+        match_players = digu_matchmaking_queue[:4]
+        digu_matchmaking_queue = digu_matchmaking_queue[4:]
+
+        # Create a new room for this match
+        room_id = generate_room_code()
+
+        digu_rooms[room_id] = {
+            'metadata': {
+                'host': match_players[0]['sid'],
+                'created': time.time(),
+                'status': 'waiting',
+                'playerCount': 4,
+                'maxPlayers': 4,
+                'gameType': 'digu',
+                'isQuickMatch': True
+            },
+            'players': {},
+            'gameState': None,
+            'hands': {}
+        }
+
+        # Assign players to positions
+        for i, player in enumerate(match_players):
+            digu_rooms[room_id]['players'][i] = {
+                'oderId': player['sid'],
+                'name': player['name'],
+                'ready': True,  # Auto-ready for quick match
+                'connected': True
+            }
+
+            player_sessions[player['sid']] = {
+                'roomId': room_id,
+                'position': i,
+                'gameType': 'digu'
+            }
+
+            # Add player to socket room
+            join_room(room_id, sid=player['sid'])
+
+        print(f'Digu quick match created: Room {room_id} with players {[p["name"] for p in match_players]}')
+
+        # Notify all matched players
+        for i, player in enumerate(match_players):
+            socketio.emit('digu_match_found', {
+                'roomId': room_id,
+                'position': i,
+                'players': digu_rooms[room_id]['players']
+            }, to=player['sid'])
+
+        return True
+    return False
+
+@socketio.on('leave_digu_queue')
+def handle_leave_digu_queue():
+    """Leave the Digu matchmaking queue"""
+    sid = request.sid
+
+    was_in_queue = any(p['sid'] == sid for p in digu_matchmaking_queue)
+    remove_from_digu_queue(sid)
+
+    if was_in_queue:
+        print(f'Player left Digu matchmaking queue. Queue size: {len(digu_matchmaking_queue)}')
+        emit('digu_queue_left', {})
+        broadcast_digu_queue_status()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))

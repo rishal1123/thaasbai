@@ -1405,6 +1405,19 @@ body {
     border-radius: calc(0.5 * var(--scale));
 }
 
+/* Active sponsor styling - hide placeholder backgrounds */
+.sponsor-area.sponsor-active {
+    background: transparent;
+    border: none;
+    width: auto;
+    height: auto;
+}
+
+.sponsor-area.sponsor-active img {
+    display: block;
+    object-fit: contain;
+}
+
 .drink-item.jumping,
 .food-item.jumping {
     animation: item-jump 0.4s ease;

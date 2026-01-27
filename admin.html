@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thaasbai Admin - Sponsor Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+        .brand-gold { color: #ffd700; }
+        .sponsor-preview {
+            height: 100px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .sponsor-preview img {
+            max-width: 90%;
+            max-height: 80px;
+            object-fit: contain;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            border: none;
+            font-weight: 600;
+        }
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #ffdd33, #ffa500);
+            color: #1a1a2e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .form-control, .form-control:focus, .form-select, .form-select:focus {
+            background: rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 0 0.2rem rgba(255,215,0,0.25);
+        }
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+        }
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .nav-tabs .nav-link {
+            color: rgba(255,255,255,0.6);
+            border: none;
+        }
+        .nav-tabs .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: #ffd700;
+            border-bottom: 2px solid #ffd700;
+        }
+        .nav-tabs .nav-link:hover {
+            color: #ffd700;
+            border-color: transparent;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 1rem;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+        .table-dark {
+            --bs-table-bg: rgba(0,0,0,0.2);
+        }
+
+        /* Live Preview Styles */
+        .preview-container {
+            background: linear-gradient(135deg, #0a3d2e 0%, #1a5a3e 50%, #0a3d2e 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            min-height: 400px;
+        }
+        .preview-table {
+            background: radial-gradient(ellipse at center, #2d7a5a 0%, #1a5a3e 100%);
+            border: 8px solid #5a3d2b;
+            border-radius: 50%;
+            width: 280px;
+            height: 200px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.3), 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .preview-slot {
+            position: absolute;
+            background: rgba(0,0,0,0.4);
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 8px;
+            transition: all 0.3s;
+        }
+        .preview-slot.active {
+            border: 2px solid #ffd700;
+            background: rgba(0,0,0,0.6);
+        }
+        .preview-slot img {
+            max-width: 100%;
+            max-height: 60%;
+            object-fit: contain;
+        }
+        .preview-slot .callout {
+            font-size: 0.7rem;
+            color: #ffd700;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .preview-slot-table {
+            width: 200px;
+            height: 80px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .preview-slot-drink {
+            width: 80px;
+            height: 100px;
+            left: -120px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .preview-slot-food {
+            width: 80px;
+            height: 100px;
+            right: -120px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .preview-slot-matchmaking {
+            width: 300px;
+            height: 80px;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .preview-slot-waiting {
+            width: 300px;
+            height: 80px;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .preview-label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .preview-empty {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+        }
+        .preview-slot.active {
+            cursor: pointer;
+        }
+        .preview-slot.active:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255,215,0,0.5);
+        }
+        .preview-slot-table.active:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+        .preview-slot-drink.active:hover,
+        .preview-slot-food.active:hover {
+            transform: translateY(-50%) scale(1.05);
+        }
+        .preview-slot-matchmaking.active:hover,
+        .preview-slot-waiting.active:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Login Section -->
+        <div id="login-section" class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card p-4 mt-5">
+                    <div class="card-body">
+                        <h2 class="text-center brand-gold mb-4">
+                            <i class="bi bi-shield-lock me-2"></i>Admin Login
+                        </h2>
+                        <div id="login-message" class="alert d-none"></div>
+                        <form id="login-form">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" placeholder="Enter admin password" required>
+                            </div>
+                            <button type="submit" class="btn btn-gold w-100">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div id="admin-section" class="d-none">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="brand-gold mb-1">
+                        <i class="bi bi-megaphone me-2"></i>Sponsor Management
+                    </h1>
+                    <p class="text-muted mb-0">Manage customers, campaigns and sponsors</p>
+                </div>
+                <div>
+                    <button class="btn btn-gold me-2" onclick="showLivePreview()">
+                        <i class="bi bi-eye me-1"></i>Live Preview
+                    </button>
+                    <button class="btn btn-outline-light" onclick="logout()">
+                        <i class="bi bi-box-arrow-right me-1"></i>Logout
+                    </button>
+                </div>
+            </div>
+
+            <div id="admin-message" class="alert d-none"></div>
+
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#customers-tab">
+                        <i class="bi bi-people me-1"></i>Customers
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#campaigns-tab">
+                        <i class="bi bi-calendar-event me-1"></i>Campaigns
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#active-tab">
+                        <i class="bi bi-broadcast me-1"></i>Active Sponsors
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Customers Tab -->
+                <div class="tab-pane fade show active" id="customers-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Customers</h4>
+                        <button class="btn btn-success btn-sm" onclick="showAddCustomerModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Add Customer
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Campaigns</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Campaigns Tab -->
+                <div class="tab-pane fade" id="campaigns-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Campaigns</h4>
+                        <button class="btn btn-success btn-sm" onclick="showAddCampaignModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Add Campaign
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Campaign</th>
+                                    <th>Customer</th>
+                                    <th>Slot</th>
+                                    <th>Status</th>
+                                    <th>Impressions</th>
+                                    <th>Clicks</th>
+                                    <th>CTR</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaigns-table">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Active Sponsors Tab -->
+                <div class="tab-pane fade" id="active-tab">
+                    <h4 class="mb-3">Currently Active Sponsors</h4>
+                    <div class="row g-4" id="active-sponsors-grid">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-gold"><i class="bi bi-person-plus me-2"></i>Add Customer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-customer-form">
+                        <div class="mb-3">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="customer-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="customer-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Portal Password</label>
+                            <input type="password" class="form-control" id="customer-password" required>
+                            <small class="text-muted">Customer will use this to access their stats portal</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="addCustomer()">Add Customer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Campaign Modal -->
+    <div class="modal fade" id="addCampaignModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-gold"><i class="bi bi-calendar-plus me-2"></i>Add Campaign</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-campaign-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Customer</label>
+                                <select class="form-select" id="campaign-customer" required>
+                                    <option value="">Select customer...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Campaign Name</label>
+                                <input type="text" class="form-control" id="campaign-name" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sponsor Slot</label>
+                                <select class="form-select" id="campaign-slot" required>
+                                    <option value="table">Table (Center) - 200x80px</option>
+                                    <option value="drink">Drink (Left) - 130x130px</option>
+                                    <option value="food">Food (Right) - 130x130px</option>
+                                    <option value="matchmaking">Matchmaking - 300x120px</option>
+                                    <option value="waiting_room">Waiting Room - 300x120px</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Logo</label>
+                                <div class="input-group mb-2">
+                                    <input type="file" class="form-control" id="campaign-logo-file" accept=".png,.json,.lottie,image/png,application/json">
+                                    <button class="btn btn-outline-primary" type="button" onclick="uploadCampaignLogo('campaign')">
+                                        <i class="bi bi-upload"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">PNG or Lottie JSON</small>
+                                <input type="text" class="form-control mt-2" id="campaign-logo" placeholder="Or enter URL">
+                                <div id="campaign-logo-preview" class="mt-2" style="height: 60px; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Click URL</label>
+                                <input type="url" class="form-control" id="campaign-url" placeholder="https://...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Callout Text</label>
+                                <input type="text" class="form-control" id="campaign-callout">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="campaign-start">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="campaign-end">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="addCampaign()">Create Campaign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div class="modal fade" id="editCustomerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-gold"><i class="bi bi-pencil me-2"></i>Edit Customer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-customer-form">
+                        <input type="hidden" id="edit-customer-id">
+                        <div class="mb-3">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="edit-customer-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit-customer-email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">New Password (leave blank to keep current)</label>
+                            <input type="password" class="form-control" id="edit-customer-password">
+                            <small class="text-muted">Only enter if you want to change the password</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateCustomer()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Campaign Modal -->
+    <div class="modal fade" id="editCampaignModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-gold"><i class="bi bi-pencil me-2"></i>Edit Campaign</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-campaign-form">
+                        <input type="hidden" id="edit-campaign-id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Customer</label>
+                                <select class="form-select" id="edit-campaign-customer" required>
+                                    <option value="">Select customer...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Campaign Name</label>
+                                <input type="text" class="form-control" id="edit-campaign-name" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sponsor Slot</label>
+                                <select class="form-select" id="edit-campaign-slot" required>
+                                    <option value="table">Table (Center) - 200x80px</option>
+                                    <option value="drink">Drink (Left) - 130x130px</option>
+                                    <option value="food">Food (Right) - 130x130px</option>
+                                    <option value="matchmaking">Matchmaking - 300x120px</option>
+                                    <option value="waiting_room">Waiting Room - 300x120px</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Logo</label>
+                                <div class="input-group mb-2">
+                                    <input type="file" class="form-control" id="edit-campaign-logo-file" accept=".png,.json,.lottie,image/png,application/json">
+                                    <button class="btn btn-outline-primary" type="button" onclick="uploadCampaignLogo('edit-campaign')">
+                                        <i class="bi bi-upload"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">PNG or Lottie JSON</small>
+                                <input type="text" class="form-control mt-2" id="edit-campaign-logo" placeholder="Or enter URL">
+                                <div id="edit-campaign-logo-preview" class="mt-2" style="height: 60px; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Click URL</label>
+                                <input type="url" class="form-control" id="edit-campaign-url" placeholder="https://...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Callout Text</label>
+                                <input type="text" class="form-control" id="edit-campaign-callout">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="edit-campaign-start">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="edit-campaign-end">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="edit-campaign-active">
+                                <label class="form-check-label" for="edit-campaign-active">Campaign Active</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateCampaign()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Preview Modal -->
+    <div class="modal fade" id="livePreviewModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-gold"><i class="bi bi-eye me-2"></i>Live Sponsor Preview</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted text-center mb-4">Preview of how active sponsors appear in the game</p>
+                    <div class="preview-container">
+                        <div class="preview-table">
+                            <!-- Table (Center) Sponsor -->
+                            <div class="preview-slot preview-slot-table" id="preview-table">
+                                <span class="preview-label">Table</span>
+                                <span class="preview-empty">No sponsor</span>
+                            </div>
+                            <!-- Drink (Left) Sponsor -->
+                            <div class="preview-slot preview-slot-drink" id="preview-drink">
+                                <span class="preview-label">Drink</span>
+                                <span class="preview-empty">No sponsor</span>
+                            </div>
+                            <!-- Food (Right) Sponsor -->
+                            <div class="preview-slot preview-slot-food" id="preview-food">
+                                <span class="preview-label">Food</span>
+                                <span class="preview-empty">No sponsor</span>
+                            </div>
+                            <!-- Matchmaking Sponsor -->
+                            <div class="preview-slot preview-slot-matchmaking" id="preview-matchmaking">
+                                <span class="preview-label">Matchmaking</span>
+                                <span class="preview-empty">No sponsor</span>
+                            </div>
+                            <!-- Waiting Room Sponsor -->
+                            <div class="preview-slot preview-slot-waiting" id="preview-waiting_room">
+                                <span class="preview-label">Waiting Room</span>
+                                <span class="preview-empty">No sponsor</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sponsor Details -->
+                    <div class="row mt-4" id="preview-details">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sponsor Detail Popup Modal -->
+    <div class="modal fade" id="sponsorDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title brand-gold"><i class="bi bi-megaphone me-2"></i>Sponsor Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="sponsor-detail-logo" class="mb-3" style="height: 120px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <!-- Logo here -->
+                    </div>
+                    <h4 id="sponsor-detail-name" class="brand-gold mb-2"></h4>
+                    <p id="sponsor-detail-customer" class="text-muted mb-3"></p>
+                    <p id="sponsor-detail-callout" class="mb-3" style="font-style: italic; color: #ffd700;"></p>
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <div class="card p-2">
+                                <div class="h5 mb-0 brand-gold" id="sponsor-detail-impressions">0</div>
+                                <small class="text-muted">Impressions</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card p-2">
+                                <div class="h5 mb-0 brand-gold" id="sponsor-detail-clicks">0</div>
+                                <small class="text-muted">Clicks</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card p-2">
+                                <div class="h5 mb-0 brand-gold" id="sponsor-detail-ctr">0%</div>
+                                <small class="text-muted">CTR</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="badge bg-info me-2" id="sponsor-detail-slot"></span>
+                        <span class="badge bg-secondary" id="sponsor-detail-dates"></span>
+                    </div>
+                    <div id="sponsor-detail-url-container" class="d-none">
+                        <a id="sponsor-detail-url" href="#" target="_blank" class="btn btn-gold">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Visit Sponsor
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let adminPassword = '';
+        let customersData = {};
+        let campaignsData = {};
+        let activeSponsors = {};
+
+        const slotLabels = {
+            'table': 'Table (Center)',
+            'drink': 'Drink (Left)',
+            'food': 'Food (Right)',
+            'matchmaking': 'Matchmaking',
+            'waiting_room': 'Waiting Room'
+        };
+
+        const slotResolutions = {
+            'table': '200x80px',
+            'drink': '130x130px',
+            'food': '130x130px',
+            'matchmaking': '300x120px',
+            'waiting_room': '300x120px'
+        };
+
+        // Check for stored session on page load
+        async function checkStoredSession() {
+            const storedPassword = sessionStorage.getItem('adminPassword');
+            if (storedPassword) {
+                try {
+                    const response = await fetch('/api/admin/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password: storedPassword })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        adminPassword = storedPassword;
+                        document.getElementById('login-section').classList.add('d-none');
+                        document.getElementById('admin-section').classList.remove('d-none');
+                        loadAllData();
+                        return;
+                    }
+                } catch (err) {
+                    // Session invalid, clear it
+                }
+                sessionStorage.removeItem('adminPassword');
+            }
+        }
+
+        // Initialize on page load
+        checkStoredSession();
+
+        // Login form
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    adminPassword = password;
+                    sessionStorage.setItem('adminPassword', password);
+                    document.getElementById('login-section').classList.add('d-none');
+                    document.getElementById('admin-section').classList.remove('d-none');
+                    loadAllData();
+                } else {
+                    showMessage('login-message', 'Invalid password', 'danger');
+                }
+            } catch (err) {
+                showMessage('login-message', 'Connection error', 'danger');
+            }
+        });
+
+        async function loadAllData() {
+            await Promise.all([loadCustomers(), loadCampaigns()]);
+            renderActiveSponsors();
+        }
+
+        async function loadCustomers() {
+            try {
+                const response = await fetch(`/api/admin/customers?password=${adminPassword}`);
+                customersData = await response.json();
+                renderCustomersTable();
+                updateCustomerDropdown();
+            } catch (err) {
+                showMessage('admin-message', 'Failed to load customers', 'danger');
+            }
+        }
+
+        async function loadCampaigns() {
+            try {
+                const response = await fetch(`/api/admin/campaigns?password=${adminPassword}`);
+                campaignsData = await response.json();
+                renderCampaignsTable();
+            } catch (err) {
+                showMessage('admin-message', 'Failed to load campaigns', 'danger');
+            }
+        }
+
+        function renderCustomersTable() {
+            const tbody = document.getElementById('customers-table');
+            tbody.innerHTML = '';
+
+            for (const [id, customer] of Object.entries(customersData)) {
+                const campaignCount = Object.values(campaignsData).filter(c => c.customer_id === id).length;
+                const created = new Date(customer.created_at).toLocaleDateString();
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${customer.name}</strong></td>
+                    <td>${customer.email}</td>
+                    <td><span class="badge bg-info">${campaignCount}</span></td>
+                    <td>${created}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="showEditCustomerModal('${id}')" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer('${id}')" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            if (Object.keys(customersData).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No customers yet</td></tr>';
+            }
+        }
+
+        function renderCampaignsTable() {
+            const tbody = document.getElementById('campaigns-table');
+            tbody.innerHTML = '';
+
+            for (const [id, campaign] of Object.entries(campaignsData)) {
+                const customer = customersData[campaign.customer_id];
+                const customerName = customer ? customer.name : 'Unknown';
+                const stats = campaign.stats || { impressions: 0, clicks: 0 };
+                const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : 0;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong>${campaign.name}</strong>
+                        ${campaign.logo ? `<br><img src="${campaign.logo}" style="max-height:30px;max-width:80px;" class="mt-1">` : ''}
+                    </td>
+                    <td>${customerName}</td>
+                    <td><span class="badge bg-secondary">${slotLabels[campaign.sponsor_slot] || campaign.sponsor_slot}</span></td>
+                    <td>
+                        ${campaign.active
+                            ? '<span class="badge bg-success">Active</span>'
+                            : '<span class="badge bg-secondary">Inactive</span>'}
+                    </td>
+                    <td>${stats.impressions.toLocaleString()}</td>
+                    <td>${stats.clicks.toLocaleString()}</td>
+                    <td>${ctr}%</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="showEditCampaignModal('${id}')" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        ${!campaign.active ? `
+                            <button class="btn btn-sm btn-success me-1" onclick="activateCampaign('${id}')" title="Activate">
+                                <i class="bi bi-broadcast"></i>
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCampaign('${id}')" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            if (Object.keys(campaignsData).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No campaigns yet</td></tr>';
+            }
+        }
+
+        function renderActiveSponsors() {
+            const grid = document.getElementById('active-sponsors-grid');
+            grid.innerHTML = '';
+
+            const slots = ['table', 'drink', 'food', 'matchmaking', 'waiting_room'];
+
+            for (const slot of slots) {
+                // Find active campaign for this slot
+                const activeCampaign = Object.entries(campaignsData).find(
+                    ([id, c]) => c.sponsor_slot === slot && c.active
+                );
+
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+
+                if (activeCampaign) {
+                    const [id, campaign] = activeCampaign;
+                    const customer = customersData[campaign.customer_id];
+                    const stats = campaign.stats || { impressions: 0, clicks: 0 };
+
+                    col.innerHTML = `
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <span class="brand-gold fw-semibold">${slotLabels[slot]}</span>
+                                <span class="badge bg-info float-end">${slotResolutions[slot]}</span>
+                            </div>
+                            <div class="card-body text-center">
+                                ${campaign.logo
+                                    ? `<img src="${campaign.logo}" style="max-height:60px;max-width:100%;" class="mb-2">`
+                                    : '<i class="bi bi-image fs-1 text-muted"></i>'}
+                                <h6 class="mt-2">${campaign.name}</h6>
+                                <small class="text-muted">${customer ? customer.name : 'Unknown'}</small>
+                                <div class="row mt-3">
+                                    <div class="col-6">
+                                        <div class="stat-value">${stats.impressions.toLocaleString()}</div>
+                                        <div class="stat-label">Impressions</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="stat-value">${stats.clicks.toLocaleString()}</div>
+                                        <div class="stat-label">Clicks</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    col.innerHTML = `
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <span class="brand-gold fw-semibold">${slotLabels[slot]}</span>
+                                <span class="badge bg-info float-end">${slotResolutions[slot]}</span>
+                            </div>
+                            <div class="card-body text-center text-muted">
+                                <i class="bi bi-broadcast fs-1"></i>
+                                <p class="mt-2 mb-0">No active sponsor</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                grid.appendChild(col);
+            }
+        }
+
+        function updateCustomerDropdown() {
+            const select = document.getElementById('campaign-customer');
+            select.innerHTML = '<option value="">Select customer...</option>';
+            for (const [id, customer] of Object.entries(customersData)) {
+                select.innerHTML += `<option value="${id}">${customer.name}</option>`;
+            }
+        }
+
+        function showAddCustomerModal() {
+            document.getElementById('add-customer-form').reset();
+            new bootstrap.Modal(document.getElementById('addCustomerModal')).show();
+        }
+
+        function showAddCampaignModal() {
+            document.getElementById('add-campaign-form').reset();
+            document.getElementById('campaign-start').value = new Date().toISOString().split('T')[0];
+            document.getElementById('campaign-logo-preview').style.display = 'none';
+            new bootstrap.Modal(document.getElementById('addCampaignModal')).show();
+        }
+
+        async function addCustomer() {
+            const name = document.getElementById('customer-name').value;
+            const email = document.getElementById('customer-email').value;
+            const customerPassword = document.getElementById('customer-password').value;
+
+            try {
+                const response = await fetch('/api/admin/customers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        name,
+                        email,
+                        customerPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('addCustomerModal')).hide();
+                    showMessage('admin-message', 'Customer created successfully', 'success');
+                    loadCustomers();
+                } else {
+                    alert(data.error || 'Failed to create customer');
+                }
+            } catch (err) {
+                alert('Failed to create customer');
+            }
+        }
+
+        async function addCampaign() {
+            const customerId = document.getElementById('campaign-customer').value;
+            const name = document.getElementById('campaign-name').value;
+            const slot = document.getElementById('campaign-slot').value;
+            const logo = document.getElementById('campaign-logo').value;
+            const url = document.getElementById('campaign-url').value;
+            const callout = document.getElementById('campaign-callout').value;
+            const startDate = document.getElementById('campaign-start').value;
+            const endDate = document.getElementById('campaign-end').value;
+
+            if (!customerId) {
+                alert('Please select a customer');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/campaigns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        customerId,
+                        name,
+                        sponsorSlot: slot,
+                        logo,
+                        url,
+                        callout,
+                        startDate,
+                        endDate
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('addCampaignModal')).hide();
+                    showMessage('admin-message', 'Campaign created successfully', 'success');
+                    loadCampaigns();
+                } else {
+                    alert(data.error || 'Failed to create campaign');
+                }
+            } catch (err) {
+                alert('Failed to create campaign');
+            }
+        }
+
+        async function deleteCustomer(customerId) {
+            if (!confirm('Delete this customer and all their campaigns?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/customers/${customerId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('admin-message', 'Customer deleted', 'success');
+                    loadAllData();
+                } else {
+                    alert(data.error || 'Failed to delete customer');
+                }
+            } catch (err) {
+                alert('Failed to delete customer');
+            }
+        }
+
+        async function deleteCampaign(campaignId) {
+            if (!confirm('Delete this campaign?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/campaigns/${campaignId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('admin-message', 'Campaign deleted', 'success');
+                    loadAllData();
+                } else {
+                    alert(data.error || 'Failed to delete campaign');
+                }
+            } catch (err) {
+                alert('Failed to delete campaign');
+            }
+        }
+
+        async function activateCampaign(campaignId) {
+            try {
+                const response = await fetch(`/api/admin/campaigns/${campaignId}/activate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: adminPassword })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('admin-message', 'Campaign activated', 'success');
+                    loadAllData();
+                } else {
+                    alert(data.error || 'Failed to activate campaign');
+                }
+            } catch (err) {
+                alert('Failed to activate campaign');
+            }
+        }
+
+        function showEditCustomerModal(customerId) {
+            const customer = customersData[customerId];
+            if (!customer) return;
+
+            document.getElementById('edit-customer-id').value = customerId;
+            document.getElementById('edit-customer-name').value = customer.name;
+            document.getElementById('edit-customer-email').value = customer.email;
+            document.getElementById('edit-customer-password').value = '';
+
+            new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
+        }
+
+        async function updateCustomer() {
+            const customerId = document.getElementById('edit-customer-id').value;
+            const name = document.getElementById('edit-customer-name').value;
+            const email = document.getElementById('edit-customer-email').value;
+            const newPassword = document.getElementById('edit-customer-password').value;
+
+            try {
+                const body = {
+                    password: adminPassword,
+                    name,
+                    email
+                };
+
+                if (newPassword) {
+                    body.customerPassword = newPassword;
+                }
+
+                const response = await fetch(`/api/admin/customers/${customerId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('editCustomerModal')).hide();
+                    showMessage('admin-message', 'Customer updated successfully', 'success');
+                    loadCustomers();
+                } else {
+                    alert(data.error || 'Failed to update customer');
+                }
+            } catch (err) {
+                alert('Failed to update customer');
+            }
+        }
+
+        function showEditCampaignModal(campaignId) {
+            const campaign = campaignsData[campaignId];
+            if (!campaign) return;
+
+            document.getElementById('edit-campaign-id').value = campaignId;
+            document.getElementById('edit-campaign-name').value = campaign.name;
+            document.getElementById('edit-campaign-slot').value = campaign.sponsor_slot;
+            document.getElementById('edit-campaign-logo').value = campaign.logo || '';
+            document.getElementById('edit-campaign-url').value = campaign.url || '';
+            document.getElementById('edit-campaign-callout').value = campaign.callout || '';
+            document.getElementById('edit-campaign-start').value = campaign.start_date || '';
+            document.getElementById('edit-campaign-end').value = campaign.end_date || '';
+            document.getElementById('edit-campaign-active').checked = campaign.active;
+            document.getElementById('edit-campaign-logo-file').value = '';
+
+            // Show logo preview if exists
+            updateLogoPreview('edit-campaign', campaign.logo || '', false);
+
+            // Populate customer dropdown
+            const select = document.getElementById('edit-campaign-customer');
+            select.innerHTML = '<option value="">Select customer...</option>';
+            for (const [id, customer] of Object.entries(customersData)) {
+                select.innerHTML += `<option value="${id}" ${id === campaign.customer_id ? 'selected' : ''}>${customer.name}</option>`;
+            }
+
+            new bootstrap.Modal(document.getElementById('editCampaignModal')).show();
+        }
+
+        async function updateCampaign() {
+            const campaignId = document.getElementById('edit-campaign-id').value;
+            const customerId = document.getElementById('edit-campaign-customer').value;
+            const name = document.getElementById('edit-campaign-name').value;
+            const slot = document.getElementById('edit-campaign-slot').value;
+            const logo = document.getElementById('edit-campaign-logo').value;
+            const url = document.getElementById('edit-campaign-url').value;
+            const callout = document.getElementById('edit-campaign-callout').value;
+            const startDate = document.getElementById('edit-campaign-start').value;
+            const endDate = document.getElementById('edit-campaign-end').value;
+            const active = document.getElementById('edit-campaign-active').checked;
+
+            if (!customerId) {
+                alert('Please select a customer');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/campaigns/${campaignId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        customerId,
+                        name,
+                        sponsorSlot: slot,
+                        logo,
+                        url,
+                        callout,
+                        startDate,
+                        endDate,
+                        active
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('editCampaignModal')).hide();
+                    showMessage('admin-message', 'Campaign updated successfully', 'success');
+                    loadAllData();
+                } else {
+                    alert(data.error || 'Failed to update campaign');
+                }
+            } catch (err) {
+                alert('Failed to update campaign');
+            }
+        }
+
+        function showMessage(elementId, text, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = text;
+            el.className = `alert alert-${type}`;
+            el.classList.remove('d-none');
+
+            setTimeout(() => {
+                el.classList.add('d-none');
+            }, 3000);
+        }
+
+        async function showLivePreview() {
+            // Refresh data first to get latest changes
+            await loadAllData();
+
+            const slots = ['table', 'drink', 'food', 'matchmaking', 'waiting_room'];
+            const detailsContainer = document.getElementById('preview-details');
+            detailsContainer.innerHTML = '';
+
+            let activeCount = 0;
+            const cacheBuster = Date.now(); // Prevent browser caching old images
+
+            for (const slot of slots) {
+                const previewEl = document.getElementById(`preview-${slot}`);
+
+                // Find active campaign for this slot
+                const activeCampaign = Object.entries(campaignsData).find(
+                    ([id, c]) => c.sponsor_slot === slot && c.active
+                );
+
+                if (activeCampaign) {
+                    const [id, campaign] = activeCampaign;
+                    const customer = customersData[campaign.customer_id];
+                    activeCount++;
+
+                    // Add cache buster to logo URL
+                    const logoUrl = campaign.logo ? `${campaign.logo}?t=${cacheBuster}` : '';
+
+                    // Update preview slot - make it clickable
+                    previewEl.classList.add('active');
+                    previewEl.onclick = () => showSponsorDetail(id);
+                    previewEl.innerHTML = `
+                        <span class="preview-label">${slotLabels[slot].split(' ')[0]}</span>
+                        ${logoUrl
+                            ? `<img src="${logoUrl}" alt="${campaign.name}">`
+                            : `<i class="bi bi-image text-muted"></i>`}
+                        ${campaign.callout ? `<span class="callout">${campaign.callout}</span>` : ''}
+                    `;
+
+                    // Add detail card - also clickable
+                    const stats = campaign.stats || { impressions: 0, clicks: 0 };
+                    const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : 0;
+
+                    detailsContainer.innerHTML += `
+                        <div class="col-md-4 col-lg-2 mb-3">
+                            <div class="card h-100 text-center p-2" style="cursor: pointer;" onclick="showSponsorDetail('${id}')">
+                                <small class="text-muted">${slotLabels[slot]}</small>
+                                <strong class="brand-gold">${campaign.name}</strong>
+                                <small class="text-muted">${customer ? customer.name : 'Unknown'}</small>
+                                <div class="mt-2">
+                                    <span class="badge bg-info">${stats.impressions} imp</span>
+                                    <span class="badge bg-success">${stats.clicks} clicks</span>
+                                </div>
+                                <small class="text-muted mt-1"><i class="bi bi-hand-index"></i> Click for details</small>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Reset preview slot
+                    previewEl.classList.remove('active');
+                    previewEl.onclick = null;
+                    previewEl.innerHTML = `
+                        <span class="preview-label">${slotLabels[slot].split(' ')[0]}</span>
+                        <span class="preview-empty">No sponsor</span>
+                    `;
+                }
+            }
+
+            if (activeCount === 0) {
+                detailsContainer.innerHTML = `
+                    <div class="col-12 text-center text-muted">
+                        <i class="bi bi-info-circle me-2"></i>No active sponsors. Activate campaigns from the Campaigns tab.
+                    </div>
+                `;
+            }
+
+            new bootstrap.Modal(document.getElementById('livePreviewModal')).show();
+        }
+
+        function showSponsorDetail(campaignId) {
+            const campaign = campaignsData[campaignId];
+            if (!campaign) return;
+
+            const customer = customersData[campaign.customer_id];
+            const stats = campaign.stats || { impressions: 0, clicks: 0 };
+            const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : 0;
+            const cacheBuster = Date.now();
+
+            // Logo
+            const logoEl = document.getElementById('sponsor-detail-logo');
+            if (campaign.logo) {
+                const logoUrl = `${campaign.logo}?t=${cacheBuster}`;
+                logoEl.innerHTML = `<img src="${logoUrl}" alt="${campaign.name}" style="max-height: 100px; max-width: 100%; object-fit: contain;">`;
+            } else {
+                logoEl.innerHTML = `<i class="bi bi-image fs-1 text-muted"></i>`;
+            }
+
+            // Details
+            document.getElementById('sponsor-detail-name').textContent = campaign.name;
+            document.getElementById('sponsor-detail-customer').textContent = customer ? `by ${customer.name}` : '';
+            document.getElementById('sponsor-detail-callout').textContent = campaign.callout || '';
+            document.getElementById('sponsor-detail-callout').style.display = campaign.callout ? 'block' : 'none';
+
+            // Stats
+            document.getElementById('sponsor-detail-impressions').textContent = stats.impressions.toLocaleString();
+            document.getElementById('sponsor-detail-clicks').textContent = stats.clicks.toLocaleString();
+            document.getElementById('sponsor-detail-ctr').textContent = ctr + '%';
+
+            // Slot and dates
+            document.getElementById('sponsor-detail-slot').textContent = slotLabels[campaign.sponsor_slot] || campaign.sponsor_slot;
+
+            let dateText = '';
+            if (campaign.start_date) {
+                dateText = campaign.start_date;
+                if (campaign.end_date) {
+                    dateText += ' - ' + campaign.end_date;
+                } else {
+                    dateText += ' - Ongoing';
+                }
+            }
+            document.getElementById('sponsor-detail-dates').textContent = dateText;
+            document.getElementById('sponsor-detail-dates').style.display = dateText ? 'inline-block' : 'none';
+
+            // URL
+            const urlContainer = document.getElementById('sponsor-detail-url-container');
+            if (campaign.url) {
+                document.getElementById('sponsor-detail-url').href = campaign.url;
+                urlContainer.classList.remove('d-none');
+            } else {
+                urlContainer.classList.add('d-none');
+            }
+
+            new bootstrap.Modal(document.getElementById('sponsorDetailModal')).show();
+        }
+
+        async function uploadCampaignLogo(prefix) {
+            const fileInput = document.getElementById(`${prefix}-logo-file`);
+            const logoInput = document.getElementById(`${prefix}-logo`);
+            const previewEl = document.getElementById(`${prefix}-logo-preview`);
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const isLottie = file.name.endsWith('.json') || file.name.endsWith('.lottie');
+            const isPng = file.type === 'image/png' || file.name.endsWith('.png');
+
+            if (!isLottie && !isPng) {
+                alert('Please upload a PNG image or Lottie JSON file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('password', adminPassword);
+
+            try {
+                const response = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    logoInput.value = data.url;
+                    updateLogoPreview(prefix, data.url, isLottie);
+                    showMessage('admin-message', 'Logo uploaded successfully', 'success');
+                } else {
+                    alert(data.error || 'Failed to upload file');
+                }
+            } catch (err) {
+                alert('Failed to upload file');
+                console.error(err);
+            }
+        }
+
+        function updateLogoPreview(prefix, url, isLottie) {
+            const previewEl = document.getElementById(`${prefix}-logo-preview`);
+            if (!url) {
+                previewEl.style.display = 'none';
+                return;
+            }
+
+            previewEl.style.display = 'flex';
+
+            if (isLottie || url.endsWith('.json') || url.endsWith('.lottie')) {
+                // For Lottie, show a placeholder since we don't have the player loaded here
+                previewEl.innerHTML = `
+                    <div class="text-center">
+                        <i class="bi bi-play-circle text-success fs-3"></i>
+                        <div class="small text-muted mt-1">Lottie Animation</div>
+                    </div>
+                `;
+            } else {
+                previewEl.innerHTML = `<img src="${url}" style="max-height: 50px; max-width: 100%; object-fit: contain;">`;
+            }
+        }
+
+        // Add event listeners for logo URL inputs to update preview
+        document.getElementById('campaign-logo').addEventListener('input', function() {
+            updateLogoPreview('campaign', this.value, false);
+        });
+
+        document.getElementById('edit-campaign-logo').addEventListener('input', function() {
+            updateLogoPreview('edit-campaign', this.value, false);
+        });
+
+        function logout() {
+            adminPassword = '';
+            customersData = {};
+            campaignsData = {};
+            sessionStorage.removeItem('adminPassword');
+            document.getElementById('admin-section').classList.add('d-none');
+            document.getElementById('login-section').classList.remove('d-none');
+            document.getElementById('password').value = '';
+        }
+
+        // Auto-refresh data every 30 seconds when logged in
+        setInterval(() => {
+            if (adminPassword) {
+                loadAllData();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+    "table": {
+        "enabled": true,
+        "name": "Table Sponsor",
+        "logo": "",
+        "url": "",
+        "callout": ""
+    },
+    "drink": {
+        "enabled": true,
+        "name": "Drink Sponsor",
+        "logo": "",
+        "url": "",
+        "callout": ""
+    },
+    "food": {
+        "enabled": true,
+        "name": "Food Sponsor",
+        "logo": "",
+        "url": "",
+        "callout": ""
+    },
+    "matchmaking": {
+        "enabled": true,
+        "name": "Matchmaking Sponsor",
+        "logo": "",
+        "url": "",
+        "callout": ""
+    },
+    "waiting_room": {
+        "enabled": true,
+        "name": "Waiting Room Sponsor",
+        "logo": "",
+        "url": "",
+        "callout": ""
+    }
+}

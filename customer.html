@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thaasbai - Sponsor Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+        .brand-gold { color: #ffd700; }
+        .btn-gold {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #1a1a2e;
+            border: none;
+            font-weight: 600;
+        }
+        .btn-gold:hover {
+            background: linear-gradient(135deg, #ffdd33, #ffa500);
+            color: #1a1a2e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .form-control, .form-control:focus {
+            background: rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .form-control:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 0 0.2rem rgba(255,215,0,0.25);
+        }
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .campaign-card {
+            transition: transform 0.2s;
+        }
+        .campaign-card:hover {
+            transform: translateY(-2px);
+        }
+        .campaign-logo {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        .campaign-logo img {
+            max-height: 60px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Login Section -->
+        <div id="login-section" class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card p-4 mt-5">
+                    <div class="card-body">
+                        <h2 class="text-center brand-gold mb-4">
+                            <i class="bi bi-bar-chart-line me-2"></i>Sponsor Portal
+                        </h2>
+                        <p class="text-center text-muted mb-4">View your campaign statistics</p>
+                        <div id="login-message" class="alert d-none"></div>
+                        <form id="login-form">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="your@email.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+                            </div>
+                            <button type="submit" class="btn btn-gold w-100">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portal Section -->
+        <div id="portal-section" class="d-none">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="brand-gold mb-1">
+                        <i class="bi bi-bar-chart-line me-2"></i>Campaign Dashboard
+                    </h1>
+                    <p class="text-muted mb-0">Welcome, <span id="customer-name"></span></p>
+                </div>
+                <button class="btn btn-outline-light" onclick="logout()">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </button>
+            </div>
+
+            <!-- Overall Stats -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card">
+                        <div class="stat-value" id="total-impressions">0</div>
+                        <div class="stat-label">Total Impressions</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card">
+                        <div class="stat-value" id="total-clicks">0</div>
+                        <div class="stat-label">Total Clicks</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card">
+                        <div class="stat-value" id="total-ctr">0%</div>
+                        <div class="stat-label">Average CTR</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card">
+                        <div class="stat-value" id="active-campaigns">0</div>
+                        <div class="stat-label">Active Campaigns</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campaigns List -->
+            <h4 class="mb-3"><i class="bi bi-collection me-2"></i>Your Campaigns</h4>
+            <div class="row g-4" id="campaigns-grid">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let customerId = '';
+        let customerPassword = '';
+        let customerData = {};
+        let campaignsData = {};
+
+        const slotLabels = {
+            'table': 'Table (Center)',
+            'drink': 'Drink (Left)',
+            'food': 'Food (Right)',
+            'matchmaking': 'Matchmaking',
+            'waiting_room': 'Waiting Room'
+        };
+
+        // Check for stored session on page load
+        async function checkStoredSession() {
+            const storedEmail = sessionStorage.getItem('customerEmail');
+            const storedPassword = sessionStorage.getItem('customerPassword');
+            if (storedEmail && storedPassword) {
+                try {
+                    const response = await fetch('/api/customer/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: storedEmail, password: storedPassword })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        customerId = data.customerId;
+                        customerPassword = storedPassword;
+                        customerData = data;
+                        document.getElementById('customer-name').textContent = data.name;
+                        document.getElementById('login-section').classList.add('d-none');
+                        document.getElementById('portal-section').classList.remove('d-none');
+                        loadDashboard();
+                        return;
+                    }
+                } catch (err) {
+                    // Session invalid, clear it
+                }
+                sessionStorage.removeItem('customerEmail');
+                sessionStorage.removeItem('customerPassword');
+            }
+        }
+
+        // Initialize on page load
+        checkStoredSession();
+
+        // Login form
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/customer/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    customerId = data.customerId;
+                    customerPassword = password;
+                    customerData = data;
+                    sessionStorage.setItem('customerEmail', email);
+                    sessionStorage.setItem('customerPassword', password);
+                    document.getElementById('customer-name').textContent = data.name;
+                    document.getElementById('login-section').classList.add('d-none');
+                    document.getElementById('portal-section').classList.remove('d-none');
+                    loadDashboard();
+                } else {
+                    showMessage('login-message', data.error || 'Invalid credentials', 'danger');
+                }
+            } catch (err) {
+                showMessage('login-message', 'Connection error', 'danger');
+            }
+        });
+
+        async function loadDashboard() {
+            await Promise.all([loadTotalStats(), loadCampaigns()]);
+        }
+
+        async function loadTotalStats() {
+            try {
+                const response = await fetch(`/api/customer/${customerId}/stats?password=${customerPassword}`);
+                const data = await response.json();
+
+                document.getElementById('total-impressions').textContent = data.totalImpressions.toLocaleString();
+                document.getElementById('total-clicks').textContent = data.totalClicks.toLocaleString();
+                document.getElementById('total-ctr').textContent = data.totalCTR + '%';
+                document.getElementById('active-campaigns').textContent = data.activeCampaigns;
+            } catch (err) {
+                console.error('Failed to load stats:', err);
+            }
+        }
+
+        async function loadCampaigns() {
+            try {
+                const response = await fetch(`/api/customer/${customerId}/campaigns?password=${customerPassword}`);
+                campaignsData = await response.json();
+                renderCampaigns();
+            } catch (err) {
+                console.error('Failed to load campaigns:', err);
+            }
+        }
+
+        function renderCampaigns() {
+            const grid = document.getElementById('campaigns-grid');
+            grid.innerHTML = '';
+
+            const campaigns = Object.entries(campaignsData);
+
+            if (campaigns.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12">
+                        <div class="card p-4 text-center text-muted">
+                            <i class="bi bi-inbox fs-1 mb-2"></i>
+                            <p class="mb-0">No campaigns yet. Contact us to create your first campaign!</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            for (const [id, campaign] of campaigns) {
+                const stats = campaign.stats || { impressions: 0, clicks: 0 };
+                const ctr = campaign.ctr || 0;
+
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+                col.innerHTML = `
+                    <div class="card campaign-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>${campaign.name}</strong>
+                            ${campaign.active
+                                ? '<span class="badge bg-success">Active</span>'
+                                : '<span class="badge bg-secondary">Inactive</span>'}
+                        </div>
+                        <div class="card-body">
+                            <div class="campaign-logo mb-3">
+                                ${campaign.logo
+                                    ? `<img src="${campaign.logo}" alt="${campaign.name}">`
+                                    : '<i class="bi bi-image fs-1 text-muted"></i>'}
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted">Sponsor Slot</small>
+                                <div><span class="badge bg-info">${slotLabels[campaign.sponsor_slot] || campaign.sponsor_slot}</span></div>
+                            </div>
+
+                            ${campaign.start_date ? `
+                                <div class="mb-3">
+                                    <small class="text-muted">Period</small>
+                                    <div>${campaign.start_date} ${campaign.end_date ? '- ' + campaign.end_date : '- Ongoing'}</div>
+                                </div>
+                            ` : ''}
+
+                            <hr class="border-secondary">
+
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="h4 mb-0 brand-gold">${stats.impressions.toLocaleString()}</div>
+                                    <small class="text-muted">Impressions</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h4 mb-0 brand-gold">${stats.clicks.toLocaleString()}</div>
+                                    <small class="text-muted">Clicks</small>
+                                </div>
+                                <div class="col-4">
+                                    <div class="h4 mb-0 brand-gold">${ctr}%</div>
+                                    <small class="text-muted">CTR</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            }
+        }
+
+        function showMessage(elementId, text, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = text;
+            el.className = `alert alert-${type}`;
+            el.classList.remove('d-none');
+
+            setTimeout(() => {
+                el.classList.add('d-none');
+            }, 3000);
+        }
+
+        function logout() {
+            customerId = '';
+            customerPassword = '';
+            customerData = {};
+            campaignsData = {};
+            sessionStorage.removeItem('customerEmail');
+            sessionStorage.removeItem('customerPassword');
+            document.getElementById('portal-section').classList.add('d-none');
+            document.getElementById('login-section').classList.remove('d-none');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Auto-refresh stats every 30 seconds
+        setInterval(() => {
+            if (customerId) {
+                loadDashboard();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

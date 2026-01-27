@@ -3811,32 +3811,23 @@
         }
 
         // Show detailed sponsor popup with logo and info
-        showSponsorDetails() {
-            console.log('showSponsorDetails - elements:', this.elements.messageOverlay, this.elements.messageTitle);
-            this.elements.messageTitle.innerHTML = `
-                <svg viewBox="0 0 200 80" width="150" height="60" style="margin-bottom: 10px;">
-                    <defs>
-                        <linearGradient id="ooredooRedPopup" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#E60012"/>
-                            <stop offset="100%" style="stop-color:#C4000F"/>
-                        </linearGradient>
-                    </defs>
-                    <g transform="translate(15, 12)">
-                        <circle cx="28" cy="28" r="26" fill="url(#ooredooRedPopup)"/>
-                        <circle cx="20" cy="22" r="10" fill="white"/>
-                        <circle cx="36" cy="22" r="8" fill="white"/>
-                        <circle cx="28" cy="38" r="7" fill="white"/>
-                        <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none"/>
-                    </g>
-                    <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#E60012" letter-spacing="-1">ooredoo</text>
-                    <text x="77" y="65" font-family="Arial, sans-serif" font-size="12" fill="#E60012" letter-spacing="2">MALDIVES</text>
-                </svg>
-            `;
+        showSponsorDetails(sponsor) {
+            if (!sponsor) return;
+
+            // Show logo if available
+            if (sponsor.logo) {
+                this.elements.messageTitle.innerHTML = `
+                    <img src="${sponsor.logo}" alt="${sponsor.name}" style="max-width: 150px; max-height: 80px; object-fit: contain; margin-bottom: 10px;">
+                `;
+            } else {
+                this.elements.messageTitle.textContent = sponsor.name || 'Sponsor';
+            }
+
+            // Show sponsor details
             this.elements.messageText.innerHTML = `
-                <div style="text-align: left; line-height: 1.6;">
-                    <p style="margin-bottom: 12px;"><strong>Ooredoo Maldives</strong> - Enriching people's digital lives</p>
-                    <p style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">Experience the fastest 4G+ network across the Maldives. Stay connected with family and friends.</p>
-                    <p style="font-size: 0.85em; opacity: 0.7;">📞 929 | 🌐 ooredoo.mv</p>
+                <div style="text-align: center; line-height: 1.6;">
+                    <p style="margin-bottom: 12px;"><strong>${sponsor.name || ''}</strong></p>
+                    ${sponsor.callout ? `<p style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">${sponsor.callout}</p>` : ''}
                 </div>
             `;
             this.elements.messageButton.textContent = 'Close';
@@ -3844,7 +3835,6 @@
             this.elements.messageButtonSecondary.classList.add('hidden');
             this.elements.messageOverlay.classList.remove('hidden');
             this.elements.messageOverlay.classList.add('sponsor-popup');
-            console.log('Popup should now be visible, classes:', this.elements.messageOverlay.className);
 
             const handleClick = () => {
                 this.elements.messageButton.removeEventListener('click', handleClick);
@@ -3907,6 +3897,28 @@
             this.diguActiveMeldSlot = null;
             this.diguNumPlayers = 4;
 
+            // Sponsor data (loaded from API)
+            this.sponsorsData = null;
+            // Store original placeholder HTML for restoration when no sponsor is active
+            try {
+                const tableEl = document.getElementById('table-sponsor');
+                const drinkEl = document.getElementById('drink-sponsor');
+                const foodEl = document.getElementById('food-sponsor');
+                const matchmakingEl = document.getElementById('matchmaking-sponsor');
+                const waitingRoomEl = document.getElementById('waiting-room-sponsor');
+                this.originalSponsorHTML = {
+                    table: tableEl ? tableEl.innerHTML : '',
+                    drink: drinkEl ? drinkEl.innerHTML : '',
+                    food: foodEl ? foodEl.innerHTML : '',
+                    matchmaking: (matchmakingEl && matchmakingEl.querySelector('.lobby-sponsor-logo')) ? matchmakingEl.querySelector('.lobby-sponsor-logo').innerHTML : '',
+                    waiting_room: (waitingRoomEl && waitingRoomEl.querySelector('.lobby-sponsor-logo')) ? waitingRoomEl.querySelector('.lobby-sponsor-logo').innerHTML : ''
+                };
+            } catch (e) {
+                console.error('Failed to store original sponsor HTML:', e);
+                this.originalSponsorHTML = { table: '', drink: '', food: '', matchmaking: '', waiting_room: '' };
+            }
+            this.loadSponsors();
+
             // Touch drag state for mobile
             this.touchDragState = {
                 isDragging: false,
@@ -3937,6 +3949,123 @@
         savePlayerName(name) {
             localStorage.setItem('dhihaEi_playerName', name);
             this.playerName = name;
+        }
+
+        // Load sponsors from API
+        async loadSponsors() {
+            try {
+                const response = await fetch('/api/sponsors');
+                this.sponsorsData = await response.json();
+                this.updateSponsorDisplay();
+            } catch (err) {
+                console.error('Failed to load sponsors:', err);
+                // Use default empty sponsors
+                this.sponsorsData = {
+                    table: { enabled: false, name: '', logo: '', url: '', callout: '' },
+                    drink: { enabled: false, name: '', logo: '', url: '', callout: '' },
+                    food: { enabled: false, name: '', logo: '', url: '', callout: '' },
+                    matchmaking: { enabled: false, name: '', logo: '', url: '', callout: '' },
+                    waiting_room: { enabled: false, name: '', logo: '', url: '', callout: '' }
+                };
+            }
+        }
+
+        // Update sponsor display based on loaded data
+        updateSponsorDisplay() {
+            if (!this.sponsorsData) return;
+            if (!this.originalSponsorHTML) {
+                this.originalSponsorHTML = { table: '', drink: '', food: '', matchmaking: '', waiting_room: '' };
+            }
+
+            // Fixed sponsor sizes matching slot resolutions
+            const sponsorSizes = {
+                table: { width: 200, height: 80 },
+                drink: { width: 130, height: 130 },
+                food: { width: 130, height: 130 },
+                matchmaking: { width: 300, height: 120 },
+                waiting_room: { width: 300, height: 120 }
+            };
+
+            // Update table sponsor (center)
+            const tableSponsor = document.getElementById('table-sponsor');
+            if (tableSponsor && this.sponsorsData.table) {
+                if (this.sponsorsData.table.enabled && this.sponsorsData.table.logo) {
+                    const size = sponsorSizes.table;
+                    tableSponsor.innerHTML = `<img src="${this.sponsorsData.table.logo}" alt="${this.sponsorsData.table.name}" style="width:${size.width}px;height:${size.height}px;object-fit:contain;">`;
+                    tableSponsor.classList.add('sponsor-active');
+                } else {
+                    // Restore original placeholder
+                    tableSponsor.innerHTML = this.originalSponsorHTML.table;
+                    tableSponsor.classList.remove('sponsor-active');
+                }
+                tableSponsor.style.display = '';
+            }
+
+            // Update drink sponsor (left)
+            const drinkSponsor = document.getElementById('drink-sponsor');
+            if (drinkSponsor && this.sponsorsData.drink) {
+                if (this.sponsorsData.drink.enabled && this.sponsorsData.drink.logo) {
+                    const size = sponsorSizes.drink;
+                    drinkSponsor.innerHTML = `<img src="${this.sponsorsData.drink.logo}" alt="${this.sponsorsData.drink.name}" style="width:${size.width}px;height:${size.height}px;object-fit:contain;">`;
+                    drinkSponsor.classList.add('sponsor-active');
+                } else {
+                    // Restore original placeholder
+                    drinkSponsor.innerHTML = this.originalSponsorHTML.drink;
+                    drinkSponsor.classList.remove('sponsor-active');
+                }
+                drinkSponsor.style.display = '';
+            }
+
+            // Update food sponsor (right)
+            const foodSponsor = document.getElementById('food-sponsor');
+            if (foodSponsor && this.sponsorsData.food) {
+                if (this.sponsorsData.food.enabled && this.sponsorsData.food.logo) {
+                    const size = sponsorSizes.food;
+                    foodSponsor.innerHTML = `<img src="${this.sponsorsData.food.logo}" alt="${this.sponsorsData.food.name}" style="width:${size.width}px;height:${size.height}px;object-fit:contain;">`;
+                    foodSponsor.classList.add('sponsor-active');
+                } else {
+                    // Restore original placeholder
+                    foodSponsor.innerHTML = this.originalSponsorHTML.food;
+                    foodSponsor.classList.remove('sponsor-active');
+                }
+                foodSponsor.style.display = '';
+            }
+
+            // Update matchmaking sponsor (lobby sponsor with different structure)
+            const matchmakingSponsor = document.getElementById('matchmaking-sponsor');
+            if (matchmakingSponsor && this.sponsorsData.matchmaking) {
+                const logoContainer = matchmakingSponsor.querySelector('.lobby-sponsor-logo');
+                if (this.sponsorsData.matchmaking.enabled && this.sponsorsData.matchmaking.logo) {
+                    if (logoContainer) {
+                        const size = sponsorSizes.matchmaking;
+                        logoContainer.innerHTML = `<img src="${this.sponsorsData.matchmaking.logo}" alt="${this.sponsorsData.matchmaking.name}" style="width:${size.width}px;height:${size.height}px;object-fit:contain;">`;
+                    }
+                } else {
+                    // Restore original placeholder
+                    if (logoContainer) {
+                        logoContainer.innerHTML = this.originalSponsorHTML.matchmaking;
+                    }
+                }
+                matchmakingSponsor.style.display = '';
+            }
+
+            // Update waiting room sponsor (lobby sponsor with different structure)
+            const waitingRoomSponsor = document.getElementById('waiting-room-sponsor');
+            if (waitingRoomSponsor && this.sponsorsData.waiting_room) {
+                const logoContainer = waitingRoomSponsor.querySelector('.lobby-sponsor-logo');
+                if (this.sponsorsData.waiting_room.enabled && this.sponsorsData.waiting_room.logo) {
+                    if (logoContainer) {
+                        const size = sponsorSizes.waiting_room;
+                        logoContainer.innerHTML = `<img src="${this.sponsorsData.waiting_room.logo}" alt="${this.sponsorsData.waiting_room.name}" style="width:${size.width}px;height:${size.height}px;object-fit:contain;">`;
+                    }
+                } else {
+                    // Restore original placeholder
+                    if (logoContainer) {
+                        logoContainer.innerHTML = this.originalSponsorHTML.waiting_room;
+                    }
+                }
+                waitingRoomSponsor.style.display = '';
+            }
         }
 
         setupEventListeners() {
@@ -4129,37 +4258,74 @@
 
             if (drinkSponsor) {
                 drinkSponsor.addEventListener('click', () => {
-                    this.renderer.showSponsorMessage('Cloud Time ☁️', 'Refreshing Coke - Take a sip and relax!');
+                    const sponsor = this.sponsorsData?.drink;
+                    if (sponsor && sponsor.enabled) {
+                        const title = sponsor.callout || sponsor.name || 'Sponsor';
+                        const url = sponsor.url;
+                        if (url) {
+                            window.open(url, '_blank');
+                        } else {
+                            this.renderer.showSponsorMessage(title, sponsor.name);
+                        }
+                    }
                 });
             }
 
             if (foodSponsor) {
                 foodSponsor.addEventListener('click', () => {
-                    this.renderer.showSponsorMessage('Cloud Time ☁️', 'Crispy Chips - Crunch while you play!');
+                    const sponsor = this.sponsorsData?.food;
+                    if (sponsor && sponsor.enabled) {
+                        const title = sponsor.callout || sponsor.name || 'Sponsor';
+                        const url = sponsor.url;
+                        if (url) {
+                            window.open(url, '_blank');
+                        } else {
+                            this.renderer.showSponsorMessage(title, sponsor.name);
+                        }
+                    }
                 });
             }
 
             if (tableSponsor) {
                 tableSponsor.addEventListener('click', () => {
-                    this.renderer.showSponsorMessage('Ooredoo Maldives 📶', 'Stay connected with the best network!');
+                    const sponsor = this.sponsorsData?.table;
+                    if (sponsor && sponsor.enabled) {
+                        const title = sponsor.callout || sponsor.name || 'Sponsor';
+                        const url = sponsor.url;
+                        if (url) {
+                            window.open(url, '_blank');
+                        } else {
+                            this.renderer.showSponsorMessage(title, sponsor.name);
+                        }
+                    }
                 });
             }
 
-            // Lobby sponsor click handlers - show detailed popup
+            // Lobby sponsor click handlers - show detailed popup or open URL
             const matchmakingSponsor = document.getElementById('matchmaking-sponsor');
             const waitingRoomSponsor = document.getElementById('waiting-room-sponsor');
 
             if (matchmakingSponsor) {
                 matchmakingSponsor.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.renderer.showSponsorDetails();
+                    const sponsor = this.sponsorsData?.matchmaking;
+                    if (sponsor && sponsor.enabled && sponsor.url) {
+                        window.open(sponsor.url, '_blank');
+                    } else if (sponsor && sponsor.enabled) {
+                        this.renderer.showSponsorDetails(sponsor);
+                    }
                 });
             }
 
             if (waitingRoomSponsor) {
                 waitingRoomSponsor.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.renderer.showSponsorDetails();
+                    const sponsor = this.sponsorsData?.waiting_room;
+                    if (sponsor && sponsor.enabled && sponsor.url) {
+                        window.open(sponsor.url, '_blank');
+                    } else if (sponsor && sponsor.enabled) {
+                        this.renderer.showSponsorDetails(sponsor);
+                    }
                 });
             }
         }
@@ -7898,18 +8064,19 @@
         };
 
         // Global function for inline onclick sponsor popup
-        window.showSponsorPopup = () => {
-            console.log('showSponsorPopup called', { ui, renderer: ui?.renderer });
-            if (ui && ui.renderer) {
-                console.log('Calling showSponsorDetails');
-                try {
-                    ui.renderer.showSponsorDetails();
-                    console.log('showSponsorDetails completed');
-                } catch (e) {
-                    console.error('Error in showSponsorDetails:', e);
+        window.showSponsorPopup = (sponsorId) => {
+            console.log('showSponsorPopup called', { ui, sponsorId });
+            if (ui && ui.renderer && ui.sponsorsData) {
+                const sponsor = ui.sponsorsData[sponsorId];
+                if (sponsor && sponsor.enabled) {
+                    if (sponsor.url) {
+                        window.open(sponsor.url, '_blank');
+                    } else {
+                        ui.renderer.showSponsorDetails(sponsor);
+                    }
                 }
             } else {
-                console.error('ui or ui.renderer is null');
+                console.error('ui, ui.renderer or ui.sponsorsData is null');
             }
         };
     });

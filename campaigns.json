@@ -1,0 +1,67 @@
+{
+  "customers": {
+    "b06099c9": {
+      "name": "Dhiraagu",
+      "email": "dhiraagu@example.com",
+      "password": "c9fbde0c6664584acba8a23c3f6fe4138f29e7ca12597ba861d60d044e1e291d",
+      "created_at": "2026-01-26T22:57:30.603954"
+    }
+  },
+  "campaigns": {
+    "3b22f39e": {
+      "customer_id": "b06099c9",
+      "name": "Dhiraagu",
+      "sponsor_slot": "table",
+      "logo": "/icons/sponsors/cf3f21ec-e499-4ddb-8e7d-19791c48867d.png",
+      "url": "",
+      "callout": "",
+      "start_date": "2026-01-26",
+      "end_date": "",
+      "active": true,
+      "stats": {
+        "impressions": 0,
+        "clicks": 0
+      },
+      "created_at": "2026-01-26T23:21:33.315551"
+    },
+    "0e45db6a": {
+      "customer_id": "b06099c9",
+      "name": "Dhiraagu lavazza",
+      "sponsor_slot": "drink",
+      "logo": "/icons/sponsors/d5051f4a-a23f-4f84-9af6-22b43ff41e65.png",
+      "url": "",
+      "callout": "Aadhey Coffee ah",
+      "start_date": "2026-01-26",
+      "end_date": "",
+      "active": true,
+      "stats": {
+        "impressions": 0,
+        "clicks": 0
+      },
+      "created_at": "2026-01-27T09:57:49.949114"
+    },
+    "267cbce4": {
+      "customer_id": "b06099c9",
+      "name": "Dhiraagu Banana",
+      "sponsor_slot": "food",
+      "logo": "/icons/sponsors/34c89900-889a-404f-b729-b26caa8dd5ae.png",
+      "url": "",
+      "callout": "Banana Chips Meeru",
+      "start_date": "2026-01-26",
+      "end_date": "",
+      "active": true,
+      "stats": {
+        "impressions": 0,
+        "clicks": 0
+      },
+      "created_at": "2026-01-27T09:59:34.672364"
+    }
+  },
+  "active_sponsors": {
+    "table": null,
+    "drink": null,
+    "food": null,
+    "matchmaking": null,
+    "waiting_room": null
+  }
+}

@@ -68,7 +68,7 @@
     <link rel="apple-touch-startup-image" href="splash/splash-ipad-9.7-2048x1536.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
     <title>Thaasbai - Maldivian Card Games</title>
-    <link rel="stylesheet" href="css/styles.css?v=110">
+    <link rel="stylesheet" href="css/styles.css?v=113">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -602,7 +602,7 @@
                     <button id="cancel-queue-btn" class="lobby-btn secondary">Cancel</button>
 
                     <!-- Sponsor Area -->
-                    <div id="matchmaking-sponsor" class="lobby-sponsor" onclick="console.log('SPONSOR CLICKED'); window.showSponsorPopup ? window.showSponsorPopup() : alert('Function not found')">
+                    <div id="matchmaking-sponsor" class="lobby-sponsor" onclick="console.log('SPONSOR CLICKED'); window.showSponsorPopup ? window.showSponsorPopup('matchmaking') : alert('Function not found')">
                         <span class="lobby-sponsor-label">Sponsored by</span>
                         <div class="lobby-sponsor-logo">
                             <svg viewBox="0 0 200 80" width="120" height="48">
@@ -681,7 +681,7 @@
                 </div>
 
                 <!-- Sponsor Area -->
-                <div id="waiting-room-sponsor" class="lobby-sponsor" onclick="console.log('SPONSOR CLICKED'); window.showSponsorPopup ? window.showSponsorPopup() : alert('Function not found')">
+                <div id="waiting-room-sponsor" class="lobby-sponsor" onclick="console.log('SPONSOR CLICKED'); window.showSponsorPopup ? window.showSponsorPopup('waiting_room') : alert('Function not found')">
                     <span class="lobby-sponsor-label">Sponsored by</span>
                     <div class="lobby-sponsor-logo">
                         <svg viewBox="0 0 200 80" width="120" height="48">
@@ -701,6 +701,72 @@
                             <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#E60012" letter-spacing="-1">ooredoo</text>
                         </svg>
                     </div>
+                </div>
+            </div>
+
+            <!-- Digu Waiting Room -->
+            <div id="digu-waiting-room" class="hidden">
+                <div class="room-header">
+                    <h3>Room Code</h3>
+                    <div id="digu-room-code-display"></div>
+                    <button id="digu-copy-code-btn" class="copy-btn" title="Copy code">Copy</button>
+                </div>
+
+                <div id="digu-player-slots">
+                    <div class="digu-slot-row">
+                        <div class="digu-player-slot" data-position="0">
+                            <span class="slot-number">1</span>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                        <div class="digu-player-slot" data-position="1">
+                            <span class="slot-number">2</span>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                    </div>
+                    <div class="digu-slot-row">
+                        <div class="digu-player-slot" data-position="2">
+                            <span class="slot-number">3</span>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                        <div class="digu-player-slot" data-position="3">
+                            <span class="slot-number">4</span>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="digu-room-hint">Minimum 2 players to start</p>
+
+                <div id="digu-waiting-room-actions">
+                    <button id="digu-ready-btn" class="lobby-btn">Ready</button>
+                    <button id="digu-start-game-btn" class="lobby-btn primary hidden">Start Game</button>
+                    <button id="digu-leave-room-btn" class="lobby-btn secondary">Leave Room</button>
+                </div>
+
+                <div id="digu-connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+            </div>
+
+            <!-- Digu Matchmaking Queue -->
+            <div id="digu-matchmaking-screen" class="hidden">
+                <div class="matchmaking-content">
+                    <h3>Finding Players...</h3>
+                    <div class="matchmaking-spinner"></div>
+                    <div class="matchmaking-status">
+                        <span id="digu-queue-count">0</span> / 4 players
+                    </div>
+                    <p class="matchmaking-hint">Game will start automatically when 4 players join</p>
+                    <button id="digu-cancel-queue-btn" class="lobby-btn secondary">Cancel</button>
                 </div>
             </div>
 
@@ -769,7 +835,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=63"></script>
+    <script src="js/bundle.js?v=71"></script>
 
     <!-- PWA Install Handler -->
     <script>
