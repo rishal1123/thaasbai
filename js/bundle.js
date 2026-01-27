@@ -4472,6 +4472,9 @@
             const superiorSuit = document.getElementById('superior-suit-display');
             if (superiorSuit) superiorSuit.classList.add('hidden');
 
+            // Trigger rescale now that game board is visible
+            window.dispatchEvent(new Event('resize'));
+
             // Initialize Digu game
             this.diguGame = new DiGuGame();
 
