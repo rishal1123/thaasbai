@@ -1384,13 +1384,13 @@ body {
 }
 
 .drink-sponsor {
-    left: calc(8 * var(--scale));
+    left: calc(18 * var(--scale));
     top: 50%;
     transform: translateY(-50%);
 }
 
 .food-sponsor {
-    right: calc(8 * var(--scale));
+    right: calc(18 * var(--scale));
     top: 50%;
     transform: translateY(-50%);
 }
