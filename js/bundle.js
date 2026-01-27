@@ -2978,7 +2978,7 @@
 
             const drawSource = player.chooseDrawSource(discardTop, player.hand);
 
-            await delay(500);
+            await delay(2000);
 
             if (drawSource === 'discard' && discardTop) {
                 this.drawFromDiscard();
@@ -2988,13 +2988,13 @@
 
             // Check if AI can declare Digu
             if (player.shouldDeclareDigu()) {
-                await delay(500);
+                await delay(2000);
                 this.declareDigu();
                 return;
             }
 
             // Discard phase
-            await delay(500);
+            await delay(2000);
             const toDiscard = player.chooseDiscard(player.hand);
             this.discardCard(toDiscard);
         }
@@ -5012,8 +5012,11 @@
                 notifEl = document.createElement('div');
                 notifEl.id = 'digu-draw-notification';
                 notifEl.className = 'digu-draw-notification';
-                const gameBoard = document.getElementById('digu-game-board');
-                if (gameBoard) gameBoard.appendChild(notifEl);
+                // Append to center area so it appears above "Draw a card"
+                const centerArea = document.getElementById('digu-center-area');
+                if (centerArea) {
+                    centerArea.insertBefore(notifEl, centerArea.firstChild);
+                }
             }
 
             const playerName = this.diguGame.players[this.diguGame.currentPlayerIndex].name;
