@@ -1,0 +1,68 @@
+/* =================================================================
+   Portal Common Styles - Shared Admin/Customer Portal Foundation
+   ================================================================= */
+
+/* Body - Dark gradient background */
+body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+}
+
+/* Brand color */
+.brand-gold {
+    color: #ffd700;
+}
+
+/* Gold button */
+.btn-gold {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #1a1a2e;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-gold:hover {
+    background: linear-gradient(135deg, #ffdd33, #ffa500);
+    color: #1a1a2e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+}
+
+/* Card - Dark glass effect */
+.card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Form controls - Dark theme with gold focus */
+.form-control,
+.form-control:focus,
+.form-select,
+.form-select:focus {
+    background: rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 0 0.2rem rgba(255,215,0,0.25);
+}
+
+/* Stat cards - Base styles */
+.stat-card {
+    text-align: center;
+    padding: 1rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+}

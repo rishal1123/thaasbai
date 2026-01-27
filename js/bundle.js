@@ -3570,6 +3570,7 @@
 
         renderHand(player, validCards = [], onCardClick = null, selectedCard = null) {
             const handElement = this.elements.hands[player.position];
+            if (!handElement) return; // Element doesn't exist on this page
             handElement.innerHTML = '';
 
             const isHuman = player.isHuman;
@@ -3608,6 +3609,7 @@
 
         renderPlayedCard(card, position) {
             const playedElement = this.elements.played[position];
+            if (!playedElement) return; // Element doesn't exist on this page
             playedElement.innerHTML = '';
 
             const cardElement = CardSprite.createCardElement(card, true);
@@ -3617,12 +3619,15 @@
 
         clearPlayedCards() {
             for (let i = 0; i < 4; i++) {
-                this.elements.played[i].innerHTML = '';
+                if (this.elements.played[i]) {
+                    this.elements.played[i].innerHTML = '';
+                }
             }
         }
 
         async animateCollectTrick(winnerPosition) {
             for (let i = 0; i < 4; i++) {
+                if (!this.elements.played[i]) continue;
                 const cardElement = this.elements.played[i].firstChild;
                 if (cardElement) {
                     CardSprite.animateCollect(cardElement);
@@ -3634,27 +3639,28 @@
         }
 
         updateScores(tricksWon, tensCollected) {
-            this.elements.scores.team0Tens.textContent = tensCollected[0];
-            this.elements.scores.team0Tricks.textContent = tricksWon[0];
-            this.elements.scores.team1Tens.textContent = tensCollected[1];
-            this.elements.scores.team1Tricks.textContent = tricksWon[1];
+            if (this.elements.scores.team0Tens) this.elements.scores.team0Tens.textContent = tensCollected[0];
+            if (this.elements.scores.team0Tricks) this.elements.scores.team0Tricks.textContent = tricksWon[0];
+            if (this.elements.scores.team1Tens) this.elements.scores.team1Tens.textContent = tensCollected[1];
+            if (this.elements.scores.team1Tricks) this.elements.scores.team1Tricks.textContent = tricksWon[1];
         }
 
         updateMatchPoints(matchPoints) {
-            this.elements.matchPoints[0].textContent = matchPoints[0];
-            this.elements.matchPoints[1].textContent = matchPoints[1];
+            if (this.elements.matchPoints[0]) this.elements.matchPoints[0].textContent = matchPoints[0];
+            if (this.elements.matchPoints[1]) this.elements.matchPoints[1].textContent = matchPoints[1];
         }
 
         updateWinTypeCounts(winTypeCount) {
             for (const type of ['normal', 'all-tens', 'shutout']) {
-                this.elements.winTypes[type][0].textContent = winTypeCount[0][type];
-                this.elements.winTypes[type][1].textContent = winTypeCount[1][type];
+                if (this.elements.winTypes[type][0]) this.elements.winTypes[type][0].textContent = winTypeCount[0][type];
+                if (this.elements.winTypes[type][1]) this.elements.winTypes[type][1].textContent = winTypeCount[1][type];
             }
         }
 
         updateCollectedTens(collectedTensCards) {
             for (let team = 0; team < 2; team++) {
                 const container = this.elements.collectedTens[team];
+                if (!container) continue;
                 container.innerHTML = '';
 
                 collectedTensCards[team].forEach(card => {
@@ -3667,12 +3673,13 @@
         }
 
         clearCollectedTens() {
-            this.elements.collectedTens[0].innerHTML = '';
-            this.elements.collectedTens[1].innerHTML = '';
+            if (this.elements.collectedTens[0]) this.elements.collectedTens[0].innerHTML = '';
+            if (this.elements.collectedTens[1]) this.elements.collectedTens[1].innerHTML = '';
         }
 
         updateSuperiorSuit(suit) {
             const element = this.elements.superiorSuit;
+            if (!element) return;
             element.classList.remove('hearts', 'diamonds', 'clubs', 'spades');
 
             if (suit) {
@@ -3697,6 +3704,7 @@
 
         showTurnIndicator(position, isHuman) {
             const indicator = this.elements.turnIndicator;
+            if (!indicator) return;
 
             const positions = {
                 0: { bottom: '140px', left: '50%', transform: 'translateX(-50%)' },
@@ -4452,9 +4460,11 @@
             // Hide lobby
             this.hideLobby();
 
-            // Hide Thaasbai board, show Digu board
-            document.getElementById('game-board').classList.add('hidden');
-            document.getElementById('digu-game-board').classList.remove('hidden');
+            // Hide Thaasbai board (if exists), show Digu board
+            const gameBoard = document.getElementById('game-board');
+            if (gameBoard) gameBoard.classList.add('hidden');
+            const diguBoard = document.getElementById('digu-game-board');
+            if (diguBoard) diguBoard.classList.remove('hidden');
 
             // Hide Dhiha Ei specific elements
             const superiorSuit = document.getElementById('superior-suit-display');
@@ -7227,15 +7237,24 @@
             const gameLobby = document.getElementById('game-lobby');
             const diguModal = document.getElementById('digu-player-count-modal');
 
+            // If on a game-specific page (no game-selection element), redirect to index
+            if (!gameSelection && window.currentGame) {
+                window.location.href = 'index.html';
+                return;
+            }
+
             if (gameSelection) gameSelection.classList.remove('hidden');
             if (gameLobby) gameLobby.classList.add('hidden');
             if (diguModal) diguModal.classList.add('hidden');
 
-            this.waitingRoom.classList.add('hidden');
-            this.nameInputModal.classList.add('hidden');
-            document.getElementById('matchmaking-screen').classList.add('hidden');
-            document.getElementById('digu-waiting-room').classList.add('hidden');
-            document.getElementById('digu-matchmaking-screen').classList.add('hidden');
+            if (this.waitingRoom) this.waitingRoom.classList.add('hidden');
+            if (this.nameInputModal) this.nameInputModal.classList.add('hidden');
+            const matchmaking = document.getElementById('matchmaking-screen');
+            const diguWaiting = document.getElementById('digu-waiting-room');
+            const diguMatchmaking = document.getElementById('digu-matchmaking-screen');
+            if (matchmaking) matchmaking.classList.add('hidden');
+            if (diguWaiting) diguWaiting.classList.add('hidden');
+            if (diguMatchmaking) diguMatchmaking.classList.add('hidden');
             this.hideError();
         }
 
@@ -7257,9 +7276,10 @@
                 // Hide game selection, show game lobby with menu
                 if (gameSelection) gameSelection.classList.add('hidden');
                 if (gameLobby) gameLobby.classList.remove('hidden');
-                this.lobbyMenu.classList.remove('hidden');
-                this.waitingRoom.classList.add('hidden');
-                document.getElementById('matchmaking-screen').classList.add('hidden');
+                if (this.lobbyMenu) this.lobbyMenu.classList.remove('hidden');
+                if (this.waitingRoom) this.waitingRoom.classList.add('hidden');
+                const matchmakingScreen = document.getElementById('matchmaking-screen');
+                if (matchmakingScreen) matchmakingScreen.classList.add('hidden');
 
                 // Check if this is first load and prompt for name
                 if (!this.playerName) {
@@ -7274,11 +7294,14 @@
                 // Show game lobby with menu for Digu as well
                 if (gameSelection) gameSelection.classList.add('hidden');
                 if (gameLobby) gameLobby.classList.remove('hidden');
-                this.lobbyMenu.classList.remove('hidden');
-                this.waitingRoom.classList.add('hidden');
-                document.getElementById('matchmaking-screen').classList.add('hidden');
-                document.getElementById('digu-waiting-room').classList.add('hidden');
-                document.getElementById('digu-matchmaking-screen').classList.add('hidden');
+                if (this.lobbyMenu) this.lobbyMenu.classList.remove('hidden');
+                if (this.waitingRoom) this.waitingRoom.classList.add('hidden');
+                const matchmakingScreen = document.getElementById('matchmaking-screen');
+                if (matchmakingScreen) matchmakingScreen.classList.add('hidden');
+                const diguWaitingRoom = document.getElementById('digu-waiting-room');
+                if (diguWaitingRoom) diguWaitingRoom.classList.add('hidden');
+                const diguMatchmaking = document.getElementById('digu-matchmaking-screen');
+                if (diguMatchmaking) diguMatchmaking.classList.add('hidden');
 
                 // Check if this is first load and prompt for name
                 if (!this.playerName) {
@@ -7309,7 +7332,15 @@
 
             // Show lobby
             this.lobbyOverlay.classList.remove('hidden');
-            this.showGameSelection();
+
+            // Check if we're on a specific game page (window.currentGame is set)
+            if (window.currentGame) {
+                // On game-specific page, go directly to game lobby
+                this.selectGame(window.currentGame);
+            } else {
+                // On index page, show game selection
+                this.showGameSelection();
+            }
         }
 
         // Hide lobby overlay

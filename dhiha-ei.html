@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Landscape-optimized viewport for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS PWA settings - landscape orientation -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Thaasbai">
+    <meta name="apple-mobile-web-app-orientations" content="landscape">
+
+    <!-- Android PWA settings -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#001825">
+    <meta name="msapplication-navbutton-color" content="#001825">
+    <meta name="msapplication-TileColor" content="#001825">
+
+    <!-- Screen orientation hint -->
+    <meta name="screen-orientation" content="landscape">
+    <meta name="x5-orientation" content="landscape">
+    <meta name="x5-fullscreen" content="true">
+
+    <!-- Prevent text size adjustment -->
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- iOS icons -->
+    <link rel="apple-touch-icon" href="icons/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167x167.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+    <link rel="apple-touch-icon-precomposed" href="icons/icon-180x180.png">
+
+    <!-- Safari Pinned Tab Icon -->
+    <link rel="mask-icon" href="icons/icon.svg" color="#006994">
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+
+    <!-- Splash screens for iOS (landscape orientation) -->
+    <!-- iPhone 15 Pro Max -->
+    <link rel="apple-touch-startup-image" href="splash/splash-iphone-15-pro-max-2796x1290.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <!-- iPhone 14/13/12 -->
+    <link rel="apple-touch-startup-image" href="splash/splash-iphone-14-13-12-2532x1170.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <!-- iPhone 11 Pro/X -->
+    <link rel="apple-touch-startup-image" href="splash/splash-iphone-11-pro-x-2436x1125.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)">
+    <!-- iPhone 11/XR -->
+    <link rel="apple-touch-startup-image" href="splash/splash-iphone-11-xr-1792x828.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- iPhone SE/8 -->
+    <link rel="apple-touch-startup-image" href="splash/splash-iphone-se-8-1334x750.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- iPad Pro 12.9" -->
+    <link rel="apple-touch-startup-image" href="splash/splash-ipad-pro-12.9-2732x2048.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- iPad Pro 11" -->
+    <link rel="apple-touch-startup-image" href="splash/splash-ipad-pro-11-2388x1668.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- iPad Air -->
+    <link rel="apple-touch-startup-image" href="splash/splash-ipad-air-2360x1640.png" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- iPad 10.2" -->
+    <link rel="apple-touch-startup-image" href="splash/splash-ipad-10.2-2160x1620.png" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- iPad mini -->
+    <link rel="apple-touch-startup-image" href="splash/splash-ipad-mini-2266x1488.png" media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+    <!-- iPad 9.7" -->
+    <link rel="apple-touch-startup-image" href="splash/splash-ipad-9.7-2048x1536.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
+
+    <title>Dhiha Ei - Thaasbai</title>
+    <link rel="stylesheet" href="css/base.css?v=1">
+    <link rel="stylesheet" href="css/dhiha-ei.css?v=1">
+
+    <!-- Socket.IO for multiplayer -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <!-- Service Worker Registration with Auto-Update -->
+    <script>
+        // Set current game for bundle.js
+        window.currentGame = 'dhiha-ei';
+
+        // Register service worker for PWA with update checking
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registered:', registration.scope);
+
+                        // Check for updates on every page load
+                        registration.update();
+
+                        // Check for updates periodically (every 5 minutes)
+                        setInterval(() => {
+                            registration.update();
+                        }, 5 * 60 * 1000);
+
+                        // Handle updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('New service worker installing...');
+
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available, reload to activate
+                                    console.log('New version available, reloading...');
+                                    window.location.reload();
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+
+                // Listen for messages from service worker
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    if (event.data.type === 'SW_UPDATED') {
+                        console.log('Service worker updated to v' + event.data.version);
+                        // Optionally reload or notify user
+                    }
+                });
+
+                // Handle controller change (new SW took over)
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    console.log('New service worker activated, reloading...');
+                    window.location.reload();
+                });
+            });
+        }
+
+        // Lock screen orientation to landscape
+        function lockLandscape() {
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(() => {
+                    // Orientation lock not supported or denied
+                    console.log('Orientation lock not available');
+                });
+            }
+        }
+
+        // Try to lock on load and fullscreen
+        document.addEventListener('DOMContentLoaded', lockLandscape);
+        document.addEventListener('fullscreenchange', lockLandscape);
+        document.addEventListener('webkitfullscreenchange', lockLandscape);
+    </script>
+</head>
+<body>
+    <!-- Full-screen background that fills viewport regardless of game scale -->
+    <div id="game-background"></div>
+
+    <div id="viewport-wrapper">
+    <div id="game-container">
+        <header id="game-header">
+            <h1>Thaasbai</h1>
+            <div id="current-game-name">Dhiha Ei</div>
+            <div id="game-status"></div>
+        </header>
+
+
+
+        <main id="game-board">
+            <!-- Match Points Display -->
+            <div id="match-points-panel">
+                <div class="match-title">Match Score</div>
+                <div class="match-scores">
+                    <span class="match-score you">You: <span id="match-points-0">0</span></span>
+                    <span class="match-score opp">Opp: <span id="match-points-1">0</span></span>
+                </div>
+                <div class="win-types-breakdown">
+                    <div class="win-type-row">
+                        <span class="win-type-label">Normal:</span>
+                        <span class="win-type-you" id="normal-0">0</span>
+                        <span class="win-type-sep">-</span>
+                        <span class="win-type-opp" id="normal-1">0</span>
+                    </div>
+                    <div class="win-type-row">
+                        <span class="win-type-label">All 10s:</span>
+                        <span class="win-type-you" id="all-tens-0">0</span>
+                        <span class="win-type-sep">-</span>
+                        <span class="win-type-opp" id="all-tens-1">0</span>
+                    </div>
+                    <div class="win-type-row">
+                        <span class="win-type-label">Shutout:</span>
+                        <span class="win-type-you" id="shutout-0">0</span>
+                        <span class="win-type-sep">-</span>
+                        <span class="win-type-opp" id="shutout-1">0</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Round Score displays -->
+
+            <div id="score-panel">
+                <div class="team-score" id="team0-score">
+                    <span class="team-label">Your Team</span>
+                    <div class="score-stats">
+                        <span class="tens-count">
+                            <span>10s</span>
+                            <span id="team0-tens">0</span>
+                        </span>
+                        <span class="tricks-count">
+                            <span>Tricks</span>
+                            <span id="team0-tricks">0</span>
+                        </span>
+                    </div>
+                    <div class="collected-tens" id="collected-tens-0"></div>
+                </div>
+                <div class="team-score" id="team1-score">
+                    <span class="team-label">Opponents</span>
+                    <div class="score-stats">
+                        <span class="tens-count">
+                            <span>10s</span>
+                            <span id="team1-tens">0</span>
+                        </span>
+                        <span class="tricks-count">
+                            <span>Tricks</span>
+                            <span id="team1-tricks">0</span>
+                        </span>
+                    </div>
+                    <div class="collected-tens" id="collected-tens-1"></div>
+                </div>
+                                <div>
+                                                                    <!-- Superior Suit Display - positioned independently -->
+        <span id="superior-suit-display">&#128081; &#8212;</span>
+                </div>
+                </div>
+
+            <!-- Player areas -->
+            <div id="player-top" class="player-area partner">
+                <div class="player-avatar">
+                    <div class="avatar-icon">P</div>
+                    <div class="avatar-cards"><span class="card-count">13</span></div>
+                </div>
+                <div class="player-hand" id="hand-top"></div>
+                <div class="player-label">Partner</div>
+                <div class="shuffle-count" id="shuffle-count-2">Shuffle: 0</div>
+            </div>
+
+            <div id="player-left" class="player-area opponent two-column">
+                <div class="player-column">
+                    <div class="player-avatar">
+                        <div class="avatar-icon">O</div>
+                        <div class="avatar-cards"><span class="card-count">13</span></div>
+                    </div>
+                    <div class="player-hand" id="hand-left"></div>
+                    <div class="player-label">Opponent</div>
+                    <div class="shuffle-count" id="shuffle-count-1">Shuffle: 0</div>
+                </div>
+                <div class="sponsor-column" id="drink-sponsor">
+                    <div class="drink-item"></div>
+                    <div id="drink-callout" class="sponsor-callout hidden">
+                        <span class="callout-text">Thirsty? Take a sip!</span>
+                        <div class="callout-arrow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="player-right" class="player-area opponent two-column">
+                <div class="sponsor-column" id="food-sponsor">
+                    <div class="food-item"></div>
+                    <div id="food-callout" class="sponsor-callout hidden">
+                        <span class="callout-text">Snack break!</span>
+                        <div class="callout-arrow"></div>
+                    </div>
+                </div>
+                <div class="player-column">
+                    <div class="player-avatar">
+                        <div class="avatar-icon">O</div>
+                        <div class="avatar-cards"><span class="card-count">13</span></div>
+                    </div>
+                    <div class="player-hand" id="hand-right"></div>
+                    <div class="player-label">Opponent</div>
+                    <div class="shuffle-count" id="shuffle-count-3">Shuffle: 0</div>
+                </div>
+            </div>
+
+            <!-- Center play area -->
+            <div id="play-area">
+                <div id="trick-cards">
+                    <div class="played-card" id="played-top"></div>
+                    <div class="played-card" id="played-left"></div>
+                    <div class="played-card" id="played-right"></div>
+                    <div class="played-card" id="played-bottom"></div>
+                </div>
+                <div id="turn-indicator"></div>
+            </div>
+
+            <!-- Human player area -->
+            <div id="player-bottom" class="player-area human">
+                <div class="player-hand" id="hand-bottom"></div>
+                <div class="player-label">You</div>
+                <div class="shuffle-count" id="shuffle-count-0">Shuffle: 0</div>
+            </div>
+        </main>
+
+        <!-- New game button -->
+        <div id="controls">
+            <button id="menu-btn">Menu</button>
+            <button id="new-game-btn">New Game</button>
+        </div>
+
+        <!-- Table Sponsor Areas -->
+        <!-- Center Table Sponsor - for main sponsor logo -->
+        <!-- Ooredoo Maldives Sponsor -->
+        <div id="table-sponsor" class="sponsor-area center-sponsor">
+            <div class="sponsor-logo ooredoo">
+                <svg viewBox="0 0 200 80" width="200" height="80">
+                    <!-- Ooredoo Logo -->
+                    <defs>
+                        <linearGradient id="ooredooRed" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E60012"/>
+                            <stop offset="100%" style="stop-color:#C4000F"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Ooredoo Symbol - Abstract circular design -->
+                    <g transform="translate(15, 12)">
+                        <!-- Main circle -->
+                        <circle cx="28" cy="28" r="26" fill="url(#ooredooRed)"/>
+                        <!-- Inner cutout circles creating the design -->
+                        <circle cx="20" cy="22" r="10" fill="white"/>
+                        <circle cx="36" cy="22" r="8" fill="white"/>
+                        <circle cx="28" cy="38" r="7" fill="white"/>
+                        <!-- Connecting white space -->
+                        <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none"/>
+                    </g>
+                    <!-- "ooredoo" text -->
+                    <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#E60012" letter-spacing="-1">ooredoo</text>
+                    <!-- "MALDIVES" text -->
+                    <text x="77" y="65" font-family="Arial, sans-serif" font-size="12" fill="#E60012" letter-spacing="2">MALDIVES</text>
+                </svg>
+            </div>
+            <div id="table-callout" class="sponsor-callout hidden">
+                <div class="callout-arrow"></div>
+                <span class="callout-text">Stay connected! &#128246;</span>
+            </div>
+        </div>
+
+
+        <!-- Game messages and overlays (inside game-container for landscape rotation) -->
+        <div id="message-overlay" class="hidden">
+            <div id="message-content">
+                <h2 id="message-title"></h2>
+                <p id="message-text"></p>
+                <div id="message-buttons">
+                    <button id="message-button">Continue</button>
+                    <button id="message-button-secondary" class="hidden">End Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lobby Overlay -->
+    <div id="lobby-overlay">
+        <div id="lobby-content">
+            <!-- Game Lobby -->
+            <div id="game-lobby">
+                <div class="lobby-header">
+                    <h2 class="lobby-title">Dhiha Ei</h2>
+                </div>
+                <p class="lobby-subtitle">Maldivian Card Game</p>
+
+                <!-- Main Menu -->
+                <div id="lobby-menu">
+                    <button id="play-ai-btn" class="lobby-btn primary">Play vs AI</button>
+                    <div class="lobby-divider"><span>or play online</span></div>
+                    <button id="quick-match-btn" class="lobby-btn primary">Quick Match</button>
+                    <button id="create-room-btn" class="lobby-btn">Create Private Room</button>
+                    <div class="join-section">
+                        <input type="text" id="room-code-input" placeholder="Room Code" maxlength="6" autocomplete="off">
+                        <button id="join-room-btn" class="lobby-btn">Join</button>
+                    </div>
+                    <button id="back-to-games" class="lobby-btn secondary" onclick="window.location.href='index.html'">&#8592; Back</button>
+                </div>
+            </div>
+
+            <!-- Matchmaking Queue -->
+            <div id="matchmaking-screen" class="hidden">
+                <div class="matchmaking-content">
+                    <h3>Finding Players...</h3>
+                    <div class="matchmaking-spinner"></div>
+                    <div class="matchmaking-status">
+                        <span id="queue-count">0</span> / 4 players
+                    </div>
+                    <p class="matchmaking-hint">Game will start automatically when 4 players join</p>
+                    <button id="cancel-queue-btn" class="lobby-btn secondary">Cancel</button>
+
+                    <!-- Sponsor Area -->
+                    <div id="matchmaking-sponsor" class="lobby-sponsor" onclick="console.log('SPONSOR CLICKED'); window.showSponsorPopup ? window.showSponsorPopup('matchmaking') : alert('Function not found')">
+                        <span class="lobby-sponsor-label">Sponsored by</span>
+                        <div class="lobby-sponsor-logo">
+                            <svg viewBox="0 0 200 80" width="120" height="48">
+                                <defs>
+                                    <linearGradient id="ooredooRedLobby1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#E60012"/>
+                                        <stop offset="100%" style="stop-color:#C4000F"/>
+                                    </linearGradient>
+                                </defs>
+                                <g transform="translate(15, 12)">
+                                    <circle cx="28" cy="28" r="26" fill="url(#ooredooRedLobby1)"/>
+                                    <circle cx="20" cy="22" r="10" fill="white"/>
+                                    <circle cx="36" cy="22" r="8" fill="white"/>
+                                    <circle cx="28" cy="38" r="7" fill="white"/>
+                                    <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none"/>
+                                </g>
+                                <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#E60012" letter-spacing="-1">ooredoo</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waiting Room -->
+            <div id="waiting-room" class="hidden">
+                <div class="room-header">
+                    <h3>Room Code</h3>
+                    <div id="room-code-display"></div>
+                    <button id="copy-code-btn" class="copy-btn" title="Copy code">Copy</button>
+                </div>
+
+                <div id="player-slots">
+                    <div class="team-column" data-team="0">
+                        <div class="team-label">Team A</div>
+                        <div class="player-slot" data-position="0" data-team="0">
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                            <button class="swap-btn hidden" title="Move to Team B">&#8594;</button>
+                        </div>
+                        <div class="player-slot" data-position="2" data-team="0">
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                            <button class="swap-btn hidden" title="Move to Team B">&#8594;</button>
+                        </div>
+                    </div>
+                    <div class="team-column" data-team="1">
+                        <div class="team-label">Team B</div>
+                        <div class="player-slot" data-position="1" data-team="1">
+                            <button class="swap-btn hidden" title="Move to Team A">&#8592;</button>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                        <div class="player-slot" data-position="3" data-team="1">
+                            <button class="swap-btn hidden" title="Move to Team A">&#8592;</button>
+                            <span class="slot-status">Waiting...</span>
+                            <span class="slot-name"></span>
+                            <span class="slot-ready"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="host-team-hint" class="host-hint hidden">As host, click arrows to move players between teams</p>
+
+                <div id="waiting-room-actions">
+                    <button id="ready-btn" class="lobby-btn">Ready</button>
+                    <button id="start-game-btn" class="lobby-btn primary hidden">Start Game</button>
+                    <button id="leave-room-btn" class="lobby-btn secondary">Leave Room</button>
+                </div>
+
+                <div id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connected</span>
+                </div>
+
+                <!-- Sponsor Area -->
+                <div id="waiting-room-sponsor" class="lobby-sponsor" onclick="console.log('SPONSOR CLICKED'); window.showSponsorPopup ? window.showSponsorPopup('waiting_room') : alert('Function not found')">
+                    <span class="lobby-sponsor-label">Sponsored by</span>
+                    <div class="lobby-sponsor-logo">
+                        <svg viewBox="0 0 200 80" width="120" height="48">
+                            <defs>
+                                <linearGradient id="ooredooRedLobby2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#E60012"/>
+                                    <stop offset="100%" style="stop-color:#C4000F"/>
+                                </linearGradient>
+                            </defs>
+                            <g transform="translate(15, 12)">
+                                <circle cx="28" cy="28" r="26" fill="url(#ooredooRedLobby2)"/>
+                                <circle cx="20" cy="22" r="10" fill="white"/>
+                                <circle cx="36" cy="22" r="8" fill="white"/>
+                                <circle cx="28" cy="38" r="7" fill="white"/>
+                                <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none"/>
+                            </g>
+                            <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#E60012" letter-spacing="-1">ooredoo</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Name Input Modal -->
+            <div id="name-input-modal" class="hidden">
+                <h3>Enter Your Name</h3>
+                <input type="text" id="player-name-input" placeholder="Your name" maxlength="10" autocomplete="off">
+                <div class="modal-actions">
+                    <button id="name-cancel-btn" class="lobby-btn secondary">Cancel</button>
+                    <button id="name-confirm-btn" class="lobby-btn primary">Confirm</button>
+                </div>
+            </div>
+
+            <!-- Error Display -->
+            <div id="lobby-error" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- Multiplayer Status Bar (shown during game) -->
+    <div id="multiplayer-status" class="hidden">
+        <span id="mp-room-code"></span>
+        <span id="mp-timer" class="hidden">&#9201;&#65039; <span id="mp-timer-value">15:00</span></span>
+        <span id="mp-turn-indicator"></span>
+        <button id="mp-leave-btn" class="mp-btn">Leave</button>
+    </div>
+
+    <!-- Rotate Device Overlay (portrait mode on mobile) -->
+    <div id="rotate-overlay">
+        <div class="rotate-content">
+            <div class="rotate-icon">
+                <svg viewBox="0 0 100 100" width="80" height="80">
+                    <rect x="25" y="10" width="50" height="80" rx="5" fill="none" stroke="#40E0D0" stroke-width="3"/>
+                    <circle cx="50" cy="80" r="4" fill="#40E0D0"/>
+                    <path d="M75 50 L90 50 L82.5 35 Z" fill="#FFD700"/>
+                    <path d="M90 50 Q95 50 95 55 L95 75 Q95 80 90 80 L75 80" fill="none" stroke="#FFD700" stroke-width="3"/>
+                </svg>
+            </div>
+            <h2>Rotate Your Device</h2>
+            <p>Thaasbai is best played in landscape mode</p>
+            <button id="play-portrait-btn" class="rotate-dismiss-btn">Play in Portrait Anyway</button>
+        </div>
+    </div>
+
+    <!-- Install PWA Prompt -->
+    <div id="install-prompt" class="hidden">
+        <div class="install-content">
+            <span>Install Thaasbai for the best experience</span>
+            <button id="install-btn" class="install-btn">Install</button>
+            <button id="install-dismiss" class="install-dismiss">&times;</button>
+        </div>
+    </div>
+
+    <!-- Single bundled script (no modules) -->
+    <script src="js/bundle.js?v=74"></script>
+
+    <!-- PWA Install Handler -->
+    <script>
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Show install prompt after a delay
+            setTimeout(() => {
+                const prompt = document.getElementById('install-prompt');
+                if (prompt && !localStorage.getItem('pwaInstallDismissed')) {
+                    prompt.classList.remove('hidden');
+                }
+            }, 3000);
+        });
+
+        document.getElementById('install-btn')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log('Install prompt outcome:', outcome);
+                deferredPrompt = null;
+            }
+            document.getElementById('install-prompt')?.classList.add('hidden');
+        });
+
+        document.getElementById('install-dismiss')?.addEventListener('click', () => {
+            document.getElementById('install-prompt')?.classList.add('hidden');
+            localStorage.setItem('pwaInstallDismissed', 'true');
+        });
+
+        // Hide install prompt if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            const prompt = document.getElementById('install-prompt');
+            if (prompt) prompt.classList.add('hidden');
+        }
+    </script>
+    </div><!-- end viewport-wrapper -->
+</body>
+</html>

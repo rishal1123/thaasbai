@@ -4,7 +4,7 @@
  */
 
 // IMPORTANT: Increment this version to trigger update
-const CACHE_VERSION = 136;
+const CACHE_VERSION = 139;
 const CACHE_NAME = `thaasbai-v${CACHE_VERSION}`;
 const OFFLINE_URL = '/';
 
@@ -12,7 +12,11 @@ const OFFLINE_URL = '/';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/css/styles.css',
+  '/dhiha-ei.html',
+  '/digu.html',
+  '/css/base.css',
+  '/css/dhiha-ei.css',
+  '/css/digu.css',
   '/js/bundle.js',
   '/manifest.json',
   '/icons/icon.svg',
