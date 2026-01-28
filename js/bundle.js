@@ -3901,7 +3901,8 @@
             this.multiplayerStatus = document.getElementById('multiplayer-status');
 
             // Digu game components
-            this.currentGameType = null; // 'dhiha-ei' or 'digu'
+            this.currentGameType = window.currentGame || null; // 'dhiha-ei' or 'digu'
+            this.selectedGame = window.currentGame || null; // Initialize from window.currentGame
             this.diguGame = null;
             this.diguSelectedCards = [];
             this.diguActiveMeldSlot = null;
@@ -4121,14 +4122,24 @@
             }
 
             // Play vs AI button
-            document.getElementById('play-ai-btn').addEventListener('click', () => {
-                if (this.selectedGame === 'digu') {
-                    // Show Digu player count modal for single player
-                    document.getElementById('digu-player-count-modal').classList.remove('hidden');
-                } else {
-                    this.startSinglePlayerGame();
-                }
-            });
+            const playAiBtn = document.getElementById('play-ai-btn');
+            if (playAiBtn) {
+                playAiBtn.addEventListener('click', () => {
+                    console.log('[UIManager] Play vs AI clicked, selectedGame:', this.selectedGame);
+                    if (this.selectedGame === 'digu') {
+                        // Show Digu player count modal for single player
+                        const modal = document.getElementById('digu-player-count-modal');
+                        if (modal) {
+                            console.log('[UIManager] Showing Digu player count modal');
+                            modal.classList.remove('hidden');
+                        } else {
+                            console.error('[UIManager] digu-player-count-modal not found');
+                        }
+                    } else {
+                        this.startSinglePlayerGame();
+                    }
+                });
+            }
 
             // Quick Match button
             document.getElementById('quick-match-btn').addEventListener('click', () => {
@@ -4139,10 +4150,13 @@
                 }
             });
 
-            // Cancel Queue button
-            document.getElementById('cancel-queue-btn').addEventListener('click', () => {
-                this.cancelMatchmaking();
-            });
+            // Cancel Queue button (Dhiha Ei)
+            const cancelQueueBtn = document.getElementById('cancel-queue-btn');
+            if (cancelQueueBtn) {
+                cancelQueueBtn.addEventListener('click', () => {
+                    this.cancelMatchmaking();
+                });
+            }
 
             // Digu Cancel Queue button
             const diguCancelQueueBtn = document.getElementById('digu-cancel-queue-btn');
@@ -4181,45 +4195,69 @@
                 }
             });
 
-            // Copy room code button
-            document.getElementById('copy-code-btn').addEventListener('click', () => {
-                this.copyRoomCode();
-            });
+            // Copy room code button (Dhiha Ei)
+            const copyCodeBtn = document.getElementById('copy-code-btn');
+            if (copyCodeBtn) {
+                copyCodeBtn.addEventListener('click', () => {
+                    this.copyRoomCode();
+                });
+            }
 
-            // Ready button
-            document.getElementById('ready-btn').addEventListener('click', () => {
-                this.toggleReady();
-            });
+            // Ready button (Dhiha Ei)
+            const readyBtn = document.getElementById('ready-btn');
+            if (readyBtn) {
+                readyBtn.addEventListener('click', () => {
+                    this.toggleReady();
+                });
+            }
 
-            // Start Game button (host only)
-            document.getElementById('start-game-btn').addEventListener('click', () => {
-                this.startMultiplayerGame();
-            });
+            // Start Game button (host only, Dhiha Ei)
+            const startGameBtn = document.getElementById('start-game-btn');
+            if (startGameBtn) {
+                startGameBtn.addEventListener('click', () => {
+                    this.startMultiplayerGame();
+                });
+            }
 
-            // Leave Room button
-            document.getElementById('leave-room-btn').addEventListener('click', () => {
-                this.leaveRoom();
-            });
+            // Leave Room button (Dhiha Ei)
+            const leaveRoomBtn = document.getElementById('leave-room-btn');
+            if (leaveRoomBtn) {
+                leaveRoomBtn.addEventListener('click', () => {
+                    this.leaveRoom();
+                });
+            }
 
-            // Name input modal
-            document.getElementById('name-confirm-btn').addEventListener('click', () => {
-                this.confirmNameInput();
-            });
-
-            document.getElementById('name-cancel-btn').addEventListener('click', () => {
-                this.cancelNameInput();
-            });
-
-            document.getElementById('player-name-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
+            // Name input modal (Dhiha Ei)
+            const nameConfirmBtn = document.getElementById('name-confirm-btn');
+            if (nameConfirmBtn) {
+                nameConfirmBtn.addEventListener('click', () => {
                     this.confirmNameInput();
-                }
-            });
+                });
+            }
 
-            // Multiplayer leave button (during game)
-            document.getElementById('mp-leave-btn').addEventListener('click', () => {
-                this.confirmLeaveMultiplayer();
-            });
+            const nameCancelBtn = document.getElementById('name-cancel-btn');
+            if (nameCancelBtn) {
+                nameCancelBtn.addEventListener('click', () => {
+                    this.cancelNameInput();
+                });
+            }
+
+            const playerNameInput = document.getElementById('player-name-input');
+            if (playerNameInput) {
+                playerNameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.confirmNameInput();
+                    }
+                });
+            }
+
+            // Multiplayer leave button (during game, Dhiha Ei)
+            const mpLeaveBtn = document.getElementById('mp-leave-btn');
+            if (mpLeaveBtn) {
+                mpLeaveBtn.addEventListener('click', () => {
+                    this.confirmLeaveMultiplayer();
+                });
+            }
 
             // Swap buttons for team assignment (host only)
             document.querySelectorAll('.swap-btn').forEach(btn => {

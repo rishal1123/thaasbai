@@ -68,8 +68,8 @@
     <link rel="apple-touch-startup-image" href="splash/splash-ipad-9.7-2048x1536.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 
     <title>Digu - Thaasbai</title>
-    <link rel="stylesheet" href="css/base.css?v=4">
-    <link rel="stylesheet" href="css/digu.css?v=4">
+    <link rel="stylesheet" href="css/base.css?v=8">
+    <link rel="stylesheet" href="css/digu.css?v=8">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -216,6 +216,54 @@
                 <div class="digu-shuffle-count" id="digu-shuffle-count-3">Shuffle: 0</div>
             </div>
 
+            <!-- Sponsor Areas -->
+            <!-- Drink sponsor - left side -->
+            <div class="sponsor-column" id="drink-sponsor">
+                <div class="drink-item"></div>
+                <div id="drink-callout" class="sponsor-callout hidden">
+                    <span class="callout-text">Thirsty? Take a sip!</span>
+                    <div class="callout-arrow"></div>
+                </div>
+            </div>
+
+            <!-- Food sponsor - right side -->
+            <div class="sponsor-column" id="food-sponsor">
+                <div class="food-item"></div>
+                <div id="food-callout" class="sponsor-callout hidden">
+                    <span class="callout-text">Snack break!</span>
+                    <div class="callout-arrow"></div>
+                </div>
+            </div>
+
+            <!-- Center Table Sponsor -->
+            <div id="table-sponsor" class="sponsor-area center-sponsor">
+                <div class="sponsor-logo ooredoo">
+                    <svg viewBox="0 0 200 80" width="200" height="80">
+                        <defs>
+                            <linearGradient id="ooredooRed" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#E60012" />
+                                <stop offset="100%" style="stop-color:#C4000F" />
+                            </linearGradient>
+                        </defs>
+                        <g transform="translate(15, 12)">
+                            <circle cx="28" cy="28" r="26" fill="url(#ooredooRed)" />
+                            <circle cx="20" cy="22" r="10" fill="white" />
+                            <circle cx="36" cy="22" r="8" fill="white" />
+                            <circle cx="28" cy="38" r="7" fill="white" />
+                            <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none" />
+                        </g>
+                        <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold"
+                            fill="#E60012" letter-spacing="-1">ooredoo</text>
+                        <text x="77" y="65" font-family="Arial, sans-serif" font-size="12" fill="#E60012"
+                            letter-spacing="2">MALDIVES</text>
+                    </svg>
+                </div>
+                <div id="table-callout" class="sponsor-callout hidden">
+                    <div class="callout-arrow"></div>
+                    <span class="callout-text">Stay connected!</span>
+                </div>
+            </div>
+
             <!-- Scores Panel -->
             <div id="digu-scores">
                 <div class="digu-scores-title">Match Stats</div>
@@ -332,6 +380,15 @@
                         <button id="join-room-btn" class="lobby-btn">Join</button>
                     </div>
                     <button id="back-to-games" class="lobby-btn secondary" onclick="window.location.href='index.html'">&#8592; Back</button>
+
+                    <!-- Matchmaking Sponsor -->
+                    <div id="matchmaking-sponsor" class="lobby-sponsor"
+                        style="margin-top: calc(2 * var(--scale)); text-align: center;">
+                        <span class="lobby-sponsor-label">Sponsored by</span>
+                        <div class="lobby-sponsor-logo">
+                            <!-- Sponsor logo will be inserted dynamically -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -385,6 +442,15 @@
                 <div id="digu-connection-status">
                     <span class="status-dot"></span>
                     <span class="status-text">Connected</span>
+                </div>
+
+                <!-- Waiting Room Sponsor -->
+                <div id="waiting-room-sponsor" class="lobby-sponsor"
+                    style="margin-top: calc(2 * var(--scale)); text-align: center;">
+                    <span class="lobby-sponsor-label">Sponsored by</span>
+                    <div class="lobby-sponsor-logo">
+                        <!-- Sponsor logo will be inserted dynamically -->
+                    </div>
                 </div>
             </div>
 
@@ -466,7 +532,7 @@
     </div>
 
     <!-- Single bundled script (no modules) -->
-    <script src="js/bundle.js?v=74"></script>
+    <script src="js/bundle.js?v=77"></script>
 
     <!-- PWA Install Handler -->
     <script>
