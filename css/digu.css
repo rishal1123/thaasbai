@@ -20,6 +20,149 @@
     display: none !important;
 }
 
+/* ============================================
+   CSS GRID LAYOUT FOR DIGU
+   ============================================ */
+
+#digu-game-board.grid-layout {
+    display: grid;
+    grid-template-columns: calc(12 * var(--scale)) 1fr calc(50 * var(--scale)) 1fr calc(12 * var(--scale));
+    grid-template-rows: calc(12 * var(--scale)) 1fr calc(25 * var(--scale));
+    grid-template-areas:
+        "left   top     top     top     scores"
+        "left   center  center  center  right"
+        "bottom bottom  bottom  bottom  bottom";
+    gap: calc(1 * var(--scale));
+    padding: calc(1 * var(--scale));
+}
+
+/* Grid Area: Top Player */
+.grid-area-top {
+    grid-area: top;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 5;
+}
+
+/* Grid Area: Left Player + Sponsor */
+.grid-area-left {
+    grid-area: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: calc(1.5 * var(--scale));
+    z-index: 5;
+}
+
+/* Grid Area: Right Player + Sponsor */
+.grid-area-right {
+    grid-area: right;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: calc(1.5 * var(--scale));
+    z-index: 5;
+}
+
+/* Grid Area: Center Table */
+.grid-area-center {
+    grid-area: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: calc(4 * var(--scale));
+    position: relative;
+    z-index: 2;
+}
+
+/* Grid Area: Bottom Player */
+.grid-area-bottom {
+    grid-area: bottom;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 100;
+    padding-bottom: calc(0.5 * var(--scale));
+}
+
+/* Grid Area: Scores Panel */
+.grid-area-scores {
+    grid-area: scores;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    z-index: 15;
+}
+
+/* Override positioning for grid layout */
+#digu-game-board.grid-layout .digu-player {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    transform: none;
+}
+
+#digu-game-board.grid-layout #digu-stock,
+#digu-game-board.grid-layout #digu-discard {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    transform: none;
+}
+
+#digu-game-board.grid-layout #digu-center-area {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(1 * var(--scale));
+}
+
+#digu-game-board.grid-layout #digu-scores {
+    position: relative;
+    top: auto;
+    right: auto;
+}
+
+#digu-game-board.grid-layout #table-sponsor {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin-top: calc(1 * var(--scale));
+}
+
+#digu-game-board.grid-layout #meld-hint {
+    position: absolute;
+    bottom: calc(-3 * var(--scale));
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Grid layout player adjustments */
+#digu-game-board.grid-layout .grid-area-top .digu-player {
+    flex-direction: column;
+}
+
+#digu-game-board.grid-layout .grid-area-left .digu-player,
+#digu-game-board.grid-layout .grid-area-right .digu-player {
+    flex-direction: column;
+}
+
+#digu-game-board.grid-layout .grid-area-bottom .digu-player {
+    flex-direction: column;
+    align-items: center;
+}
+
 /* Oval Table for Digu */
 #digu-game-board::before {
     content: '';
@@ -1542,10 +1685,10 @@ div:has(.sponsor-column) > .digu-player.bottom {
     min-height: 48px;
 }
 
-/* Wrapper divs for players with sponsors */
+/* Wrapper divs for players with sponsors (non-grid layout) */
 
 /* Bottom player (player 0) wrapper */
-#digu-game-board > div:has(#digu-player-0) {
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-0) {
     position: absolute;
     bottom: 0;
     left: 50%;
@@ -1557,7 +1700,7 @@ div:has(.sponsor-column) > .digu-player.bottom {
     z-index: 100;
 }
 
-#digu-game-board > div:has(#digu-player-0) #digu-player-0 {
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-0) #digu-player-0 {
     position: relative;
     bottom: auto;
     left: auto;
@@ -1566,18 +1709,18 @@ div:has(.sponsor-column) > .digu-player.bottom {
 }
 
 /* Ensure player 0 label stays at the top of the hand area */
-#digu-game-board > div:has(#digu-player-0) .digu-player-label {
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-0) .digu-player-label {
     order: -1;
 }
 
 /* Sponsor column next to player 0 - align to bottom */
-#digu-game-board > div:has(#digu-player-0) .sponsor-column {
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-0) .sponsor-column {
     align-self: flex-end;
     margin-bottom: calc(3 * var(--scale));
 }
 
 /* Left player (player 1) wrapper */
-#digu-game-board > div:has(#digu-player-1) {
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-1) {
     position: absolute;
     left: calc(2 * var(--scale));
     top: 50%;
@@ -1590,7 +1733,7 @@ div:has(.sponsor-column) > .digu-player.bottom {
 }
 
 /* Right player (player 3) wrapper */
-#digu-game-board > div:has(#digu-player-3) {
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-3) {
     position: absolute;
     right: calc(2 * var(--scale));
     top: 50%;
@@ -1602,10 +1745,10 @@ div:has(.sponsor-column) > .digu-player.bottom {
     z-index: 5;
 }
 
-/* Override absolute positioning for players inside wrapper */
-#digu-game-board > div:has(#digu-player-0) #digu-player-0,
-#digu-game-board > div:has(#digu-player-1) #digu-player-1,
-#digu-game-board > div:has(#digu-player-3) #digu-player-3 {
+/* Override absolute positioning for players inside wrapper (non-grid) */
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-0) #digu-player-0,
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-1) #digu-player-1,
+#digu-game-board:not(.grid-layout) > div:has(#digu-player-3) #digu-player-3 {
     position: relative;
     left: auto;
     right: auto;

@@ -82,7 +82,7 @@
 
     <title>Digu - Thaasbai</title>
     <link rel="stylesheet" href="css/base.css?v=8">
-    <link rel="stylesheet" href="css/digu.css?v=10">
+    <link rel="stylesheet" href="css/digu.css?v=11">
 
     <!-- Socket.IO for multiplayer -->
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -170,35 +170,23 @@
                 <div id="game-status"></div>
             </header>
 
-            <!-- Digu Game Board -->
-            <main id="digu-game-board">
-                <!-- Stock Pile - Left Side of Table -->
-                <div id="digu-stock" class="digu-pile clickable" title="Draw from deck"></div>
-
-                <!-- Center: Phase & Button -->
-                <div id="digu-center-area">
-                    <!-- Phase Indicator -->
-                    <div id="digu-phase">Draw a card</div>
-
-                    <!-- DIGU Button -->
-                    <button id="digu-btn" class="hidden" disabled>DIGU!</button>
+            <!-- Digu Game Board - CSS Grid Layout -->
+            <main id="digu-game-board" class="grid-layout">
+                <!-- Grid Area: Top Player -->
+                <div class="grid-area-top">
+                    <div id="digu-player-2" class="digu-player top team-a">
+                        <div class="digu-avatar">
+                            <div class="digu-avatar-icon"></div>
+                        </div>
+                        <div class="digu-team-label">Partner</div>
+                        <div class="digu-player-label">Player 3</div>
+                        <div class="digu-card-count">10 cards</div>
+                        <div class="digu-shuffle-count" id="digu-shuffle-count-2">Shuffle: 0</div>
+                    </div>
                 </div>
 
-                <!-- Discard Pile - Right Side of Table -->
-                <div id="digu-discard" class="digu-pile clickable" title="Draw from discard">
-                    <div class="discard-card" id="digu-discard-top"></div>
-                </div>
-
-                <!-- Discard hint -->
-                <div id="meld-hint">Discard</div>
-
-                <!-- Player Areas - positioned around the table -->
-                <div id="digu-player-0" class="digu-player bottom team-a">
-                    <div class="digu-player-label">You</div>
-                    <div class="digu-shuffle-count" id="digu-shuffle-count-0">Shuffle: 0</div>
-                    <div class="digu-player-hand"></div>
-                </div>
-                <div>
+                <!-- Grid Area: Left Player + Sponsor -->
+                <div class="grid-area-left">
                     <div id="digu-player-1" class="digu-player left team-b">
                         <div class="digu-avatar">
                             <div class="digu-avatar-icon"></div>
@@ -217,17 +205,9 @@
                         </div>
                     </div>
                 </div>
-                <div id="digu-player-2" class="digu-player top team-a">
-                    <div class="digu-avatar">
-                        <div class="digu-avatar-icon"></div>
-                    </div>
-                    <div class="digu-team-label">Partner</div>
-                    <div class="digu-player-label">Player 3</div>
-                    <div class="digu-card-count">10 cards</div>
-                    <div class="digu-shuffle-count" id="digu-shuffle-count-2">Shuffle: 0</div>
-                </div>
 
-                <div>
+                <!-- Grid Area: Right Player + Sponsor -->
+                <div class="grid-area-right">
                     <!-- Food sponsor - right side -->
                     <div class="sponsor-column" id="food-sponsor">
                         <div class="food-item"></div>
@@ -236,7 +216,6 @@
                             <div class="callout-arrow"></div>
                         </div>
                     </div>
-
                     <div id="digu-player-3" class="digu-player right team-b">
                         <div class="digu-avatar">
                             <div class="digu-avatar-icon"></div>
@@ -248,56 +227,85 @@
                     </div>
                 </div>
 
-                <!-- Sponsor Areas -->
+                <!-- Grid Area: Center Table (Stock, Center, Discard, Sponsor) -->
+                <div class="grid-area-center">
+                    <!-- Stock Pile -->
+                    <div id="digu-stock" class="digu-pile clickable" title="Draw from deck"></div>
 
+                    <!-- Center: Phase, Button & Table Sponsor -->
+                    <div id="digu-center-area">
+                        <!-- Phase Indicator -->
+                        <div id="digu-phase">Draw a card</div>
 
+                        <!-- DIGU Button -->
+                        <button id="digu-btn" class="hidden" disabled>DIGU!</button>
 
-
-                <!-- Center Table Sponsor -->
-                <div id="table-sponsor" class="sponsor-area center-sponsor">
-                    <div class="sponsor-logo ooredoo">
-                        <svg viewBox="0 0 200 80" width="200" height="80">
-                            <defs>
-                                <linearGradient id="ooredooRed" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#E60012" />
-                                    <stop offset="100%" style="stop-color:#C4000F" />
-                                </linearGradient>
-                            </defs>
-                            <g transform="translate(15, 12)">
-                                <circle cx="28" cy="28" r="26" fill="url(#ooredooRed)" />
-                                <circle cx="20" cy="22" r="10" fill="white" />
-                                <circle cx="36" cy="22" r="8" fill="white" />
-                                <circle cx="28" cy="38" r="7" fill="white" />
-                                <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none" />
-                            </g>
-                            <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold"
-                                fill="#E60012" letter-spacing="-1">ooredoo</text>
-                            <text x="77" y="65" font-family="Arial, sans-serif" font-size="12" fill="#E60012"
-                                letter-spacing="2">MALDIVES</text>
-                        </svg>
+                        <!-- Center Table Sponsor -->
+                        <div id="table-sponsor" class="sponsor-area center-sponsor">
+                            <div class="sponsor-logo ooredoo">
+                                <svg viewBox="0 0 200 80" width="200" height="80">
+                                    <defs>
+                                        <linearGradient id="ooredooRed" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#E60012" />
+                                            <stop offset="100%" style="stop-color:#C4000F" />
+                                        </linearGradient>
+                                    </defs>
+                                    <g transform="translate(15, 12)">
+                                        <circle cx="28" cy="28" r="26" fill="url(#ooredooRed)" />
+                                        <circle cx="20" cy="22" r="10" fill="white" />
+                                        <circle cx="36" cy="22" r="8" fill="white" />
+                                        <circle cx="28" cy="38" r="7" fill="white" />
+                                        <path d="M22 30 Q28 32 34 28" stroke="white" stroke-width="4" fill="none" />
+                                    </g>
+                                    <text x="75" y="48" font-family="Arial, sans-serif" font-size="28" font-weight="bold"
+                                        fill="#E60012" letter-spacing="-1">ooredoo</text>
+                                    <text x="77" y="65" font-family="Arial, sans-serif" font-size="12" fill="#E60012"
+                                        letter-spacing="2">MALDIVES</text>
+                                </svg>
+                            </div>
+                            <div id="table-callout" class="sponsor-callout hidden">
+                                <div class="callout-arrow"></div>
+                                <span class="callout-text">Stay connected!</span>
+                            </div>
+                        </div>
                     </div>
-                    <div id="table-callout" class="sponsor-callout hidden">
-                        <div class="callout-arrow"></div>
-                        <span class="callout-text">Stay connected!</span>
+
+                    <!-- Discard Pile -->
+                    <div id="digu-discard" class="digu-pile clickable" title="Draw from discard">
+                        <div class="discard-card" id="digu-discard-top"></div>
+                    </div>
+
+                    <!-- Discard hint -->
+                    <div id="meld-hint">Discard</div>
+                </div>
+
+                <!-- Grid Area: Bottom Player -->
+                <div class="grid-area-bottom">
+                    <div id="digu-player-0" class="digu-player bottom team-a">
+                        <div class="digu-player-label">You</div>
+                        <div class="digu-shuffle-count" id="digu-shuffle-count-0">Shuffle: 0</div>
+                        <div class="digu-player-hand"></div>
                     </div>
                 </div>
 
-                <!-- Scores Panel -->
-                <div id="digu-scores">
-                    <div class="digu-scores-title">Match Stats</div>
-                    <div class="digu-match-info">
-                        <span>Games: <span id="digu-games-count">0</span></span>
-                    </div>
-                    <div class="digu-team-scores">
-                        <div class="digu-team-score team-a">
-                            <span class="team-name">Your Team</span>
-                            <span class="team-wins-value" id="team-a-wins">0 wins</span>
-                            <span class="team-score-value" id="team-a-score">0</span>
+                <!-- Grid Area: Scores Panel -->
+                <div class="grid-area-scores">
+                    <div id="digu-scores">
+                        <div class="digu-scores-title">Match Stats</div>
+                        <div class="digu-match-info">
+                            <span>Games: <span id="digu-games-count">0</span></span>
                         </div>
-                        <div class="digu-team-score team-b">
-                            <span class="team-name">Opponents</span>
-                            <span class="team-wins-value" id="team-b-wins">0 wins</span>
-                            <span class="team-score-value" id="team-b-score">0</span>
+                        <div class="digu-team-scores">
+                            <div class="digu-team-score team-a">
+                                <span class="team-name">Your Team</span>
+                                <span class="team-wins-value" id="team-a-wins">0 wins</span>
+                                <span class="team-score-value" id="team-a-score">0</span>
+                            </div>
+                            <div class="digu-team-score team-b">
+                                <span class="team-name">Opponents</span>
+                                <span class="team-wins-value" id="team-b-wins">0 wins</span>
+                                <span class="team-score-value" id="team-b-score">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
